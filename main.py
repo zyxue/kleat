@@ -2,6 +2,7 @@ import pysam
 
 
 # https://pysam.readthedocs.io/en/latest/api.html?highlight=AlignmentSegment#pysam.AlignedSegment.cigartuples
+BAM_CMATCH = 0
 BAM_CSOFT_CLIP = 4              # used to identify soft clip 
 
 
@@ -87,6 +88,46 @@ def calc_num_tail_reads(segment, r2c_sam):
     return num_tail_reads, seg_clv
 
 
+def infer_contig_abs_ref_start(contig):
+    """
+    infer the absolute reference starting position taking into consideration
+    the non-M bases (esp. softclipped bases)
+    """
+    pos = contig.reference_start
+    for key, val in contig.cigartuples:
+        if key != BAM_CMATCH:
+            pos -= val
+        break
+    return pos
+
+
+def infer_contig_abs_ref_end(contig):
+    """
+    infer the absolute reference starting position taking into consideration
+    the non-M bases (esp. softclipped bases)
+    """
+    pos = contig.reference_end
+    for key, val in reversed(contig.cigartuples):
+        if key != BAM_CMATCH:
+            pos += val
+        break
+    return pos
+
+
+def calc_ref_clv_from_r2c_alignment(contig, read):
+    """calculate
+    cleavage site position wst the reference based on bridge read, and
+    read2contig and contig2genome alignments
+    """
+    if contig.is_reverse:
+        abs_ref_end = infer_contig_abs_ref_end(contig)
+        ref_clv = abs_ref_end - read.reference_start
+    else:
+        abs_ref_beg = infer_contig_abs_ref_start(contig)
+        ref_clv = abs_ref_beg + read.reference_start
+    return ref_clv
+
+
 def test_A1_R26141(seg, ref_clv, tail_length, num_tail_reads, seg_clv):
     assert seg.is_reverse is False
     assert seg.reference_name == "chr3"
@@ -134,8 +175,8 @@ if __name__ == "__main__":
                     contig, ref_clv, tail_length, num_tail_reads, contig_clv)
         else:
             # potential test case for bridge read
-            # PTEN	ENST00000371953	+	yes	A0.R100710	chr10	89725287
-            # KRAS	ENST00000256078	-	yes	A1.S26245	chr12	25362769
+            # PTEN	ENST00000371953	+	yes	A0.R100710	chr10	89725287, ref_clv: 89725516, 89725287
+            # KRAS	ENST00000256078	-	yes	A1.S26245	chr12	25362769, ref_clv: 25362769
 
             # loop through all reads that are aligned to this contig looking
             # for bridge reads
@@ -144,7 +185,7 @@ if __name__ == "__main__":
             # if not contig.query_name == "A1.S26245":
                 continue
             # else:
-            #     break
+            #     pass
 
             for read in r2c_sam.fetch(
                     contig.query_name, 0, contig.query_length):
@@ -163,6 +204,20 @@ if __name__ == "__main__":
                         and first_cigar[0] == BAM_CSOFT_CLIP
                         and set(seq[:first_cigar[1]]) == {'T'}
                 ):
+                    ref_clv = calc_ref_clv_from_r2c_alignment(contig, read)
+
+                    if contig.query_name == "A0.R100710":
+                        if read.query_name in [
+                                'SN7001282:314:h15b0adxx:1:2203:2771:88598',
+                                'SN7001282:314:h15b0adxx:2:1105:18463:70356'
+                        ]:
+                            assert ref_clv == 89725516
+                        else:
+                            assert ref_clv == 89725287
+                    if contig.query_name == "A1.S26245":
+                        assert ref_clv == 25362769
+
+                    print(ref_clv)
                     print(f'{read.query_sequence:75s}\t{read.cigarstring:20s}\t{read.reference_start}\t{read.reference_name}\t{read.is_reverse}\t{read.query_name}')
 
 
