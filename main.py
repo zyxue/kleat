@@ -110,24 +110,66 @@ if __name__ == "__main__":
     c2g_sam = pysam.AlignmentFile('../kleat3-test-data/tasrkleat-results/align_contigs2genome/cba.sorted.bam')
     r2c_sam = pysam.AlignmentFile('../kleat3-test-data/tasrkleat-results/align_reads2contigs/cba.sorted.bam')
 
-    for k, seg in enumerate(c2g_sam):
-        if seg.is_unmapped:
+    tmp_dd = {}
+
+    print('identifying tail contigs...')
+    for k, contig in enumerate(c2g_sam):
+        if contig.is_unmapped:
             continue
 
-        if is_tail_contig(seg):
-            ref_clv = calc_ref_clv(seg)
-            tail_length = calc_tail_length(seg)
-            num_tail_reads, seg_clv = calc_num_tail_reads(seg, r2c_sam)
+        tmp_dd[contig.query_name] = contig
 
-            if seg.query_name == "A0.R100820":
+        if is_tail_segment(contig):
+            ref_clv = calc_ref_clv(contig)
+            tail_length = calc_tail_length(contig)
+            num_tail_reads, contig_clv = calc_num_tail_reads(contig, r2c_sam)
+
+            # below are for debugging purpose
+            if contig.query_name == "A0.R100820":
                 test_A0_R100820(
-                    seg, ref_clv, tail_length, num_tail_reads, seg_clv)
-                print(seg.query_sequence, seg.reference_name,
-                      seg.reference_start, seg.reference_end)
+                    contig, ref_clv, tail_length, num_tail_reads, contig_clv)
 
-            if seg.query_name == "A1.R26141":
+            if contig.query_name == "A1.R26141":
                 test_A1_R26141(
-                    seg, ref_clv, tail_length, num_tail_reads, seg_clv)
+                    contig, ref_clv, tail_length, num_tail_reads, contig_clv)
+        else:
+            # potential test case for bridge read
+            # PTEN	ENST00000371953	+	yes	A0.R100710	chr10	89725287
+            # KRAS	ENST00000256078	-	yes	A1.S26245	chr12	25362769
 
-                print(seg.query_sequence, seg.reference_name,
-                      seg.reference_start, seg.reference_end)
+            # loop through all reads that are aligned to this contig looking
+            # for bridge reads
+
+            if not contig.query_name == "A0.R100710":
+            # if not contig.query_name == "A1.S26245":
+                continue
+            # else:
+            #     break
+
+            for read in r2c_sam.fetch(
+                    contig.query_name, 0, contig.query_length):
+                if read.is_unmapped or read.is_reverse:
+                    # still possible a read is unmapped even though fetching
+                    # used a specific contig, e.g. SN7001282:314:h15b0adxx:1:2206:17178:42842
+
+                    # bridge read should always not be reversed, and its tail
+                    # letter is A or T depending on the contig orientation
+                    continue
+
+                seq = read.query_sequence
+                first_cigar = read.cigartuples[0]
+                if (
+                        seq.startswith('T')  # cDNA always tails in T
+                        and first_cigar[0] == BAM_CSOFT_CLIP
+                        and set(seq[:first_cigar[1]]) == {'T'}
+                ):
+                    print(f'{read.query_sequence:75s}\t{read.cigarstring:20s}\t{read.reference_start}\t{read.reference_name}\t{read.is_reverse}\t{read.query_name}')
+
+
+    # print('identifying bridge reads...')
+    # for k, read in enumerate(r2c_sam):
+    #     if read.is_unmapped:
+    #         continue
+
+    #     if is_tail_segment(read) and read.is_reverse:
+    #         break
