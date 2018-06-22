@@ -5,7 +5,7 @@ from kleat3 import (
     calc_ref_clv,
     calc_tail_length,
     calc_num_tail_reads,
-    is_forward_tseg,
+    is_forward_tail_segment,
     calc_ref_clv_from_r2c_alignment,
 )
 
@@ -92,7 +92,7 @@ def test_bridge_reads():
 # SN7001282:314:h15b0adxx:1:2206:17178:42842      133     A0.S68856       1       0       *       =       1       0       TTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTTT     +1:A:?)8<CFDHA@/4337=:BBBB6630&07670:7317@B@B@5@88889<<<@57<B7@BBBBB;;>>>5<     AS:i:0  XS:i:0
                 continue
 
-            if not is_forward_tseg(read):
+            if not is_forward_tail_segment(read):
                 continue
 
             ref_clv = calc_ref_clv_from_r2c_alignment(contig, read)
