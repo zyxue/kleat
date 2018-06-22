@@ -30,7 +30,7 @@ def analyze_tail_contig(contig):
     clv_record = (
         *contig_info, ref_clv, 'tail_contig',
         # bridge_contig evidence is left empty
-        num_tail_reads, tail_length, 0, 0
+        num_tail_reads, tail_length, 0, 0, 0
     )
     return clv_record
 
@@ -143,23 +143,24 @@ def infer_contig_abs_ref_end(contig):
     return pos
 
 
-def calc_ref_clv_from_r2c_alignment(contig, read):
+def calc_ref_clv_from_r2c_alignment(contig, read_reference_start_wst_contig):
     """calculate
     cleavage site position wst the reference based on bridge read, and
     read2contig and contig2genome alignments
     """
+    read_start = read_reference_start_wst_contig
     if contig.is_reverse:
         abs_ref_end = infer_contig_abs_ref_end(contig)
         # 0            +---AAA          l              -> contig coordinates
         # <-----------------------------+              -> the contig
         # a                ref_start    b:abs_ref_end  -> genomic coordinates
-        ref_clv = abs_ref_end - read.reference_start
+        ref_clv = abs_ref_end - read_start
     else:
         abs_ref_beg = infer_contig_abs_ref_start(contig)
         # 0              TTT---+        l              -> contig coordinates
         # +----------------------------->              -> the contig
         # a:abs_ref_beg     ref_start   b              -> genomic coordinates
-        ref_clv = abs_ref_beg + read.reference_start
+        ref_clv = abs_ref_beg + read_start
     return ref_clv
 
 
@@ -179,6 +180,7 @@ if __name__ == "__main__":
             'clv', 'polya_evidence_type',
             'num_contig_tail_reads', 'contig_tail_length',
             'num_bridge_reads', 'max_bridge_tail_length',
+            'num_link_reads'
         ])
 
         for k, contig in enumerate(c2g_sam):
@@ -189,7 +191,7 @@ if __name__ == "__main__":
 
             if (
                     contig.is_unmapped or
-                    contig.mapq == 0
+                    contig.mapping_quality == 0
             ):
                 continue
 
@@ -200,24 +202,66 @@ if __name__ == "__main__":
                 contig_info = gen_contig_info(contig)
                 num_bdg_reads_dd = {}
                 max_bdg_tail_len_dd = {}
+
+                num_link_reads_dd = {}
                 for read in r2c_sam.fetch(
                         contig.query_name, 0, contig.query_length):
-                    # being unmapped is still possible, see test for a reason
-                    # r2c (cDNA) alignment, tail is always T, must not reverse
-                    if (read.is_unmapped or read.is_reverse):
+                    # if read.query_name == "SN7001282:314:h15b0adxx:1:2102:16317:20542" and read.is_unmapped:
+                    #     sys.exit(1)
+
+                    # if read.query_sequence.startswith('T' * 50) and contig.query_length > 150:
+                    #     import pdb; pdb.set_trace()
+
+                    if read.is_reverse:
+                        # read2contig alignment cannot be reverse to be a read
+                        # supporting polyA tail
                         continue
 
-                    if is_forward_tail_segment(read):
-                        ref_clv = calc_ref_clv_from_r2c_alignment(contig, read)
-                        tail_len = calc_tail_length(read)
-                        num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
-                        max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
-                if len(num_bdg_reads_dd.keys()) > 0:
+                    if read.is_unmapped:  # a candidate for link read
+
+                        # in principle, could also check from the perspecitve
+                        # and the mate of a link read, but it would be harder
+                        # to verify the sequence composition of the link read
+                        if read.mate_is_unmapped:
+                            continue
+
+                        if not set(read.query_sequence) == {'T'}:
+                            # needs to be completely T
+                            continue
+
+                        if not read.reference_id == read.next_reference_id:
+                            # assume reference_id comparison is faster than
+                            # reference_name
+                            continue
+
+                        # assume the start/end of the paired read is the
+                        # cleavage site
+                        ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.next_reference_start)
+
+                        # for debug purpose
+                        # num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, []) + [f'{read.query_sequence}']
+                        num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, 0) + 1
+
+                    else:       # a candidate for bridge read
+                        if is_forward_tail_segment(read):
+                            ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.reference_start)
+                            tail_len = calc_tail_length(read)
+                            num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
+                            max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
+
+                if len(num_bdg_reads_dd) > 0:
                     for ref_clv in num_bdg_reads_dd:
                         clv_record = (
                             *contig_info, ref_clv, 'bridge_contig',
                             # tail_contig evidence is left empty
-                            0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv]
+                            0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv], 0
+                        )
+                        csvwriter.writerow(clv_record)
+                if len(num_link_reads_dd) > 0:
+                    for ref_clv in num_link_reads_dd:
+                        clv_record = (
+                            *contig_info, ref_clv, 'link_contig',
+                            0, 0, 0, 0, num_link_reads_dd[ref_clv]
                         )
                         csvwriter.writerow(clv_record)
                 else:
@@ -227,6 +271,6 @@ if __name__ == "__main__":
 
                     clv_record = (
                         *contig_info, ref_clv, 'None',
-                        0, 0, 0, 0
+                        0, 0, 0, 0, 0
                     )
                     csvwriter.writerow(clv_record)
