@@ -142,7 +142,8 @@ if __name__ == "__main__":
     with open(output, 'wt') as opf:
         csvwriter = csv.writer(opf)
         csvwriter.writerow([
-            'seqname', 'strand', 'clv', 'contig_id', 'polya_evidence_type',
+            'seqname', 'strand', 'contig_id', 'contig_len', 'contig_mapq',
+            'clv', 'polya_evidence_type',
             'num_contig_tail_reads', 'contig_tail_length',
             'num_bridge_reads', 'max_bridge_tail_length',
         ])
@@ -152,21 +153,30 @@ if __name__ == "__main__":
                 print(f'processed {k + 1} contigs')
 
             tmp_dd[contig.query_name] = contig
-            if contig.is_unmapped:
+
+            if (
+                    contig.is_unmapped or
+                    contig.mapq == 0
+            ):
                 continue
 
             seqname = contig.reference_name
             strand = calc_strand(contig)
+
+            contig_info = [
+                seqname, strand, contig.query_name, contig.query_length,
+                contig.mapq
+            ]
+
             if is_tail_segment(contig):
                 ref_clv = calc_ref_clv(contig)
                 num_tail_reads, _ = calc_num_tail_reads(contig, r2c_sam)
                 tail_length = calc_tail_length(contig)
 
                 clv_record = (
-                    seqname, strand, ref_clv, contig.query_name,
-                    'tail_contig',
-                    num_tail_reads, tail_length,
-                    0, 0      # bridge_contig evidence is left empty
+                    *contig_info, ref_clv, 'tail_contig',
+                    # bridge_contig evidence is left empty
+                    num_tail_reads, tail_length, 0, 0
                 )
                 csvwriter.writerow(clv_record)
             else:
@@ -187,18 +197,18 @@ if __name__ == "__main__":
                 if len(num_bdg_reads_dd.keys()) > 0:
                     for ref_clv in num_bdg_reads_dd:
                         clv_record = (
-                            seqname, strand, ref_clv, contig.query_name,
-                            'bridge_contig',
-                            0, 0,  # tail_contig evidence is left empty
-                            num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv]
+                            *contig_info, ref_clv, 'bridge_contig',
+                            # tail_contig evidence is left empty
+                            0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv]
                         )
                         csvwriter.writerow(clv_record)
                 else:
                     # assume there is still a clv at the 3' end of the contig
                     # even without any polya evidence
                     ref_clv = calc_ref_clv(contig)
+
                     clv_record = (
-                        seqname, strand, ref_clv, contig.query_name,
-                        'None', 0, 0, 0, 0
+                        *contig_info, ref_clv, 'None',
+                        0, 0, 0, 0
                     )
                     csvwriter.writerow(clv_record)
