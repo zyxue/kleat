@@ -128,24 +128,6 @@ def calc_ref_clv_from_r2c_alignment(contig, read):
     return ref_clv
 
 
-def test_A1_R26141(seg, ref_clv, tail_length, num_tail_reads, seg_clv):
-    assert seg.is_reverse is False
-    assert seg.reference_name == "chr3"
-    assert ref_clv == 52435023
-    assert tail_length == 9
-    assert num_tail_reads == 1
-    assert seg_clv == 8
-
-
-def test_A0_R100820(seg, ref_clv, tail_length, num_tail_reads, seg_clv):
-    """all coordinates are 0-based"""
-    assert seg.is_reverse is True
-    assert seg.reference_name == "chr17"
-    assert ref_clv == 37884912
-    assert tail_length == 20
-    assert num_tail_reads == 2
-    assert seg_clv == 4668
-
 
 if __name__ == "__main__":
     c2g_sam = pysam.AlignmentFile('../kleat3-test-data/tasrkleat-results/align_contigs2genome/cba.sorted.bam')
