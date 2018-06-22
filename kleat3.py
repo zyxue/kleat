@@ -42,12 +42,12 @@ def analyze_bridge_contig(contig):
 def is_tail_segment(segment):
     seg = segment
     if seg.is_reverse:
-        return is_reverse_tseg(seg)
+        return is_reverse_tail_segment(seg)
     else:
-        return is_forward_tseg(seg)
+        return is_forward_tail_segment(seg)
 
 
-def is_reverse_tseg(segment, tail_base='A'):
+def is_reverse_tail_segment(segment, tail_base='A'):
     """
     tseg: tail segment
 
@@ -66,7 +66,7 @@ def is_reverse_tseg(segment, tail_base='A'):
     )
 
 
-def is_forward_tseg(segment, tail_base='T'):
+def is_forward_tail_segment(segment, tail_base='T'):
     seq = segment.query_sequence
     first_cigar = segment.cigartuples[0]
     # potential test case A0.S36384
@@ -207,7 +207,7 @@ if __name__ == "__main__":
                     if (read.is_unmapped or read.is_reverse):
                         continue
 
-                    if is_forward_tseg(read):
+                    if is_forward_tail_segment(read):
                         ref_clv = calc_ref_clv_from_r2c_alignment(contig, read)
                         tail_len = calc_tail_length(read)
                         num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
