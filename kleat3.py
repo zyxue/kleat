@@ -11,6 +11,34 @@ def calc_strand(contig):
     return '+' if contig.is_reverse else '-'
 
 
+def gen_contig_info(contig):
+    return [
+        contig.reference_name,
+        calc_strand(contig),
+        contig.query_name,
+        contig.query_length,
+        contig.mapq
+    ]
+
+
+def analyze_tail_contig(contig):
+    contig_info = gen_contig_info(contig)
+    ref_clv = calc_ref_clv(contig)
+    num_tail_reads, _ = calc_num_tail_reads(contig, r2c_sam)
+    tail_length = calc_tail_length(contig)
+
+    clv_record = (
+        *contig_info, ref_clv, 'tail_contig',
+        # bridge_contig evidence is left empty
+        num_tail_reads, tail_length, 0, 0
+    )
+    return clv_record
+
+
+def analyze_bridge_contig(contig):
+    pass
+
+
 def is_tail_segment(segment):
     seg = segment
     if seg.is_reverse:
@@ -160,26 +188,11 @@ if __name__ == "__main__":
             ):
                 continue
 
-            seqname = contig.reference_name
-            strand = calc_strand(contig)
-
-            contig_info = [
-                seqname, strand, contig.query_name, contig.query_length,
-                contig.mapq
-            ]
-
             if is_tail_segment(contig):
-                ref_clv = calc_ref_clv(contig)
-                num_tail_reads, _ = calc_num_tail_reads(contig, r2c_sam)
-                tail_length = calc_tail_length(contig)
-
-                clv_record = (
-                    *contig_info, ref_clv, 'tail_contig',
-                    # bridge_contig evidence is left empty
-                    num_tail_reads, tail_length, 0, 0
-                )
+                clv_record = analyze_tail_contig(contig)
                 csvwriter.writerow(clv_record)
             else:
+                contig_info = gen_contig_info(contig)
                 num_bdg_reads_dd = {}
                 max_bdg_tail_len_dd = {}
                 for read in r2c_sam.fetch(
