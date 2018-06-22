@@ -24,6 +24,7 @@ def test_tail_contigs():
                 "A1.R26141",
 
                 'A0.R101981',
+                'A0.S18124'
         ]:
             continue
 
@@ -52,7 +53,7 @@ def test_tail_contigs():
             assert num_contig_tail_reads == 1
             assert contig_clv == 8
 
-        # An example of short contig supporting a UNconfident CS
+        # An example of short contig supporting a UNCONFIDENT CS
         if contig.query_name == 'A0.R101981':
             assert contig.reference_name == "chr10"
             assert strand == '-'
@@ -60,6 +61,15 @@ def test_tail_contigs():
             assert num_contig_tail_reads == 1
             assert contig_tail_len == 28
             assert contig.query_length == 80
+
+        # An example of short contig supporting a CONFIDENT CS
+        if contig.query_name == 'A0.S18124':
+            assert contig.reference_name == "chr18"
+            assert strand == '-'
+            assert ref_clv == 77733512
+            assert num_contig_tail_reads == 1
+            assert contig_tail_len == 15
+            assert contig.query_length == 72
 
 
 def test_bridge_reads():
