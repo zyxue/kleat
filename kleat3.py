@@ -151,13 +151,13 @@ def calc_ref_clv_from_r2c_alignment(contig, read):
     if contig.is_reverse:
         abs_ref_end = infer_contig_abs_ref_end(contig)
         # 0            +---AAA          l              -> contig coordinates
-        # +-----------------------------+              -> the contig
+        # <-----------------------------+              -> the contig
         # a                ref_start    b:abs_ref_end  -> genomic coordinates
         ref_clv = abs_ref_end - read.reference_start
     else:
         abs_ref_beg = infer_contig_abs_ref_start(contig)
         # 0              TTT---+        l              -> contig coordinates
-        # +-----------------------------+              -> the contig
+        # +----------------------------->              -> the contig
         # a:abs_ref_beg     ref_start   b              -> genomic coordinates
         ref_clv = abs_ref_beg + read.reference_start
     return ref_clv
