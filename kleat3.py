@@ -47,30 +47,35 @@ def is_tail_segment(segment):
         return is_forward_tseg(seg)
 
 
-def is_reverse_tseg(segment):
-    """tseg: tail segment"""
+def is_reverse_tseg(segment, tail_base='A'):
+    """
+    tseg: tail segment
+
+    default tail_base applies main to alignment to genome, where the polyA tail
+    strand is known
+    """
     seq = segment.query_sequence
     last_cigar = segment.cigartuples[-1]
     # potential test case == "A0.R100820":
     return (
-        seq.endswith('A')
+        seq.endswith(tail_base)
         # right clipped
         and last_cigar[0] == BAM_CSOFT_CLIP
         # clipped are all As
-        and set(seq[-last_cigar[1]:]) == {'A'}
+        and set(seq[-last_cigar[1]:]) == {tail_base}
     )
 
 
-def is_forward_tseg(segment):
+def is_forward_tseg(segment, tail_base='T'):
     seq = segment.query_sequence
     first_cigar = segment.cigartuples[0]
     # potential test case A0.S36384
     return (
-        seq.startswith('T')
+        seq.startswith(tail_base)
         # left clipped
         and first_cigar[0] == BAM_CSOFT_CLIP
         # clipped are all Ts
-        and set(seq[:first_cigar[1]]) == {'T'}
+        and set(seq[:first_cigar[1]]) == {tail_base}
     )
 
 
