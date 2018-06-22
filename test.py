@@ -21,41 +21,52 @@ def test_tail_contigs():
     for k, contig in enumerate(C2G_BAM):
         if contig.query_name not in [
                 "A0.R100820",
-                "A1.R26141"
+                "A1.R26141",
+
+                'A0.R101981',
         ]:
             continue
 
         strand = calc_strand(contig)
         ref_clv = calc_ref_clv(contig)
-        tail_length = calc_tail_length(contig)
-        num_tail_reads, contig_clv = calc_num_tail_reads(contig, R2C_BAM)
+        contig_tail_len = calc_tail_length(contig)
+        num_contig_tail_reads, contig_clv = calc_num_tail_reads(contig, R2C_BAM)
 
         # ERBB2
         if contig.query_name == "A0.R100820":
-            assert strand == '+'
-            assert contig.is_reverse is True
             assert contig.reference_name == "chr17"
+            assert strand == '+'
             assert ref_clv == 37884912
-            assert tail_length == 20
-            assert num_tail_reads == 2
+            assert contig.is_reverse is True
+            assert contig_tail_len == 20
+            assert num_contig_tail_reads == 2
             assert contig_clv == 4668
 
         # BAP1
-        elif contig.query_name == "A1.R26141":
-            assert strand == '-'
-            assert contig.is_reverse is False
+        if contig.query_name == "A1.R26141":
             assert contig.reference_name == "chr3"
+            assert strand == '-'
             assert ref_clv == 52435023
-            assert tail_length == 9
-            assert num_tail_reads == 1
+            assert contig.is_reverse is False
+            assert contig_tail_len == 9
+            assert num_contig_tail_reads == 1
             assert contig_clv == 8
+
+        # An example of short contig supporting a UNconfident CS
+        if contig.query_name == 'A0.R101981':
+            assert contig.reference_name == "chr10"
+            assert strand == '-'
+            assert ref_clv == 6132816
+            assert num_contig_tail_reads == 1
+            assert contig_tail_len == 28
+            assert contig.query_length == 80
 
 
 def test_bridge_reads():
     for k, contig in enumerate(C2G_BAM):
         if contig.query_name not in [
                 "A0.R100710",
-                "A1.S26245"
+                "A1.S26245",
         ]:
             continue
 
@@ -78,8 +89,8 @@ def test_bridge_reads():
 
             # PTEN
             if contig.query_name == "A0.R100710":
-                assert strand == '+'
                 assert contig.reference_name == "chr10"
+                assert strand == '+'
 
                 # there are two clvs
                 if read.query_name in [
@@ -92,8 +103,8 @@ def test_bridge_reads():
 
             # KRAS
             if contig.query_name == "A1.S26245":
-                assert strand == '-'
                 assert contig.reference_name == "chr12"
+                assert strand == '-'
                 assert ref_clv == 25362769
 
             # potential test case for bridge read
