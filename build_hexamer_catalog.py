@@ -1,6 +1,6 @@
 import argparse
 import csv
-import sys
+from multiprocessing import Pool
 
 from Bio import Seq, SeqIO
 
@@ -50,32 +50,48 @@ def parse_args():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
-    args = parse_args()
+def build_catalog(rec):
+    """build catalog for one chromosome"""
+    seq = rec.seq.upper()
+    seqname = rec.id
 
-    io = SeqIO.parse(args.input_fa, 'fasta')
-    with open(args.output_csv, 'wt') as opf:
+    output = f'./tmp/{seqname}.csv'
+    with open(output, 'wt') as opf:
         csvwriter = csv.writer(opf)
         csvwriter.writerow([
             'seqname', 'strand', 'position', 'hexamer', 'hexamer_id'
         ])
-        for rec in io:
-            seq = rec.seq.upper()
-            seqname = rec.id
-            print(f'working on {seqname}')
-            for strand in ['+', '-']:
-                if strand == '+':
-                    hexamer_list = CANDIDATE_HEXAMERS
-                else:
-                    hexamer_list = CANDIDATE_HEXAMERS_REVERSE_COMPLEMENTED
 
-                for (hexamer, hexamer_id) in hexamer_list:
-                    index = 0
-                    while True:
-                        index = seq.find(hexamer, start=index)
-                        if index == -1:
-                            break
-                        csvwriter.writerow([
-                            seqname, strand, index, hexamer, hexamer_id
-                        ])
-                        index += 1
+        print(f'working on {output}')
+        for strand in ['+', '-']:
+            if strand == '+':
+                hexamer_list = CANDIDATE_HEXAMERS
+            else:
+                hexamer_list = CANDIDATE_HEXAMERS_REVERSE_COMPLEMENTED
+
+            for (hexamer, hexamer_id) in hexamer_list:
+                index = 0
+                while True:
+                    index = seq.find(hexamer, start=index)
+                    if index == -1:
+                        break
+                    csvwriter.writerow([
+                        seqname, strand, index, hexamer, hexamer_id
+                    ])
+                    index += 1
+    print(f'{output} finished.')
+
+
+if __name__ == "__main__":
+    args = parse_args()
+
+    io = SeqIO.parse(args.input_fa, 'fasta')
+
+    recs = []
+    for rec in io:
+        print(f'adding {rec.id} to the list')
+        recs.append(rec)
+
+    num_procs = 24              # arbitray for now
+    pool = Pool(num_procs)
+    pool.map(build_catalog, recs)
