@@ -1,3 +1,4 @@
+import csv
 import pysam
 
 
@@ -129,53 +130,64 @@ def calc_ref_clv_from_r2c_alignment(contig, read):
     return ref_clv
 
 
-
 if __name__ == "__main__":
     c2g_sam = pysam.AlignmentFile('../kleat3-test-data/tasrkleat-results/align_contigs2genome/cba.sorted.bam')
     r2c_sam = pysam.AlignmentFile('../kleat3-test-data/tasrkleat-results/align_reads2contigs/cba.sorted.bam')
 
+    output = './lele.csv'
+
     # useful for debugging, remove later
     tmp_dd = {}
 
-    print('identifying tail contigs...')
-    for k, contig in enumerate(c2g_sam):
-        if contig.is_unmapped:
-            continue
+    with open(output, 'wt') as opf:
+        csvwriter = csv.writer(opf)
+        csvwriter.writerow([
+            'seqname', 'strand', 'clv', 'contig_id', 'apa_evidence_type',
+            'num_contig_tail_reads', 'contig_tail_length',
+            'num_bridge_reads', 'max_bridge_tail_length',
+        ])
 
-        tmp_dd[contig.query_name] = contig
-
-        strand = calc_strand(contig)
-        if is_tail_segment(contig):
-            ref_clv = calc_ref_clv(contig)
-            num_tail_reads, _ = calc_num_tail_reads(contig, r2c_sam)
-            tail_length = calc_tail_length(contig)
-
-            clv_record = (
-                contig.reference_name, strand, ref_clv,
-                num_tail_reads, tail_length
-            )
-        else:
-
-            # loop through all reads that are aligned to this contig looking
-            # for bridge reads
-
-            if not contig.query_name == "A0.R100710":
-            # if not contig.query_name == "A1.S26245":
+        for k, contig in enumerate(c2g_sam):
+            tmp_dd[contig.query_name] = contig
+            if contig.is_unmapped:
                 continue
-            # else:
-            #     pass
 
-            for read in r2c_sam.fetch(
-                    contig.query_name, 0, contig.query_length):
-                if (
-                        # still possible, see test for reason
-                        read.is_unmapped
-                        # in r2c (cDNA) alignment, tail always T, must not
-                        # reverse
-                        or read.is_reverse
-                ):
-                    continue
+            seqname = contig.reference_name
+            strand = calc_strand(contig)
+            if is_tail_segment(contig):
+                ref_clv = calc_ref_clv(contig)
+                num_tail_reads, _ = calc_num_tail_reads(contig, r2c_sam)
+                tail_length = calc_tail_length(contig)
 
-                if is_forward_tseg(read):
-                    ref_clv = calc_ref_clv_from_r2c_alignment(contig, read)
-                    print(f'{read.query_sequence:75s}\t{read.cigarstring:20s}\t{read.reference_start}\t{read.reference_name}\t{read.is_reverse}\t{read.query_name}\t{ref_clv}')
+                clv_record = (
+                    seqname, strand, ref_clv, contig.query_name,
+                    'tail_contig',
+                    num_tail_reads, tail_length,
+                    '', ''      # bridge_contig evidence is left empty
+                )
+                csvwriter.writerow(clv_record)
+            else:
+                num_bdg_reads_dd = {}
+                max_bdg_tail_len_dd = {}
+                for read in r2c_sam.fetch(
+                        contig.query_name, 0, contig.query_length):
+                    # being unmapped is still possible, see test for a reason
+                    # r2c (cDNA) alignment, tail is always T, must not reverse
+                    if (read.is_unmapped or read.is_reverse):
+                        continue
+
+                    if is_forward_tseg(read):
+                        ref_clv = calc_ref_clv_from_r2c_alignment(contig, read)
+                        tail_len = calc_tail_length(read)
+                        num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
+                        max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
+                for ref_clv in num_bdg_reads_dd:
+                    clv_record = (
+                        seqname, strand, ref_clv, contig.query_name,
+                        'bridge_contig',
+                        '', '',  # tail_contig evidence is left empty
+                        num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv]
+                    )
+                    csvwriter.writerow(clv_record)
+
+# print(f'{read.query_sequence:75s}\t{read.cigarstring:20s}\t{read.reference_start}\t{read.reference_name}\t{read.is_reverse}\t{read.query_name}\t{ref_clv}')
