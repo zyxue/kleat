@@ -1,7 +1,11 @@
+import glob
+import os
 import argparse
 import csv
-from multiprocessing import Pool
+import tempfile
+import multiprocessing
 
+import pandas as pd
 from Bio import Seq, SeqIO
 
 
@@ -9,6 +13,10 @@ from Bio import Seq, SeqIO
 This script builds a comprehensive catalog of polyadenylation signal for a
 given reference genome
 """
+
+
+def rev_comp(s):
+    return str(Seq.Seq(s).reverse_complement())
 
 
 # numbers indicate their strengths, 1 is the strongest
@@ -33,7 +41,7 @@ CANDIDATE_HEXAMERS = [
 
 
 CANDIDATE_HEXAMERS_REVERSE_COMPLEMENTED = [
-    (str(Seq.Seq(i).reverse_complement()), j) for (i, j) in CANDIDATE_HEXAMERS
+    (rev_comp(i), j) for (i, j) in CANDIDATE_HEXAMERS
 ]
 
 
@@ -44,10 +52,15 @@ def parse_args():
         help='e.g. a fasta file of a reference genome'
     )
     parser.add_argument(
-        '-o', '--output-csv', type=str,
-        help='output csv file'
+        '-o', '--output-pkl', type=str,
+        help='output pickle file'
     )
     return parser.parse_args()
+
+
+def gen_output_per_rec(rec):
+    seqname = rec.id
+    return f'./tmp/{seqname}.csv'
 
 
 def build_catalog(rec):
@@ -55,7 +68,7 @@ def build_catalog(rec):
     seq = rec.seq.upper()
     seqname = rec.id
 
-    output = f'./tmp/{seqname}.csv'
+    output = gen_output_per_rec(rec)
     with open(output, 'wt') as opf:
         csvwriter = csv.writer(opf)
         csvwriter.writerow([
@@ -75,8 +88,11 @@ def build_catalog(rec):
                     index = seq.find(hexamer, start=index)
                     if index == -1:
                         break
+
+                    # reverse back
+                    hmr = rev_comp(hexamer) if strand == '-' else hexamer
                     csvwriter.writerow([
-                        seqname, strand, index, hexamer, hexamer_id
+                        seqname, strand, index, hmr, hexamer_id
                     ])
                     index += 1
     print(f'{output} finished.')
@@ -87,11 +103,35 @@ if __name__ == "__main__":
 
     io = SeqIO.parse(args.input_fa, 'fasta')
 
+    if not os.path.exists('./tmp'):
+        os.mkdir('./tmp')
+
     recs = []
+    num_recs = 0
     for rec in io:
+        num_recs += 1
+
+        output = gen_output_per_rec(rec)
+        if os.path.exists(output):
+            print(f'{output} exists.')
+            continue
+
         print(f'adding {rec.id} to the list')
         recs.append(rec)
 
-    num_procs = 24              # arbitray for now
-    pool = Pool(num_procs)
-    pool.map(build_catalog, recs)
+    if len(recs) > 0:
+        num_procs = min(len(recs), multiprocessing.cpu_count())
+        pool = multiprocessing.Pool(num_procs)
+        pool.map(build_catalog, recs)
+
+    if num_recs > 1:
+        print(f'prepare to concatenate all chromosome files into one...')
+        dfs = []
+        for f in glob.glob('./tmp/*.csv'):
+            print(f'reading {f}')
+            _df = pd.read_csv(f)
+            dfs.append(_df)
+        print(f'concatenating...')
+    output_df = pd.concat(dfs)
+    output_df.to_pickle(args.output_pkl)
+    print(f'concatenated into f{output_pkl}')
