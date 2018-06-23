@@ -39,6 +39,7 @@ def load_raw_kleat_df(kleat_csv):
 def load_kleat3_df(kleat3_csv):
     cols = ['strand', 'seqname', 'clv']
     df = pd.read_csv(kleat3_csv, usecols=cols)
+    df['seqname'] = df.seqname.astype(str)
     df = df.drop_duplicates().copy()
     return df
 
