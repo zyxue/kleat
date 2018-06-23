@@ -88,10 +88,10 @@ if __name__ == "__main__":
     rootdir = '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk'
     if truth_sample == 'UHRC1':
         truth_csv = f'{rootdir}/UHR/C1/polyA-Seq/polyA-Seq-truth-114-genes.csv'
-        # './UHR/C2/polyA-Seq/polyA-Seq-truth-114-genes.csv'
     elif truth_sample == 'HBRC4':
         truth_csv = f'{rootdir}/HBR/C4/polyA-Seq/polyA-Seq-truth-114-genes.csv'
-        #     './HBR/C6/polyA-Seq/polyA-Seq-truth-114-genes.csv',
+    elif truth_sample == 'HBRC6':
+        truth_csv = f'{rootdir}/HBR/C6/polyA-Seq/polyA-Seq-truth-114-genes.csv'
     else:
         raise
 
