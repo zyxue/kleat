@@ -1,26 +1,15 @@
 import pickle
 
 import pandas as pd
-from sklearn import metrics
 from sklearn.tree import DecisionTreeClassifier
 
 from compare_to_polyA_Seq import load_polya_df, map_clvs
 
+from utils import FEATURE_COLS
+
 
 SAMPLE_ID = 'HBRC4'
 edf = pd.read_csv(f'./kleat3_{SAMPLE_ID}_ml_ready.csv', low_memory=False)
-
-FEATURE_COLS = [
-    'num_contig_tail_reads', 'num_bridge_reads', 'num_link_reads',
-    'num_blank_contigs',
-    'contig_len',
-    'contig_mapq', 'contig_tail_length', 'max_bridge_tail_length',
-    'abs_dist_to_aclv'] + [
-        'AATAAA', 'ATTAAA', 'AGTAAA', 'TATAAA',
-        'CATAAA', 'GATAAA', 'AATATA', 'AATACA',
-        'AATAGA', 'AAAAAG', 'ACTAAA', 'AAGAAA',
-        'AATGAA', 'TTTAAA', 'AAAACA', 'GGGGCT', 'NA'
-    ]
 
 rootdir = '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk'
 truth_csv = f'{rootdir}/{SAMPLE_ID[:3]}/{SAMPLE_ID[3:]}/polyA-Seq/polyA-Seq-truth-114-genes.csv'
