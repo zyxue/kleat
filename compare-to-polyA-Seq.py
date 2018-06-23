@@ -77,6 +77,10 @@ def compare(df_pred, df_ref, dist_cutoff=50):
     return sensitivity, precision, f1
 
 
+def replace_seqname(df):
+    df['seqname'] = df.seqname.str.replace('chr', '').replace('M', 'MT')
+
+
 if __name__ == "__main__":
     pred_file, pred_type, truth_sample = sys.argv[1:4]
 
@@ -94,6 +98,9 @@ if __name__ == "__main__":
 
     pred_file_loader = eval(f'load_{pred_type}_df')
     df_pred = pred_file_loader(pred_file)
+
+    replace_seqname(df_ref)
+    replace_seqname(df_pred)
 
     se, pr, f1 = compare(df_pred, df_ref)
     print(f'compared to\tSensitivity\tPrecision\tF1')
