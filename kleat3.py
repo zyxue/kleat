@@ -30,7 +30,7 @@ def analyze_tail_contig(contig):
     clv_record = (
         *contig_info, ref_clv, 'tail_contig',
         # bridge_contig evidence is left empty
-        num_tail_reads, tail_length, 0, 0, 0
+        num_tail_reads, tail_length, 0, 0, 0, 0
     )
     return clv_record
 
@@ -180,7 +180,8 @@ if __name__ == "__main__":
             'clv', 'polya_evidence_type',
             'num_contig_tail_reads', 'contig_tail_length',
             'num_bridge_reads', 'max_bridge_tail_length',
-            'num_link_reads'
+            'num_link_reads',
+            'num_blank_contigs'   # those contigs that provide no polya evidence
         ])
 
         for k, contig in enumerate(c2g_sam):
@@ -254,14 +255,14 @@ if __name__ == "__main__":
                         clv_record = (
                             *contig_info, ref_clv, 'bridge_contig',
                             # tail_contig evidence is left empty
-                            0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv], 0
+                            0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv], 0, 1
                         )
                         csvwriter.writerow(clv_record)
                 if len(num_link_reads_dd) > 0:
                     for ref_clv in num_link_reads_dd:
                         clv_record = (
                             *contig_info, ref_clv, 'link_contig',
-                            0, 0, 0, 0, num_link_reads_dd[ref_clv]
+                            0, 0, 0, 0, num_link_reads_dd[ref_clv], 1
                         )
                         csvwriter.writerow(clv_record)
                 else:
@@ -271,6 +272,6 @@ if __name__ == "__main__":
 
                     clv_record = (
                         *contig_info, ref_clv, 'None',
-                        0, 0, 0, 0, 0
+                        0, 0, 0, 0, 0, 1
                     )
                     csvwriter.writerow(clv_record)
