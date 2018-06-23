@@ -8,6 +8,10 @@ BAM_CSOFT_CLIP = 4              # used to identify soft clip
 
 
 def calc_strand(contig):
+    """
+    calculate the strand of clv (hence the corresponding gene) this contig may
+    support
+    """
     return '+' if contig.is_reverse else '-'
 
 
