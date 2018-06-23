@@ -85,9 +85,9 @@ def is_forward_tail_segment(segment, tail_base='T'):
 
 def calc_ref_clv(segment):
     """calculate cleavage site position wst the reference"""
-    if segment.is_reverse:
+    if segment.is_reverse:      # + strand
         return segment.reference_end + 1
-    else:
+    else:                       # - strand
         return segment.reference_start
 
 
