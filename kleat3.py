@@ -271,11 +271,14 @@ if __name__ == "__main__":
                         csvwriter.writerow(clv_record)
                 else:
                     # assume there is still a clv at the 3' end of the contig
-                    # even without any polya evidence
-                    ref_clv = calc_ref_clv(contig)
-
-                    clv_record = (
-                        *contig_info, ref_clv, 'None',
-                        0, 0, 0, 0, 0, 1
-                    )
-                    csvwriter.writerow(clv_record)
+                    # even without any polya evidence, in thus case, there is
+                    # no direction, so either end of the contig could be a clv
+                    for ref_clv in [
+                            contig.reference_end + 1,
+                            contig.reference_start
+                    ]:
+                        clv_record = (
+                            *contig_info, ref_clv, 'None',
+                            0, 0, 0, 0, 0, 1
+                        )
+                        csvwriter.writerow(clv_record)
