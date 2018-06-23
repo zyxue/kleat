@@ -204,7 +204,8 @@ if __name__ == "__main__":
                 clv_record = analyze_tail_contig(contig)
                 csvwriter.writerow(clv_record)
             else:
-                contig_info = gen_contig_info(contig)
+                contig_is_blank = True
+
                 num_bdg_reads_dd = {}
                 max_bdg_tail_len_dd = {}
 
@@ -254,7 +255,9 @@ if __name__ == "__main__":
                             num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
                             max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
 
+                contig_info = gen_contig_info(contig)
                 if len(num_bdg_reads_dd) > 0:
+                    contig_is_blank = False
                     for ref_clv in num_bdg_reads_dd:
                         clv_record = (
                             *contig_info, ref_clv, 'bridge_contig',
@@ -262,23 +265,29 @@ if __name__ == "__main__":
                             0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv], 0, 1
                         )
                         csvwriter.writerow(clv_record)
+
                 if len(num_link_reads_dd) > 0:
+                    contig_is_blank = False
                     for ref_clv in num_link_reads_dd:
                         clv_record = (
                             *contig_info, ref_clv, 'link_contig',
                             0, 0, 0, 0, num_link_reads_dd[ref_clv], 1
                         )
                         csvwriter.writerow(clv_record)
-                else:
+
+                if contig_is_blank:
                     # assume there is still a clv at the 3' end of the contig
                     # even without any polya evidence, in thus case, there is
                     # no direction, so either end of the contig could be a clv
-                    for ref_clv in [
+                    for strand, ref_clv in zip(['+', '-'], [
                             contig.reference_end + 1,
                             contig.reference_start
-                    ]:
+                    ]):
+                        # replace strand  in contig_info
+                        ref_name, _, qn, ql, mapq = contig_info
                         clv_record = (
-                            *contig_info, ref_clv, 'None',
+                            ref_name, strand, qn, ql, mapq,
+                            ref_clv, 'None',
                             0, 0, 0, 0, 0, 1
                         )
                         csvwriter.writerow(clv_record)
