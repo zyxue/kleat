@@ -13,17 +13,33 @@ COLS_TO_SUM = [
 
 COLS_TO_MAX = ['contig_len', 'contig_mapq', 'contig_tail_length', 'max_bridge_tail_length']
 
-FEATURE_COLS = [
+KLEAT3_FEATURE_COLS = [
     'num_contig_tail_reads', 'num_bridge_reads', 'num_link_reads',
     'num_blank_contigs',
     'contig_len',
     'contig_mapq', 'contig_tail_length', 'max_bridge_tail_length',
-    'abs_dist_to_aclv'] + [
-        'AATAAA', 'ATTAAA', 'AGTAAA', 'TATAAA',
-        'CATAAA', 'GATAAA', 'AATATA', 'AATACA',
-        'AATAGA', 'AAAAAG', 'ACTAAA', 'AAGAAA',
-        'AATGAA', 'TTTAAA', 'AAAACA', 'GGGGCT', 'NA'
-    ]
+    'abs_dist_to_aclv',
+
+    'AATAAA', 'ATTAAA', 'AGTAAA', 'TATAAA',
+    'CATAAA', 'GATAAA', 'AATATA', 'AATACA',
+    'AATAGA', 'AAAAAG', 'ACTAAA', 'AAGAAA',
+    'AATGAA', 'TTTAAA', 'AAAACA', 'GGGGCT', 'NA'
+]
+
+
+KLEAT2_FEATURE_COLS = [
+     'length_of_tail_in_contig',
+     'number_of_bridge_reads',
+     'max_bridge_read_tail_length',
+     'tail+bridge_reads',
+     'flag',
+    'abs_dist_to_aclv',    
+
+    'AATAAA', 'ATTAAA', 'AGTAAA', 'TATAAA',
+    'CATAAA', 'GATAAA', 'AATATA', 'AATACA',
+    'AATAGA', 'AAAAAG', 'ACTAAA', 'AAGAAA',
+    'AATGAA', 'TTTAAA', 'AAAACA', 'GGGGCT', 'NA'
+]
 
 
 
