@@ -1,3 +1,4 @@
+import os
 import sys
 import pickle
 
@@ -7,23 +8,33 @@ import pandas as pd
 import pysam
 
 from cluster import cluster_clv_sites
-from utils import FEATURE_COLS
 
-SAMPLE_ID = sys.argv[1]         # e.g. HBRC4
-print(f'working on {SAMPLE_ID}')
+kleat_version = sys.argv[1]
+SAMPLE_ID = sys.argv[2]         # e.g. HBRC4
+train_data_sample_id = 'HBRC4'
 
-for max_depth in list(range(2, 10)):
+if kleat_version == 'kleat2':
+    from utils import KLEAT2_FEATURE_COLS as feature_cols
+elif kleat_version == 'kleat3':
+    from utils import KLEAT3_FEATURE_COLS as feature_cols
+else:
+    raise
+
+print(f'working on {kleat_version} {SAMPLE_ID}')
+
+depths = range(2, 20, 1)
+for max_depth in depths:
     print(f'working on depth: {max_depth}')
-    classifier_pkl = f'./pkl/DT_HBRC4_max_depth{max_depth}.pkl'
+    outdir = f'./{kleat_version}_ml/pkl/DT/{train_data_sample_id}/max_depth{max_depth}'
+    clf_pkl = f'{outdir}/clf.pkl'
 
-    edf = pd.read_csv(f'./kleat3_{SAMPLE_ID}_ml_ready.csv', low_memory=False)
+    fdf = pd.read_csv(
+        f'./{kleat_version}_ml/{SAMPLE_ID}_ml_ready.csv', low_memory=False)
 
-    with open(classifier_pkl, 'rb') as inf:
+    with open(clf_pkl, 'rb') as inf:
         clf = pickle.load(inf)
 
-    fdf = edf
-
-    fdf['predicted'] = clf.predict(fdf[FEATURE_COLS])
+    fdf['predicted'] = clf.predict(fdf[feature_cols])
 
     pre_gdf = fdf.query('predicted')[['seqname', 'strand', 'clv']]
 
@@ -41,13 +52,13 @@ for max_depth in list(range(2, 10)):
         if grp.name in annot_clvs.index:
              # grp.name holds the group key
             aclvs = annot_clvs.loc[grp.name]
-            aclvs = annot_clvs.loc[grp.name] # grp.name holds the group key
+            aclvs = annot_clvs.loc[grp.name]  # grp.name holds the group key
             bcast = np.broadcast_to(grp.clv.values, (aclvs.shape[0], grp.shape[0])).T
             grp['abs_dist_to_aclv'] = np.min(np.abs(bcast - aclvs), axis=1)
             return grp
         else:
-            # return None, this group will be gone, which is good 
-            # as they won't be clv of targeted genes for sure, increasing precision
+            # return None, this group will be gone, which is good as they won't
+            # be clv of targeted genes for sure, increasing precision
             return 
 
     idf = hdf.rename(columns={'mclv': 'clv'}).groupby(['seqname', 'strand']).apply(
@@ -69,5 +80,8 @@ for max_depth in list(range(2, 10)):
             refseq, row.seqname, row.clv, row.strand), axis=1)
     idf_hxm = pd.concat([idf, hxm_df], axis=1)
 
-    out_csv = f'./cv/kleat3_{SAMPLE_ID}_ml_filtered_clustered_max_depth{max_depth}.csv'
+    outdir = f'./{kleat_version}_ml/cv/max_depth{max_depth}'
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+    out_csv = f'{outdir}/{SAMPLE_ID}.csv'
     idf_hxm.rename(columns={'mclv': 'clv'}).to_csv(out_csv, index=False)
