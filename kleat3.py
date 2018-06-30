@@ -1,7 +1,9 @@
 import csv
 import pysam
 
-from suffix_utils import is_suffix_contig, analyze_suffix_contig
+import tail as T
+import suffix
+from settings import HEADER
 
 
 # https://pysam.readthedocs.io/en/latest/api.html?highlight=AlignmentSegment#pysam.AlignedSegment.cigartuples
@@ -73,14 +75,7 @@ if __name__ == "__main__":
 
     with open(output, 'wt') as opf:
         csvwriter = csv.writer(opf)
-        csvwriter.writerow([
-            'seqname', 'strand', 'contig_id', 'contig_len', 'contig_mapq',
-            'clv', 'polya_evidence_type',
-            'num_contig_tail_reads', 'contig_tail_length',
-            'num_bridge_reads', 'max_bridge_tail_length',
-            'num_link_reads',
-            'num_blank_contigs'   # those contigs that provide no polya evidence
-        ])
+        csvwriter.writerow(HEADER)
 
         for k, contig in enumerate(c2g_bam):
             if (k + 1) % 1000 == 0:
@@ -94,9 +89,9 @@ if __name__ == "__main__":
             ):
                 continue
 
-            if is_suffix_contig(contig):
-                clv_record = analyze_suffix_contig(contig, r2c_bam)
-                csvwriter.writerow(clv_record)
+            if T.has_tail(contig):
+                clv_record = suffix.gen_clv_record(contig, r2c_bam)
+                csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
             # else:
             #     contig_is_blank = True
 
@@ -104,7 +99,7 @@ if __name__ == "__main__":
             #     max_bdg_tail_len_dd = {}
 
             #     num_link_reads_dd = {}
-            #     for read in r2c_sam.fetch(
+            #     for read in r2c_bam.fetch(
             #             contig.query_name, 0, contig.query_length):
             #         # if read.query_name == "SN7001282:314:h15b0adxx:1:2102:16317:20542" and read.is_unmapped:
             #         #     sys.exit(1)
@@ -125,7 +120,7 @@ if __name__ == "__main__":
             #             if read.mate_is_unmapped:
             #                 continue
 
-            #             if not set(read.query_sequence) == {'T'}:
+            #             if not set(read.query_sequence) in {{'A'}, {'T'}}:
             #                 # needs to be completely T
             #                 continue
 
@@ -136,15 +131,24 @@ if __name__ == "__main__":
 
             #             # assume the start/end of the paired read is the
             #             # cleavage site
-            #             ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.next_reference_start)
+            #             ref_clv, strand = calc_ref_clv_from_r2c_alignment(
+            #                 contig, read.next_reference_start)
+                        
 
             #             # for debug purpose
             #             # num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, []) + [f'{read.query_sequence}']
             #             num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, 0) + 1
 
             #         else:       # a candidate for bridge read
+            #             if is_left_tail_segment(read):
+            #                 ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.reference_end)
+            #                 strand = '-'
+            #                 tail_len = calc_tail_length(read)
+            #                 num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
+            #                 max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
             #             if is_right_tail_segment(read):
             #                 ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.reference_start)
+            #                 strand = '+'
             #                 tail_len = calc_tail_length(read)
             #                 num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
             #                 max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
