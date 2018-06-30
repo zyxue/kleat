@@ -1,4 +1,8 @@
+deprecated/
+kleat2_ml/ kleat3_ml/
+__pycache__
+*pyc
+venv
+.ipynb_checkpoints/
 .pytest_cache/
-__pycache__/
-venv/
-*.pyc
+.tmp/
