@@ -3,7 +3,7 @@ from collections import defaultdict
 
 import pysam
 
-from evidence import suffix, bridge, link
+from evidence import suffix, bridge, link, blank
 from settings import HEADER
 import utils as U
 
@@ -102,19 +102,6 @@ if __name__ == "__main__":
                         contig, clv_key, dd_link['num_reads'][clv_key])
                     U.write_row(clv_record, csvwriter)
 
-            # if contig_is_blank:
-            #     # assume there is still a clv at the 3' end of the contig
-            #     # even without any polya evidence, in thus case, there is
-            #     # no direction, so either end of the contig could be a clv
-            #     for strand, ref_clv in zip(['+', '-'], [
-            #             contig.reference_end + 1,
-            #             contig.reference_start
-            #     ]):
-            #         # replace strand  in contig_info
-            #         ref_name, _, qn, ql, mapq = contig_info
-            #         clv_record = (
-            #             ref_name, strand, qn, ql, mapq,
-            #             ref_clv, 'None',
-            #             0, 0, 0, 0, 0, 1
-            #         )
-            #         csvwriter.writerow(clv_record)
+            if contig_is_blank:
+                for clv_rec in blank.gen_two_clv_records(contig):
+                    U.write_row(clv_rec, csvwriter)
