@@ -1,4 +1,6 @@
 import csv
+from collections import defaultdict
+
 import pysam
 
 from evidence import suffix, bridge, link
@@ -38,16 +40,20 @@ if __name__ == "__main__":
             # suffix evidence
             if U.has_tail(contig):
                 clv_record = suffix.gen_clv_record(contig, r2c_bam)
-                csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
+                U.write_row(clv_record, csvwriter)
                 continue
 
             # bridge or link evidence
             contig_is_blank = True
 
-            dd_num_bdg_reads = {}
-            dd_max_bdg_tail_len = {}
+            dd_bridge = {
+                'num_reads': defaultdict(int),
+                'max_tail_len': defaultdict(int),
+            }
 
-            dd_num_link_reads = {}
+            dd_link = {
+                'num_reads': defaultdict(int)
+            }
 
             query_region = [0, contig.query_length]
             for read in r2c_bam.fetch(contig.query_name, *query_region):
@@ -58,36 +64,37 @@ if __name__ == "__main__":
                     if U.has_tail(read):
                         seqname, strand, ref_clv, tail_len = \
                             bridge.analyze_bridge_read(contig, read)
-                        clv_key = (seqname, strand, ref_clv)
-                        dd_num_bdg_reads[clv_key] = \
-                            dd_num_bdg_reads.get(clv_key, 0) + 1
-                        dd_max_bdg_tail_len[clv_key] = \
-                            max(dd_max_bdg_tail_len.get(ref_clv, 0), tail_len)
+
+                        clv_key = U.gen_clv_key_tuple(seqname, strand, ref_clv)
+                        dd_bridge['num_reads'][clv_key] += 1
+                        dd_bridge['max_tail_len'][clv_key] = max(
+                            dd_bridge['max_tail_len'][clv_key], tail_len)
+                        contig_is_blank = False
                 else:
-                    # in principle, could also check from the perspecitve
-                    # and the mate of a link read, but it would be harder
-                    # to verify the sequence composition of the link read
+                    # Here we focused on the unmapped all A/T read, but in
+                    # principle, we could also check from the perspecitve and
+                    # the mate of a link read, but it would be harder to verify
+                    # the sequence composition of the link read
                     if (not read.mate_is_unmapped
                         # assume reference_id comparison is faster than
                         # reference_name
                         and read.reference_id == read.next_reference_id
                         and set(read.query_sequence) in [{'A'}, {'T'}]):
-                        link.analyze_link(read, contig)
+                        seqname, strand, ref_clv = \
+                            link.analyze_link(contig, read)
 
-            #         # for debug purpose
-            #         # num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, []) + [f'{read.query_sequence}']
-            #         num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, 0) + 1
+                        clv_key = U.gen_clv_key_tuple(seqname, strand, ref_clv)
+                        dd_link['num_reads'][clv_key] += 1
+                        contig_is_blank = False
 
-            # contig_info = gen_contig_info(contig)
-            # if len(num_bdg_reads_dd) > 0:
-            #     contig_is_blank = False
-            #     for ref_clv in num_bdg_reads_dd:
-            #         clv_record = (
-            #             *contig_info, ref_clv, 'bridge_contig',
-            #             # tail_contig evidence is left empty
-            #             0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv], 0, 1
-            #         )
-            #         csvwriter.writerow(clv_record)
+            if len(dd_bridge['num_reads']) > 0:
+                for clv_key in dd_bridge['num_reads']:
+                    clv_record = bridge.gen_clv_record(
+                        contig, clv_key,
+                        dd_bridge['num_reads'][clv_key],
+                        dd_bridge['max_tail_len'][clv_key]
+                    )
+                    U.write_row(clv_record, csvwriter)
 
             # if len(num_link_reads_dd) > 0:
             #     contig_is_blank = False

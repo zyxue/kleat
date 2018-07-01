@@ -1,4 +1,17 @@
+from settings import HEADER
 from settings import BAM_CSOFT_CLIP, BAM_CMATCH
+
+
+def gen_clv_key_tuple(seqname, strand, clv):
+    return (seqname, strand, clv)
+
+
+def gen_clv_key_str(seqname, strand, clv):
+    return f'{seqname}|{strand}|{clv}'
+
+
+def write_row(clv_record, csvwriter):
+    csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
 
 
 def infer_contig_abs_ref_start(contig):

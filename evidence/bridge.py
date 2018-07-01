@@ -1,4 +1,5 @@
 import utils as U
+from settings import ClvRecord
 
 
 def analyze_bridge_read(contig, read):
@@ -33,3 +34,25 @@ def analyze_bridge_read(contig, read):
         else:
             raise ValueError(f'no tail found for read {read}')
     return seqname, strand, ref_clv, tail_len
+
+
+def gen_clv_record(
+        bridge_contig, clv_key_tuple, num_bridge_reads, max_bridge_tail_len):
+    seqname, strand, ref_clv = clv_key_tuple
+    return ClvRecord(
+        seqname, strand, ref_clv,
+
+        'bridge',
+        bridge_contig.query_name,
+        bridge_contig.query_length,
+        bridge_contig.mapq,
+
+        0,                      # num_tail_reads
+        0,                      # tail_length
+
+        num_bridge_reads,
+        max_bridge_tail_len,
+
+        num_link_reads=0,
+        num_blank_contigs=0
+    )
