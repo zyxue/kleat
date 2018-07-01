@@ -43,15 +43,18 @@ def analyze_bridge_read(contig, read):
         else:
             raise ValueError(f'no tail found for read {read}')
     else:
+        # set always=True to include hard-clipped bases
+        # https://pysam.readthedocs.io/en/latest/api.html?highlight=parse_region#pysam.AlignedSegment.infer_query_length
+        ctg_len = contig.infer_query_length(always=True)
         if U.left_tail(read, 'T'):
             strand = '+'
-            match_len_cutoff = contig.query_length - read.reference_start
+            match_len_cutoff = ctg_len - read.reference_start
             offset = calc_offset(contig, match_len_cutoff)
             gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[0][1]
         elif U.right_tail(read, 'A'):
             strand = '-'
-            match_len_cutoff = contig.query_length - read.reference_end
+            match_len_cutoff = ctg_len - read.reference_end
             offset = calc_offset(contig, match_len_cutoff)
             gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[-1][1]
@@ -68,7 +71,7 @@ def gen_clv_record(
 
         'bridge',
         bridge_contig.query_name,
-        bridge_contig.query_length,
+        bridge_contig.infer_query_length(True),
         bridge_contig.mapq,
 
         0,                      # num_tail_reads
