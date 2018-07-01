@@ -1,5 +1,23 @@
 import utils as U
-from settings import ClvRecord
+from settings import ClvRecord, BAM_CMATCH, BAM_CREF_SKIP
+
+
+def calc_offset(contig, stop_match_pos):
+    """
+    Calculate the offset caused by skipped region (e.g. intron) until stop_pos
+    relative to contig
+    """
+    match_pos = 0
+    offset = 0
+    for key, val in contig.cigartuples:
+        if key == BAM_CMATCH:
+            match_pos += val
+            if match_pos > stop_match_pos:
+                return offset
+            offset += val
+        if key == BAM_CREF_SKIP:
+            offset += val
+    return offset
 
 
 def analyze_bridge_read(contig, read):
@@ -15,8 +33,8 @@ def analyze_bridge_read(contig, read):
             tail_len = read.cigartuples[0][1]
         elif U.right_tail(read, 'A'):
             strand = '+'
-            contig_clv = read.reference_end
-            ref_clv = ctg_beg + contig_clv
+            stop_match_pos = read.reference_end
+            ref_clv = ctg_beg + calc_offset(contig, stop_match_pos) + 1
             tail_len = read.cigartuples[-1][1]
         else:
             raise ValueError(f'no tail found for read {read}')
