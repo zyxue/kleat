@@ -4,7 +4,7 @@ assumed to be suffix contigs
 """
 
 
-from utils.tail import calc_strand, calc_ref_clv, calc_tail_length
+from utils import calc_strand, calc_ref_clv, calc_tail_length
 from settings import ClvRecord
 
 

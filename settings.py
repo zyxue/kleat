@@ -3,7 +3,7 @@ from collections import namedtuple
 
 # https://pysam.readthedocs.io/en/latest/api.html?highlight=AlignmentSegment#pysam.AlignedSegment.cigartuples
 BAM_CMATCH = 0
-BAM_CSOFT_CLIP = 4              # used to identify soft clip 
+BAM_CSOFT_CLIP = 4              # used to identify soft clip
 
 HEADER = [
     'seqname', 'strand', 'clv',

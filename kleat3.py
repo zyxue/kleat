@@ -1,39 +1,11 @@
 import csv
 import pysam
 
-from utils import tail as T
 from evidence import suffix, bridge, link
 from settings import HEADER
+import utils as U
 
 
-# https://pysam.readthedocs.io/en/latest/api.html?highlight=AlignmentSegment#pysam.AlignedSegment.cigartuples
-BAM_CMATCH = 0
-
-
-def infer_contig_abs_ref_start(contig):
-    """
-    infer the absolute reference starting position taking into consideration
-    the non-M bases (esp. softclipped bases)
-    """
-    pos = contig.reference_start
-    for key, val in contig.cigartuples:
-        if key != BAM_CMATCH:
-            pos -= val
-        break
-    return pos
-
-
-def infer_contig_abs_ref_end(contig):
-    """
-    infer the absolute reference starting position taking into consideration
-    the non-M bases (esp. softclipped bases)
-    """
-    pos = contig.reference_end
-    for key, val in reversed(contig.cigartuples):
-        if key != BAM_CMATCH:
-            pos += val
-        break
-    return pos
 
 
 def calc_ref_clv_from_r2c_alignment(contig, read_reference_start_wst_contig):
@@ -90,7 +62,7 @@ if __name__ == "__main__":
                 continue
 
             # suffix evidence
-            if T.has_tail(contig):
+            if U.has_tail(contig):
                 clv_record = suffix.gen_clv_record(contig, r2c_bam)
                 csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
                 continue
@@ -108,7 +80,7 @@ if __name__ == "__main__":
                 #     sys.exit(1)
 
                 if not read.is_unmapped:
-                    if T.has_tail(read):
+                    if U.has_tail(read):
                         bridge.analyze_bridge(read, contig)
                 else:
                     # in principle, could also check from the perspecitve

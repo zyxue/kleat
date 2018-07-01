@@ -1,7 +1,35 @@
-from settings import BAM_CSOFT_CLIP
+from settings import BAM_CSOFT_CLIP, BAM_CMATCH
+
+
+def infer_contig_abs_ref_start(contig):
+    """
+    infer the absolute reference starting position taking into consideration
+    the non-M bases (esp. softclipped bases)
+    """
+    pos = contig.reference_start
+    for key, val in contig.cigartuples:
+        if key != BAM_CMATCH:
+            pos -= val
+        break
+    return pos
+
+
+def infer_contig_abs_ref_end(contig):
+    """
+    infer the absolute reference starting position taking into consideration
+    the non-M bases (esp. softclipped bases)
+    """
+    pos = contig.reference_end
+    for key, val in reversed(contig.cigartuples):
+        if key != BAM_CMATCH:
+            pos += val
+        break
+    return pos
+
+
 """
-Utility functions here apply to both contig and read as long as they have a
-tail
+Below are utility functions here apply to both contig and read as long as
+they have a tail
 """
 
 
