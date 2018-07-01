@@ -96,7 +96,7 @@ if __name__ == "__main__":
                 continue
 
             # bridge or link evidence
-            contig_is_blank = true
+            contig_is_blank = True
 
             num_bdg_reads_dd = {}
             max_bdg_tail_len_dd = {}
@@ -107,18 +107,19 @@ if __name__ == "__main__":
                 # if read.query_name == "SN7001282:314:h15b0adxx:1:2102:16317:20542" and read.is_unmapped:
                 #     sys.exit(1)
 
-                if T.has_tail(read):
-                    bridge.analyze_bridge_read_candidate(read, contig)
-                elif (read.is_unmapped
-                      # in principle, could also check from the perspecitve
-                      # and the mate of a link read, but it would be harder
-                      # to verify the sequence composition of the link read
-                      and not read.mate_is_unmapped
-                      # assume reference_id comparison is faster than
-                      # reference_name
-                      and read.reference_id == read.next_reference_id
-                      and set(read.query_sequence) in {{'A'}, {'T'}}):
-                    link.analyze_link_read_candidate(read, contig)
+                if not read.is_unmapped:
+                    if T.has_tail(read):
+                        bridge.analyze_bridge(read, contig)
+                else:
+                    # in principle, could also check from the perspecitve
+                    # and the mate of a link read, but it would be harder
+                    # to verify the sequence composition of the link read
+                    if (not read.mate_is_unmapped
+                        # assume reference_id comparison is faster than
+                        # reference_name
+                        and read.reference_id == read.next_reference_id
+                        and set(read.query_sequence) in [{'A'}, {'T'}]):
+                        link.analyze_link(read, contig)
 
             #         # for debug purpose
             #         # num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, []) + [f'{read.query_sequence}']

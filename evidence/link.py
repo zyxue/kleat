@@ -1,4 +1,4 @@
-def analyze_link_read_candidate(contig, poly_read):
+def analyze_link(contig, poly_read):
     """poly_read refers to the read with all A or T rather than its mate"""
     pass
     # if read.query_sequence.startswith('T' * 50) and contig.query_length > 150:

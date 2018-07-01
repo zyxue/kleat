@@ -1,4 +1,4 @@
-def analyze_bridge_candidate(contig, read):
+def analyze_bridge(contig, read):
     pass
     # if is_left_tail_segment(read):
     #     ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.reference_end)
