@@ -96,14 +96,11 @@ if __name__ == "__main__":
                     )
                     U.write_row(clv_record, csvwriter)
 
-            # if len(num_link_reads_dd) > 0:
-            #     contig_is_blank = False
-            #     for ref_clv in num_link_reads_dd:
-            #         clv_record = (
-            #             *contig_info, ref_clv, 'link_contig',
-            #             0, 0, 0, 0, num_link_reads_dd[ref_clv], 1
-            #         )
-            #         csvwriter.writerow(clv_record)
+            if len(dd_link['num_reads']) > 0:
+                for ref_clv in dd_link['num_reads']:
+                    clv_record = link.gen_clv_record(
+                        contig, clv_key, dd_link['num_reads'][clv_key])
+                    U.write_row(clv_record, csvwriter)
 
             # if contig_is_blank:
             #     # assume there is still a clv at the 3' end of the contig

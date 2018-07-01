@@ -1,4 +1,5 @@
 import utils as U
+from settings import ClvRecord
 
 
 def allN(seq, N):
@@ -43,3 +44,25 @@ def analyze_link(contig, poly_A_or_T_read):
         else:
             raise ValueError(f'NOT a polyA/T read: {read}')
     return seqname, strand, ref_clv
+
+
+def gen_clv_record(
+        link_contig, clv_key_tuple, num_link_reads):
+    seqname, strand, ref_clv = clv_key_tuple
+    return ClvRecord(
+        seqname, strand, ref_clv,
+
+        'link',
+        link_contig.query_name,
+        link_contig.query_length,
+        link_contig.mapq,
+
+        0,                      # num_tail_reads
+        0,                      # tail_length
+
+        0,                      # num_bridge_reads
+        0,                      # max_bridge_tail_len
+
+        num_link_reads,
+        num_blank_contigs=0
+    )
