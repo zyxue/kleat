@@ -51,8 +51,9 @@ def analyze_bridge_read(contig, read):
             tail_len = read.cigartuples[0][1]
         elif U.right_tail(read, 'A'):
             strand = '-'
-            contig_clv = read.reference_end
-            gnm_clv = gnm_end - contig_clv
+            match_len_cutoff = contig.query_length - read.reference_end
+            offset = calc_offset(contig, match_len_cutoff)
+            gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[-1][1]
         else:
             raise ValueError(f'no tail found for read {read}')
