@@ -1,8 +1,8 @@
 import csv
 import pysam
 
-import tail as T
-import suffix
+import tail as T                # part of utility functions
+from evidence import suffix, bridge, link
 from settings import HEADER
 
 
@@ -89,103 +89,74 @@ if __name__ == "__main__":
             ):
                 continue
 
+            # suffix evidence
             if T.has_tail(contig):
                 clv_record = suffix.gen_clv_record(contig, r2c_bam)
                 csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
-            # else:
-            #     contig_is_blank = True
+                continue
 
-            #     num_bdg_reads_dd = {}
-            #     max_bdg_tail_len_dd = {}
+            # bridge or link evidence
+            contig_is_blank = true
 
-            #     num_link_reads_dd = {}
-            #     for read in r2c_bam.fetch(
-            #             contig.query_name, 0, contig.query_length):
-            #         # if read.query_name == "SN7001282:314:h15b0adxx:1:2102:16317:20542" and read.is_unmapped:
-            #         #     sys.exit(1)
+            num_bdg_reads_dd = {}
+            max_bdg_tail_len_dd = {}
 
-            #         # if read.query_sequence.startswith('T' * 50) and contig.query_length > 150:
-            #         #     import pdb; pdb.set_trace()
+            num_link_reads_dd = {}
+            for read in r2c_bam.fetch(
+                    contig.query_name, 0, contig.query_length):
+                # if read.query_name == "SN7001282:314:h15b0adxx:1:2102:16317:20542" and read.is_unmapped:
+                #     sys.exit(1)
 
-            #         # if read.is_reverse:
-            #         #     # read2contig alignment cannot be reverse to be a read
-            #         #     # supporting polyA tail
-            #         #     continue
+                if T.has_tail(read):
+                    bridge.analyze_bridge_read_candidate(read, contig)
+                elif (read.is_unmapped
+                      # in principle, could also check from the perspecitve
+                      # and the mate of a link read, but it would be harder
+                      # to verify the sequence composition of the link read
+                      and not read.mate_is_unmapped
+                      # assume reference_id comparison is faster than
+                      # reference_name
+                      and read.reference_id == read.next_reference_id
+                      and set(read.query_sequence) in {{'A'}, {'T'}}):
+                    link.analyze_link_read_candidate(read, contig)
 
-            #         if read.is_unmapped:  # a candidate for link read
+            #         # for debug purpose
+            #         # num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, []) + [f'{read.query_sequence}']
+            #         num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, 0) + 1
 
-            #             # in principle, could also check from the perspecitve
-            #             # and the mate of a link read, but it would be harder
-            #             # to verify the sequence composition of the link read
-            #             if read.mate_is_unmapped:
-            #                 continue
+            # contig_info = gen_contig_info(contig)
+            # if len(num_bdg_reads_dd) > 0:
+            #     contig_is_blank = False
+            #     for ref_clv in num_bdg_reads_dd:
+            #         clv_record = (
+            #             *contig_info, ref_clv, 'bridge_contig',
+            #             # tail_contig evidence is left empty
+            #             0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv], 0, 1
+            #         )
+            #         csvwriter.writerow(clv_record)
 
-            #             if not set(read.query_sequence) in {{'A'}, {'T'}}:
-            #                 # needs to be completely T
-            #                 continue
+            # if len(num_link_reads_dd) > 0:
+            #     contig_is_blank = False
+            #     for ref_clv in num_link_reads_dd:
+            #         clv_record = (
+            #             *contig_info, ref_clv, 'link_contig',
+            #             0, 0, 0, 0, num_link_reads_dd[ref_clv], 1
+            #         )
+            #         csvwriter.writerow(clv_record)
 
-            #             if not read.reference_id == read.next_reference_id:
-            #                 # assume reference_id comparison is faster than
-            #                 # reference_name
-            #                 continue
-
-            #             # assume the start/end of the paired read is the
-            #             # cleavage site
-            #             ref_clv, strand = calc_ref_clv_from_r2c_alignment(
-            #                 contig, read.next_reference_start)
-                        
-
-            #             # for debug purpose
-            #             # num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, []) + [f'{read.query_sequence}']
-            #             num_link_reads_dd[ref_clv] = num_link_reads_dd.get(ref_clv, 0) + 1
-
-            #         else:       # a candidate for bridge read
-            #             if is_left_tail_segment(read):
-            #                 ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.reference_end)
-            #                 strand = '-'
-            #                 tail_len = calc_tail_length(read)
-            #                 num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
-            #                 max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
-            #             if is_right_tail_segment(read):
-            #                 ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.reference_start)
-            #                 strand = '+'
-            #                 tail_len = calc_tail_length(read)
-            #                 num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
-            #                 max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
-
-            #     contig_info = gen_contig_info(contig)
-            #     if len(num_bdg_reads_dd) > 0:
-            #         contig_is_blank = False
-            #         for ref_clv in num_bdg_reads_dd:
-            #             clv_record = (
-            #                 *contig_info, ref_clv, 'bridge_contig',
-            #                 # tail_contig evidence is left empty
-            #                 0, 0, num_bdg_reads_dd[ref_clv], max_bdg_tail_len_dd[ref_clv], 0, 1
-            #             )
-            #             csvwriter.writerow(clv_record)
-
-            #     if len(num_link_reads_dd) > 0:
-            #         contig_is_blank = False
-            #         for ref_clv in num_link_reads_dd:
-            #             clv_record = (
-            #                 *contig_info, ref_clv, 'link_contig',
-            #                 0, 0, 0, 0, num_link_reads_dd[ref_clv], 1
-            #             )
-            #             csvwriter.writerow(clv_record)
-
-            #     if contig_is_blank:
-            #         # assume there is still a clv at the 3' end of the contig
-            #         # even without any polya evidence, in thus case, there is
-            #         # no direction, so either end of the contig could be a clv
-            #         for strand, ref_clv in zip(['+', '-'], [
-            #                 contig.reference_end + 1,
-            #                 contig.reference_start
-            #         ]):
-            #             # replace strand  in contig_info
-            #             ref_name, _, qn, ql, mapq = contig_info
-            #             clv_record = (
-            #                 ref_name, strand, qn, ql, mapq,
-            #                 ref_clv, 'None',
-            #                 0, 0, 0, 0, 0, 1
-            #             )
-            #             csvwriter.writerow(clv_record)
+            # if contig_is_blank:
+            #     # assume there is still a clv at the 3' end of the contig
+            #     # even without any polya evidence, in thus case, there is
+            #     # no direction, so either end of the contig could be a clv
+            #     for strand, ref_clv in zip(['+', '-'], [
+            #             contig.reference_end + 1,
+            #             contig.reference_start
+            #     ]):
+            #         # replace strand  in contig_info
+            #         ref_name, _, qn, ql, mapq = contig_info
+            #         clv_record = (
+            #             ref_name, strand, qn, ql, mapq,
+            #             ref_clv, 'None',
+            #             0, 0, 0, 0, 0, 1
+            #         )
+            #         csvwriter.writerow(clv_record)
