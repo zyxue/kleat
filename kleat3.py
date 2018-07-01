@@ -1,7 +1,7 @@
 import csv
 import pysam
 
-import tail as T                # part of utility functions
+from utils import tail as T
 from evidence import suffix, bridge, link
 from settings import HEADER
 
