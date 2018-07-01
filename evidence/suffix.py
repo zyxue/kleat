@@ -35,7 +35,7 @@ def gen_clv_record(suffix_contig, r2c_bam):
         calc_strand(suffix_contig),
         ref_clv,
 
-        'tail_contig',
+        'suffix',
         suffix_contig.query_name,
         suffix_contig.query_length,
         suffix_contig.mapq,
