@@ -1,5 +1,5 @@
 import utils as U
-from settings import ClvRecord, BAM_CMATCH, BAM_CREF_SKIP
+from settings import ClvRecord, BAM_CMATCH, BAM_CREF_SKIP, BAM_CDEL
 
 
 def calc_offset(contig, match_len_cutoff):
@@ -10,7 +10,7 @@ def calc_offset(contig, match_len_cutoff):
     match_len = 0
     offset = 0
     for key, val in contig.cigartuples:
-        if key in [BAM_CMATCH]:
+        if key in [BAM_CMATCH, BAM_CDEL]:
             match_len += val
             if match_len >= match_len_cutoff:
                 delta = val - (match_len - match_len_cutoff)
@@ -25,20 +25,20 @@ def calc_offset(contig, match_len_cutoff):
 def analyze_bridge_read(contig, read):
     # beginning and end wst to genome
     gnm_beg = U.infer_contig_abs_ref_start(contig)
-    gnm_end = U.infer_contig_abs_ref_end(contig)
 
     seqname = contig.reference_name
     if not contig.is_reverse:
         if U.left_tail(read, 'T'):
             strand = '-'
-            ctg_clv = read.reference_start  # in contig coordinate
-            gnm_clv = gnm_beg + ctg_clv     # convert to genome coordinate
+            match_len_cutoff = read.reference_start
+            offset = calc_offset(contig, match_len_cutoff)
+            gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[0][1]
         elif U.right_tail(read, 'A'):
             strand = '+'
-            stop_match_pos = read.reference_end
-            offset = calc_offset(contig, stop_match_pos)
-            gnm_clv = gnm_beg + offset + 1
+            match_len_cutoff = read.reference_end - 1
+            offset = calc_offset(contig, match_len_cutoff)
+            gnm_clv = gnm_beg + offset
             tail_len = read.cigartuples[-1][1]
         else:
             raise ValueError(f'no tail found for read {read}')
