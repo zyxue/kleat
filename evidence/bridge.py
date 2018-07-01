@@ -1,19 +1,35 @@
-def analyze_bridge(contig, read):
-    pass
-    # if is_left_tail_segment(read):
-    #     ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.reference_end)
-    #     strand = '-'
-    #     tail_len = calc_tail_length(read)
-    #     num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
-    #     max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
-    # if is_right_tail_segment(read):
-    #     ref_clv = calc_ref_clv_from_r2c_alignment(contig, read.reference_start)
-    #     strand = '+'
-    #     tail_len = calc_tail_length(read)
-    #     num_bdg_reads_dd[ref_clv] = num_bdg_reads_dd.get(ref_clv, 0) + 1
-    #     max_bdg_tail_len_dd[ref_clv] = max(max_bdg_tail_len_dd.get(ref_clv, 0), tail_len)
+import utils as U
 
-        # if read.is_reverse:
-        #     # read2contig alignment cannot be reverse to be a read
-        #     # supporting polyA tail
-        #     continue
+
+def analyze_bridge_read(contig, read):
+    ctg_beg = U.infer_contig_abs_ref_start(contig)
+    ctg_end = U.infer_contig_abs_ref_end(contig)
+
+    seqname = contig.reference_name
+    if not contig.is_reverse:
+        if U.left_tail(read, 'T'):
+            strand = '-'
+            contig_clv = read.reference_start  # in contig coordinate
+            ref_clv = ctg_beg + contig_clv     # convert to genome coordinate
+            tail_len = read.cigartuples[0][1]
+        elif U.right_tail(read, 'A'):
+            strand = '+'
+            contig_clv = read.reference_end
+            ref_clv = ctg_beg + contig_clv
+            tail_len = read.cigartuples[-1][1]
+        else:
+            raise ValueError(f'no tail found for read {read}')
+    else:
+        if U.left_tail(read, 'T'):
+            strand = '+'
+            contig_clv = read.reference_start
+            ref_clv = ctg_end - contig_clv
+            tail_len = read.cigartuples[0][1]
+        elif U.right_tail(read, 'A'):
+            strand = '-'
+            contig_clv = read.reference_end
+            ref_clv = ctg_end - contig_clv
+            tail_len = read.cigartuples[-1][1]
+        else:
+            raise ValueError(f'no tail found for read {read}')
+    return seqname, strand, ref_clv, tail_len

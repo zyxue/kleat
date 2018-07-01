@@ -6,29 +6,6 @@ from settings import HEADER
 import utils as U
 
 
-
-
-def calc_ref_clv_from_r2c_alignment(contig, read_reference_start_wst_contig):
-    """calculate
-    cleavage site position wst the reference based on bridge read, and
-    read2contig and contig2genome alignments
-    """
-    read_start = read_reference_start_wst_contig
-    if contig.is_reverse:
-        abs_ref_end = infer_contig_abs_ref_end(contig)
-        # 0            +---AAA          l              -> contig coordinates
-        # <-----------------------------+              -> the contig
-        # a                ref_start    b:abs_ref_end  -> genomic coordinates
-        ref_clv = abs_ref_end - read_start
-    else:
-        abs_ref_beg = infer_contig_abs_ref_start(contig)
-        # 0              TTT---+        l              -> contig coordinates
-        # +----------------------------->              -> the contig
-        # a:abs_ref_beg     ref_start   b              -> genomic coordinates
-        ref_clv = abs_ref_beg + read_start
-    return ref_clv
-
-
 if __name__ == "__main__":
     # datadir = '../kleat3-test-data/tasrkleat-results'
     datadir = '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C1/tasrkleat-results'
@@ -55,10 +32,7 @@ if __name__ == "__main__":
 
             tmp_dd[contig.query_name] = contig
 
-            if (
-                    contig.is_unmapped or
-                    contig.mapping_quality == 0
-            ):
+            if (contig.is_unmapped or contig.mapping_quality == 0):
                 continue
 
             # suffix evidence
@@ -70,18 +44,25 @@ if __name__ == "__main__":
             # bridge or link evidence
             contig_is_blank = True
 
-            num_bdg_reads_dd = {}
-            max_bdg_tail_len_dd = {}
+            dd_num_bdg_reads = {}
+            dd_max_bdg_tail_len = {}
 
-            num_link_reads_dd = {}
-            for read in r2c_bam.fetch(
-                    contig.query_name, 0, contig.query_length):
+            dd_num_link_reads = {}
+
+            query_region = [0, contig.query_length]
+            for read in r2c_bam.fetch(contig.query_name, *query_region):
                 # if read.query_name == "SN7001282:314:h15b0adxx:1:2102:16317:20542" and read.is_unmapped:
                 #     sys.exit(1)
 
                 if not read.is_unmapped:
                     if U.has_tail(read):
-                        bridge.analyze_bridge(read, contig)
+                        seqname, strand, ref_clv, tail_len = \
+                            bridge.analyze_bridge_read(contig, read)
+                        clv_key = (seqname, strand, ref_clv)
+                        dd_num_bdg_reads[clv_key] = \
+                            dd_num_bdg_reads.get(clv_key, 0) + 1
+                        dd_max_bdg_tail_len[clv_key] = \
+                            max(dd_max_bdg_tail_len.get(ref_clv, 0), tail_len)
                 else:
                     # in principle, could also check from the perspecitve
                     # and the mate of a link read, but it would be harder
