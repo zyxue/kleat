@@ -29,6 +29,7 @@ if __name__ == "__main__":
         csvwriter.writerow(HEADER)
 
         for k, contig in enumerate(c2g_bam):
+            contig_is_blank = True
             if (k + 1) % 1000 == 0:
                 print(f'processed {k + 1} contigs')
 
@@ -40,11 +41,8 @@ if __name__ == "__main__":
             # suffix evidence
             if U.has_tail(contig):
                 clv_record = suffix.gen_clv_record(contig, r2c_bam)
+                contig_is_blank = False
                 U.write_row(clv_record, csvwriter)
-                continue
-
-            # bridge or link evidence
-            contig_is_blank = True
 
             dd_bridge = {
                 'num_reads': defaultdict(int),
@@ -69,7 +67,6 @@ if __name__ == "__main__":
                         dd_bridge['num_reads'][clv_key] += 1
                         dd_bridge['max_tail_len'][clv_key] = max(
                             dd_bridge['max_tail_len'][clv_key], tail_len)
-                        contig_is_blank = False
                 else:
                     # Here we focused on the unmapped all A/T read, but in
                     # principle, we could also check from the perspecitve and
@@ -85,9 +82,9 @@ if __name__ == "__main__":
 
                         clv_key = U.gen_clv_key_tuple(seqname, strand, ref_clv)
                         dd_link['num_reads'][clv_key] += 1
-                        contig_is_blank = False
 
             if len(dd_bridge['num_reads']) > 0:
+                contig_is_blank = False
                 for clv_key in dd_bridge['num_reads']:
                     clv_record = bridge.gen_clv_record(
                         contig, clv_key,
@@ -97,6 +94,7 @@ if __name__ == "__main__":
                     U.write_row(clv_record, csvwriter)
 
             if len(dd_link['num_reads']) > 0:
+                contig_is_blank = False
                 for ref_clv in dd_link['num_reads']:
                     clv_record = link.gen_clv_record(
                         contig, clv_key, dd_link['num_reads'][clv_key])
