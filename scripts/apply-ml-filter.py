@@ -7,16 +7,18 @@ import pandas as pd
 
 import pysam
 
-from cluster import cluster_clv_sites
+from utils.cluster import cluster_clv_sites
+from utils import search_hexamer
 
 kleat_version = sys.argv[1]
-SAMPLE_ID = sys.argv[2]         # e.g. HBRC4
-train_data_sample_id = 'HBRC4'
+train_data_sample_id = sys.argv[2]
+SAMPLE_ID = sys.argv[3]
+
 
 if kleat_version == 'kleat2':
-    from utils import KLEAT2_FEATURE_COLS as feature_cols
+    from utils.utils import KLEAT2_FEATURE_COLS as feature_cols
 elif kleat_version == 'kleat3':
-    from utils import KLEAT3_FEATURE_COLS as feature_cols
+    from utils.utils import KLEAT3_FEATURE_COLS as feature_cols
 else:
     raise
 
@@ -64,8 +66,6 @@ for max_depth in depths:
     idf = hdf.rename(columns={'mclv': 'clv'}).groupby(['seqname', 'strand']).apply(
         calc_abs_dist_to_annot_clv).reset_index(drop=True)
 
-    import search_hexamer
-
     def search_hexamer_wrapper(refseq, chrm, clv, strand, window=50):
         res = search_hexamer.search(refseq, chrm, clv, strand, window)
         if res is None:
@@ -80,7 +80,7 @@ for max_depth in depths:
             refseq, row.seqname, row.clv, row.strand), axis=1)
     idf_hxm = pd.concat([idf, hxm_df], axis=1)
 
-    outdir = f'./{kleat_version}_ml/cv/max_depth{max_depth}'
+    outdir = f'./{kleat_version}_ml/cv/trained_on_{train_data_sample_id}/max_depth{max_depth}'
     if not os.path.exists(outdir):
         os.makedirs(outdir)
     out_csv = f'{outdir}/{SAMPLE_ID}.csv'

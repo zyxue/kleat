@@ -1,9 +1,17 @@
+import os
 import sys
 
 import pandas as pd
 import numpy as np
 
 sys.path.insert(0, '../apa_manuscript/')
+
+
+def load_bed(input_bed):
+    """"mostly for whole transcriptome"""
+    return pd.read_csv(
+        input_bed, header=None, sep='\t',
+        names=['seqname', 'clv', 'clv1', 'hexamer_str', 'unknown', 'strand'])
 
 
 def load_polya_df(polya_csv):
@@ -42,6 +50,10 @@ def load_kleat3_df(kleat3_csv):
     df['seqname'] = df.seqname.astype(str)
     df = df.drop_duplicates().copy()
     return df
+
+
+def load_apatrap_df(cleaned_apatrap_output):
+    return pd.read_csv(cleaned_apatrap_output)
 
 
 def map_clvs(df_pred, df_ref):
@@ -84,20 +96,30 @@ def replace_seqname(df):
 
 if __name__ == "__main__":
     pred_file, pred_type, truth_sample = sys.argv[1:4]
+    pred_file = os.path.abspath(pred_file)
 
     rootdir = '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk'
-    if truth_sample == 'UHRC1':
-        truth_csv = f'{rootdir}/UHR/C1/polyA-Seq/polyA-Seq-truth-114-genes.csv'
-    elif truth_sample == 'HBRC4':
-        truth_csv = f'{rootdir}/HBR/C4/polyA-Seq/polyA-Seq-truth-114-genes.csv'
-    elif truth_sample == 'HBRC6':
-        truth_csv = f'{rootdir}/HBR/C6/polyA-Seq/polyA-Seq-truth-114-genes.csv'
+
+    if truth_sample in ['UHRC1', 'UHRC2', 'HBRC4', 'HBRC6']:
+        truth_csv = f'{rootdir}/{truth_sample[:3]}/{truth_sample[3:]}/polyA-Seq/polyA-Seq-truth-114-genes.csv'
+        df_ref = load_polya_df(truth_csv)
+    elif truth_sample == 'Brain-C4_S3_RNABloom':
+        bed = '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain1.bed'
+        df_ref = load_bed(bed)
+    elif truth_sample == 'Brain-C6_S4_RNABloom':
+        bed = '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain2.bed'
+        df_ref = load_bed(bed)
+    elif truth_sample == 'HRR-C2_S2_RNABloom':
+        bed = '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/UHR2.bed'
+        df_ref = load_bed(bed)
+    elif truth_sample == ['UHRR-C1_S1_RNABloom', 'UHRC1_whole_transcriptome']:
+        bed = '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/UHR1.bed'
+        df_ref = load_bed(bed)
     else:
         raise
 
-    df_ref = load_polya_df(truth_csv)
-
     pred_file_loader = eval(f'load_{pred_type}_df')
+    print(f'loading "{pred_file}"')
     df_pred = pred_file_loader(pred_file)
 
     replace_seqname(df_ref)

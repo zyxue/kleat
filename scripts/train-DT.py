@@ -8,15 +8,14 @@ from sklearn.tree import DecisionTreeClassifier
 from compare_to_polyA_Seq import load_polya_df, map_clvs
 
 kleat_version = sys.argv[1]
+SAMPLE_ID = sys.argv[2]
 
 if kleat_version == 'kleat2':
-    from utils import KLEAT2_FEATURE_COLS as feature_cols
+    from utils.utils import KLEAT2_FEATURE_COLS as feature_cols
 elif kleat_version == 'kleat3':
-    from utils import KLEAT3_FEATURE_COLS as feature_cols
+    from utils.utils import KLEAT3_FEATURE_COLS as feature_cols
 else:
     raise
-
-SAMPLE_ID = 'HBRC4'
 
 fdf = pd.read_csv(f'./{kleat_version}_ml/{SAMPLE_ID}_ml_ready.csv', low_memory=False)
 
