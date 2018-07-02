@@ -15,6 +15,8 @@ import utils as U
 logging.basicConfig(
     level=logging.DEBUG, format='%(asctime)s|%(levelname)s|%(message)s')
 
+logger = logging.getLogger(__name__)
+
 
 def write_row(clv_record, csvwriter):
     csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
@@ -52,7 +54,7 @@ if __name__ == "__main__":
 
         for k, contig in enumerate(c2g_bam):
             if (k + 1) % 1000 == 0:
-                print(f'processed {k + 1} contigs')
+                logger.info(f'processed {k + 1} contigs')
 
             if contig.is_unmapped:
                 continue
