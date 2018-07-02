@@ -6,6 +6,7 @@ import argparse
 from collections import defaultdict
 
 import pysam
+from tqdm import tqdm
 
 from evidence import suffix, bridge, link, blank
 from settings import HEADER
@@ -52,10 +53,7 @@ if __name__ == "__main__":
         csvwriter = csv.writer(opf)
         csvwriter.writerow(HEADER)
 
-        for k, contig in enumerate(c2g_bam):
-            if (k + 1) % 1000 == 0:
-                logger.info(f'processed {k + 1} contigs')
-
+        for k, contig in tqdm(enumerate(c2g_bam)):
             if contig.is_unmapped:
                 continue
 
