@@ -23,6 +23,13 @@ Cleavage site prediction via de novo assembly
 * Documentation: https://kleat3.readthedocs.io.
 
 
+Install
+--------
+
+.. code-block:: bash
+   pip install git+https://github.com/zyxue/kleat.git#egg=kleat
+
+
 Features
 --------
 
