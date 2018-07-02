@@ -9,6 +9,10 @@ from settings import HEADER
 import utils as U
 
 
+def write_row(clv_record, csvwriter):
+    csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
+
+
 def get_args():
     parser = argparse.ArgumentParser(
         description='KLEAT3: cleavage site detection via de novo assembly')
@@ -49,7 +53,7 @@ if __name__ == "__main__":
             # suffix evidence
             if U.has_tail(contig):
                 clv_record = suffix.gen_clv_record(contig, r2c_bam)
-                U.write_row(clv_record, csvwriter)
+                write_row(clv_record, csvwriter)
 
             dd_bridge = {
                 'num_reads': defaultdict(int),
@@ -95,14 +99,14 @@ if __name__ == "__main__":
                         dd_bridge['num_reads'][clv_key],
                         dd_bridge['max_tail_len'][clv_key]
                     )
-                    U.write_row(clv_record, csvwriter)
+                    write_row(clv_record, csvwriter)
 
             if len(dd_link['num_reads']) > 0:
                 for ref_clv in dd_link['num_reads']:
                     clv_record = link.gen_clv_record(
                         contig, clv_key, dd_link['num_reads'][clv_key])
-                    U.write_row(clv_record, csvwriter)
+                    write_row(clv_record, csvwriter)
 
             # blank evidence
             for clv_rec in blank.gen_two_clv_records(contig):
-                U.write_row(clv_rec, csvwriter)
+                write_row(clv_rec, csvwriter)

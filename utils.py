@@ -36,10 +36,6 @@ def gen_clv_key_str(seqname, strand, clv):
     return f'{seqname}|{strand}|{clv}'
 
 
-def write_row(clv_record, csvwriter):
-    csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
-
-
 def infer_contig_abs_ref_start(contig):
     """
     infer the absolute reference starting position taking into consideration
