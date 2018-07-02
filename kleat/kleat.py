@@ -43,19 +43,38 @@ def get_args():
     return parser.parse_args()
 
 
-def init_evidence_holders():
+def process_suffix(contig, r2c_bam, csvwriter):
+    clv_record = suffix.gen_clv_record(contig, r2c_bam)
+    write_row(clv_record, csvwriter)
+
+
+def process_bridge_and_link(contig, r2c_bam, csvwriter):
+    # bridge & link
+    aligned_reads = r2c_bam.fetch(contig.query_name)
+    dd_bridge, dd_link = extract_bridge_and_link(contig, aligned_reads)
+    write_bridge(dd_bridge, contig, csvwriter)
+    write_link(dd_link, contig, csvwriter)
+
+
+def process_blank(contig, csvwriter):
+    for clv_rec in blank.gen_two_clv_records(contig):
+        write_row(clv_rec, csvwriter)
+
+
+def init_bridge_evidence_holder():
     """
     initialize holders for bridge and link evidence of a given contig
     """
-    dd_bridge = {
+    return {
         'num_reads': defaultdict(int),
         'max_tail_len': defaultdict(int),
     }
 
-    dd_link = {
+
+def init_link_evidence_holder():
+    return {
         'num_reads': defaultdict(int)
     }
-    return dd_bridge, dd_link
 
 
 def is_bridge_read(read):
@@ -102,7 +121,8 @@ def extract_bridge_and_link(contig, aligned_reads):
     :param contig: a pysam.libcalignedsegment.AlignedSegment instance
     :param aligned_reads: a pysam.libcalignmentfile.IteratorRowRegion instance
     """
-    dd_bridge, dd_link = init_evidence_holders()
+    dd_bridge = init_bridge_evidence_holder()
+    dd_link = init_link_evidence_holder()
     for read in aligned_reads:
         if is_bridge_read(read):
             bdg_evid = bridge.analyze_bridge_read(contig, read)
@@ -150,21 +170,10 @@ def main():
             if contig.is_unmapped:
                 continue
 
-            # suffix
             if apautils.has_tail(contig):
-                clv_record = suffix.gen_clv_record(contig, r2c_bam)
-                write_row(clv_record, csvwriter)
-
-            # bridge & link
-            aligned_reads = r2c_bam.fetch(contig.query_name)
-            dd_bridge, dd_link = extract_bridge_and_link(contig, aligned_reads)
-            write_bridge(dd_bridge, contig, csvwriter)
-            write_link(dd_link, contig, csvwriter)
-
-            # blank
-            for clv_rec in blank.gen_two_clv_records(contig):
-                write_row(clv_rec, csvwriter)
-
+                process_suffix(contig, r2c_bam, csvwriter)
+            process_bridge_and_link(contig, r2c_bam, csvwriter)
+            process_blank(contig, csvwriter)
 
 if __name__ == "__main__":
     main()
