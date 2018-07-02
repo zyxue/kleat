@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import logging
 import csv
 import argparse
 from collections import defaultdict
@@ -9,6 +10,10 @@ import pysam
 from evidence import suffix, bridge, link, blank
 from settings import HEADER
 import utils as U
+
+
+logging.basicConfig(
+    level=logging.DEBUG, format='%(asctime)s|%(levelname)s|%(message)s')
 
 
 def write_row(clv_record, csvwriter):
