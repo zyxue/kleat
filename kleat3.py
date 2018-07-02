@@ -33,9 +33,7 @@ if __name__ == "__main__":
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
     r2c_bam = pysam.AlignmentFile(args.read_to_contig)
     output = args.output
-
-    # useful for debugging, remove later
-    tmp_dd = {}
+    U.backup_file(output)
 
     with open(output, 'wt') as opf:
         csvwriter = csv.writer(opf)
@@ -44,8 +42,6 @@ if __name__ == "__main__":
         for k, contig in enumerate(c2g_bam):
             if (k + 1) % 1000 == 0:
                 print(f'processed {k + 1} contigs')
-
-            tmp_dd[contig.query_name] = contig
 
             if contig.is_unmapped:
                 continue
