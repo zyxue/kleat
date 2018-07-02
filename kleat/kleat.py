@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 import logging
 import csv
 import argparse
@@ -48,7 +49,8 @@ def main():
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
     r2c_bam = pysam.AlignmentFile(args.read_to_contig)
     output = args.output
-    U.backup_file(output)
+    if os.path.exists(output):
+        U.backup_file(output)
 
     with open(output, 'wt') as opf:
         csvwriter = csv.writer(opf)
