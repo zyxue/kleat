@@ -9,8 +9,9 @@ import pysam
 from tqdm import tqdm
 
 from evidence import suffix, bridge, link, blank
-from settings import HEADER
-import utils as U
+from misc import apautils
+import misc.utils as U
+import misc.settings as S
 
 
 logging.basicConfig(
@@ -20,7 +21,7 @@ logger = logging.getLogger(__name__)
 
 
 def write_row(clv_record, csvwriter):
-    csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
+    csvwriter.writerow([getattr(clv_record, _) for _ in S.HEADER])
 
 
 def get_args():
@@ -51,14 +52,14 @@ if __name__ == "__main__":
 
     with open(output, 'wt') as opf:
         csvwriter = csv.writer(opf)
-        csvwriter.writerow(HEADER)
+        csvwriter.writerow(S.HEADER)
 
         for k, contig in tqdm(enumerate(c2g_bam)):
             if contig.is_unmapped:
                 continue
 
             # suffix evidence
-            if U.has_tail(contig):
+            if apautils.has_tail(contig):
                 clv_record = suffix.gen_clv_record(contig, r2c_bam)
                 write_row(clv_record, csvwriter)
 
@@ -74,11 +75,11 @@ if __name__ == "__main__":
             for read in r2c_bam.fetch(contig.query_name):
                 # bridge evidence
                 if not read.is_unmapped:
-                    if U.has_tail(read):
+                    if apautils.has_tail(read):
                         seqname, strand, ref_clv, tail_len = \
                             bridge.analyze_bridge_read(contig, read)
 
-                        clv_key = U.gen_clv_key_tuple(seqname, strand, ref_clv)
+                        clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
                         dd_bridge['num_reads'][clv_key] += 1
                         dd_bridge['max_tail_len'][clv_key] = max(
                             dd_bridge['max_tail_len'][clv_key], tail_len)
@@ -96,7 +97,7 @@ if __name__ == "__main__":
                         seqname, strand, ref_clv = \
                             link.analyze_link(contig, read)
 
-                        clv_key = U.gen_clv_key_tuple(seqname, strand, ref_clv)
+                        clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
                         dd_link['num_reads'][clv_key] += 1
 
             if len(dd_bridge['num_reads']) > 0:

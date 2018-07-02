@@ -1,4 +1,4 @@
-from settings import ClvRecord
+from misc.settings import ClvRecord
 
 
 def gen_two_clv_records(blank_contig):

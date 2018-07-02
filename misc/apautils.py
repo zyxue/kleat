@@ -1,9 +1,44 @@
+from .settings import BAM_CMATCH, BAM_CSOFT_CLIP
+
+
+def gen_clv_key_tuple(seqname, strand, clv):
+    return (seqname, strand, clv)
+
+
+def gen_clv_key_str(seqname, strand, clv):
+    return f'{seqname}|{strand}|{clv}'
+
+
+def infer_contig_abs_ref_start(contig):
+    """
+    infer the absolute reference starting position taking into consideration
+    the non-M bases (esp. softclipped bases)
+    """
+    pos = contig.reference_start
+    for key, val in contig.cigartuples:
+        if key != BAM_CMATCH:
+            pos -= val
+        break
+    return pos
+
+
+def infer_contig_abs_ref_end(contig):
+    """
+    infer the absolute reference starting position taking into consideration
+    the non-M bases (esp. softclipped bases)
+    """
+    pos = contig.reference_end
+    for key, val in reversed(contig.cigartuples):
+        if key != BAM_CMATCH:
+            pos += val
+        break
+    return pos
+
+
 """
-Below are utility functions here apply to both contig and read as long as
+Below are utility functions that apply to both contig and read as long as
 they have a tail
 """
-
-from settings import BAM_CSOFT_CLIP
 
 
 def has_tail(segment):

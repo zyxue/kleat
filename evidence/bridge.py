@@ -1,5 +1,5 @@
-import utils as U
-from settings import ClvRecord, BAM_CMATCH, BAM_CREF_SKIP, BAM_CDEL
+from misc import apautils
+from misc.settings import ClvRecord, BAM_CMATCH, BAM_CREF_SKIP, BAM_CDEL
 
 
 def calc_offset(contig, match_len_cutoff):
@@ -24,17 +24,17 @@ def calc_offset(contig, match_len_cutoff):
 
 def analyze_bridge_read(contig, read):
     # beginning and end wst to genome
-    gnm_beg = U.infer_contig_abs_ref_start(contig)
+    gnm_beg = apautils.infer_contig_abs_ref_start(contig)
 
     seqname = contig.reference_name
     if not contig.is_reverse:
-        if U.left_tail(read, 'T'):
+        if apautils.left_tail(read, 'T'):
             strand = '-'
             match_len_cutoff = read.reference_start
             offset = calc_offset(contig, match_len_cutoff)
             gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[0][1]
-        elif U.right_tail(read, 'A'):
+        elif apautils.right_tail(read, 'A'):
             strand = '+'
             match_len_cutoff = read.reference_end - 1
             offset = calc_offset(contig, match_len_cutoff)
@@ -46,13 +46,13 @@ def analyze_bridge_read(contig, read):
         # set always=True to include hard-clipped bases
         # https://pysam.readthedocs.io/en/latest/api.html?highlight=parse_region#pysam.AlignedSegment.infer_query_length
         ctg_len = contig.infer_query_length(always=True)
-        if U.left_tail(read, 'T'):
+        if apautils.left_tail(read, 'T'):
             strand = '+'
             match_len_cutoff = ctg_len - read.reference_start
             offset = calc_offset(contig, match_len_cutoff)
             gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[0][1]
-        elif U.right_tail(read, 'A'):
+        elif apautils.right_tail(read, 'A'):
             strand = '-'
             match_len_cutoff = ctg_len - read.reference_end
             offset = calc_offset(contig, match_len_cutoff)

@@ -3,9 +3,8 @@ Utilities for analyzing suffix-specific evidence. Contigs here are always
 assumed to be suffix contigs
 """
 
-
-from utils import calc_strand, calc_ref_clv, calc_tail_length
-from settings import ClvRecord
+from misc import apautils
+from misc.settings import ClvRecord
 
 
 def calc_num_suffix_reads(r2c_sam, suffix_contig, ref_clv=None):
@@ -15,7 +14,7 @@ def calc_num_suffix_reads(r2c_sam, suffix_contig, ref_clv=None):
     https://pysam.readthedocs.io/en/latest/api.html?highlight=AlignmentSegment#pysam.AlignedSegment.cigartuples
     """
     if ref_clv is None:
-        ref_clv = calc_ref_clv(suffix_contig)
+        ref_clv = apautils.calc_ref_clv(suffix_contig)
 
     num_tail_reads = r2c_sam.count(
         # region is half-open
@@ -26,13 +25,14 @@ def calc_num_suffix_reads(r2c_sam, suffix_contig, ref_clv=None):
 
 
 def gen_clv_record(suffix_contig, r2c_bam):
-    ref_clv = calc_ref_clv(suffix_contig)
+    ref_clv = apautils.calc_ref_clv(suffix_contig)
+    tail_length = apautils.calc_tail_length(suffix_contig)
+
     num_tail_reads = calc_num_suffix_reads(r2c_bam, suffix_contig, ref_clv)
-    tail_length = calc_tail_length(suffix_contig)
 
     return ClvRecord(
         suffix_contig.reference_name,
-        calc_strand(suffix_contig),
+        apautils.calc_strand(suffix_contig),
         ref_clv,
 
         'suffix',
