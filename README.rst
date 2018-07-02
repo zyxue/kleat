@@ -1,16 +1,16 @@
-======
-kleat3
-======
+=====
+kleat
+=====
 
 
-.. image:: https://img.shields.io/pypi/v/kleat3.svg
-        :target: https://pypi.python.org/pypi/kleat3
+.. image:: https://img.shields.io/pypi/v/kleat.svg
+        :target: https://pypi.python.org/pypi/kleat
 
-.. image:: https://img.shields.io/travis/zyxue/kleat3.svg
-        :target: https://travis-ci.org/zyxue/kleat3
+.. image:: https://img.shields.io/travis/zyxue/kleat.svg
+        :target: https://travis-ci.org/zyxue/kleat
 
-.. image:: https://readthedocs.org/projects/kleat3/badge/?version=latest
-        :target: https://kleat3.readthedocs.io/en/latest/?badge=latest
+.. image:: https://readthedocs.org/projects/kleat/badge/?version=latest
+        :target: https://kleat.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
 
@@ -20,7 +20,7 @@ Cleavage site prediction via de novo assembly
 
 
 * Free software: MIT license
-* Documentation: https://kleat3.readthedocs.io.
+* Documentation: https://kleat.readthedocs.io.
 
 
 Features

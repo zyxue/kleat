@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['pysam>=0.14.1']
+requirements = [ ]
 
 setup_requirements = ['pytest-runner', ]
 
@@ -33,22 +33,17 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     description="Cleavage site prediction via de novo assembly",
-    entry_points={
-        'console_scripts': [
-            'kleat3=kleat3.kleat3:main',
-        ],
-    },
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords='kleat3',
-    name='kleat3',
-    packages=find_packages(include=['kleat3']),
+    keywords='kleat',
+    name='kleat',
+    packages=find_packages(include=['kleat']),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/zyxue/kleat3',
+    url='https://github.com/zyxue/kleat',
     version='3.0.0',
     zip_safe=False,
 )
