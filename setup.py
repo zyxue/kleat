@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [ ]
+requirements = ['pysam>=0.14.1']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -33,6 +33,11 @@ setup(
         'Programming Language :: Python :: 3.6',
     ],
     description="Cleavage site prediction via de novo assembly",
+    entry_points={
+        'console_scripts': [
+            'kleat=kleat.kleat:main',
+        ],
+    },
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
