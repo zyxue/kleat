@@ -1,4 +1,5 @@
 import csv
+import argparse
 from collections import defaultdict
 
 import pysam
@@ -8,18 +9,30 @@ from settings import HEADER
 import utils as U
 
 
+def get_args():
+    parser = argparse.ArgumentParser(
+        description='KLEAT3: cleavage site detection via de novo assembly')
+    parser.add_argument(
+        '-c', '--contig-to-genome', type=str, required=True,
+        help='input contig-to-genome alignment BAM file'
+    )
+    parser.add_argument(
+        '-r', '--read-to-contig', type=str, required=True,
+        help='input read-to-contig alignment BAM file'
+    )
+    parser.add_argument(
+        '-o', '--output', type=str, default='./output.csv',
+        help='output csv file'
+    )
+    return parser.parse_args()
+
+
 if __name__ == "__main__":
-    # datadir = '../kleat3-test-data/tasrkleat-results'
-    datadir = '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C1/tasrkleat-results'
-    # datadir = '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C2/tasrkleat-results'
-    # datadir = '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C4/tasrkleat-results'
-    # datadir = '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C6/tasrkleat-results'
+    args = get_args()
 
-    c2g_bam = pysam.AlignmentFile(f'{datadir}/align_contigs2genome/cba.sorted.bam')
-    r2c_bam = pysam.AlignmentFile(f'{datadir}/align_reads2contigs/cba.sorted.bam')
-
-    import sys
-    output = sys.argv[1]
+    c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
+    r2c_bam = pysam.AlignmentFile(args.read_to_contig)
+    output = args.output
 
     # useful for debugging, remove later
     tmp_dd = {}
