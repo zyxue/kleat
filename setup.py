@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['Click>=6.0', 'pysam>=0.14.1']
+requirements = ['pysam>=0.14.1']
 
 setup_requirements = ['pytest-runner', ]
 
@@ -35,7 +35,7 @@ setup(
     description="Cleavage site prediction via de novo assembly",
     entry_points={
         'console_scripts': [
-            'kleat3=kleat3.cli:main',
+            'kleat3=kleat3.kleat3:main',
         ],
     },
     install_requires=requirements,

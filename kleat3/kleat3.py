@@ -42,7 +42,7 @@ def get_args():
     return parser.parse_args()
 
 
-if __name__ == "__main__":
+def main():
     args = get_args()
 
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
@@ -118,3 +118,7 @@ if __name__ == "__main__":
             # blank evidence
             for clv_rec in blank.gen_two_clv_records(contig):
                 write_row(clv_rec, csvwriter)
+
+
+if __name__ == "__main__":
+    main()
