@@ -43,9 +43,99 @@ def get_args():
     return parser.parse_args()
 
 
+def init_evidence_holders():
+    """
+    initialize holders for bridge and link evidence of a given contig
+    """
+    dd_bridge = {
+        'num_reads': defaultdict(int),
+        'max_tail_len': defaultdict(int),
+    }
+
+    dd_link = {
+        'num_reads': defaultdict(int)
+    }
+    return dd_bridge, dd_link
+
+
+def is_bridge_read(read):
+    return not read.is_unmapped and apautils.has_tail(read)
+
+
+def update_bridge(evid_tuple, evid_holder):
+    """
+    update the bridge evidence holder with extracted bridge evidence
+
+    :param evid_tuple: evidence tuple
+    :param evid_holder: A dict holder bridge evidence for a given contig
+    """
+    seqname, strand, ref_clv, tail_len = evid_tuple
+    clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
+    evid_holder['num_reads'][clv_key] += 1
+    evid_holder['max_tail_len'][clv_key] = max(
+        evid_holder['max_tail_len'][clv_key], tail_len)
+
+
+def is_link_read(read):
+    # Here we focused on the unmapped all A/T read, but in
+    # principle, we could also check from the perspecitve and
+    # the mate of a link read, but it would be harder to verify
+    # the sequence composition of the link read
+    return (not read.mate_is_unmapped
+            # assume reference_id comparison is faster than
+            # reference_name
+            and read.reference_id == read.next_reference_id
+            and set(read.query_sequence) in [{'A'}, {'T'}])
+
+
+def update_link(evid_tuple, evid_holder):
+    seqname, strand, ref_clv = evid_tuple
+    clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
+    evid_holder['num_reads'][clv_key] += 1
+
+
+def extract_bridge_and_link(contig, aligned_reads):
+    """
+    bridge and link are processed together by looping throught reads aligned to
+    the contig
+
+    :param contig: a pysam.libcalignedsegment.AlignedSegment instance
+    :param aligned_reads: a pysam.libcalignmentfile.IteratorRowRegion instance
+    """
+    dd_bridge, dd_link = init_evidence_holders()
+    for read in aligned_reads:
+        if is_bridge_read(read):
+            bdg_evid = bridge.analyze_bridge_read(contig, read)
+            update_bridge(bdg_evid, dd_bridge)
+        elif is_link_read(read):
+            link_evid = link.analyze_link(contig, read)
+            update_link(link_evid, dd_link)
+    return dd_bridge, dd_link
+
+
+def write_bridge(dd_bridge, contig, csvwriter):
+    if len(dd_bridge['num_reads']) == 0:
+        return
+    for clv_key in dd_bridge['num_reads']:
+        clv_record = bridge.gen_clv_record(
+            contig, clv_key,
+            dd_bridge['num_reads'][clv_key],
+            dd_bridge['max_tail_len'][clv_key]
+        )
+        write_row(clv_record, csvwriter)
+
+
+def write_link(dd_link, contig, csvwriter):
+    if len(dd_link['num_reads']) == 0:
+        return
+    for clv_key in dd_link['num_reads']:
+        clv_record = link.gen_clv_record(
+            contig, clv_key, dd_link['num_reads'][clv_key])
+        write_row(clv_record, csvwriter)
+
+
 def main():
     args = get_args()
-
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
     r2c_bam = pysam.AlignmentFile(args.read_to_contig)
     output = args.output
@@ -60,64 +150,18 @@ def main():
             if contig.is_unmapped:
                 continue
 
-            # suffix evidence
+            # suffix
             if apautils.has_tail(contig):
                 clv_record = suffix.gen_clv_record(contig, r2c_bam)
                 write_row(clv_record, csvwriter)
 
-            dd_bridge = {
-                'num_reads': defaultdict(int),
-                'max_tail_len': defaultdict(int),
-            }
+            # bridge & link
+            aligned_reads = r2c_bam.fetch(contig.query_name)
+            dd_bridge, dd_link = extract_bridge_and_link(contig, aligned_reads)
+            write_bridge(dd_bridge, contig, csvwriter)
+            write_link(dd_link, contig, csvwriter)
 
-            dd_link = {
-                'num_reads': defaultdict(int)
-            }
-
-            for read in r2c_bam.fetch(contig.query_name):
-                # bridge evidence
-                if not read.is_unmapped:
-                    if apautils.has_tail(read):
-                        seqname, strand, ref_clv, tail_len = \
-                            bridge.analyze_bridge_read(contig, read)
-
-                        clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
-                        dd_bridge['num_reads'][clv_key] += 1
-                        dd_bridge['max_tail_len'][clv_key] = max(
-                            dd_bridge['max_tail_len'][clv_key], tail_len)
-                # link evidence
-                else:
-                    # Here we focused on the unmapped all A/T read, but in
-                    # principle, we could also check from the perspecitve and
-                    # the mate of a link read, but it would be harder to verify
-                    # the sequence composition of the link read
-                    if (not read.mate_is_unmapped
-                        # assume reference_id comparison is faster than
-                        # reference_name
-                        and read.reference_id == read.next_reference_id
-                        and set(read.query_sequence) in [{'A'}, {'T'}]):
-                        seqname, strand, ref_clv = \
-                            link.analyze_link(contig, read)
-
-                        clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
-                        dd_link['num_reads'][clv_key] += 1
-
-            if len(dd_bridge['num_reads']) > 0:
-                for clv_key in dd_bridge['num_reads']:
-                    clv_record = bridge.gen_clv_record(
-                        contig, clv_key,
-                        dd_bridge['num_reads'][clv_key],
-                        dd_bridge['max_tail_len'][clv_key]
-                    )
-                    write_row(clv_record, csvwriter)
-
-            if len(dd_link['num_reads']) > 0:
-                for ref_clv in dd_link['num_reads']:
-                    clv_record = link.gen_clv_record(
-                        contig, clv_key, dd_link['num_reads'][clv_key])
-                    write_row(clv_record, csvwriter)
-
-            # blank evidence
+            # blank
             for clv_rec in blank.gen_two_clv_records(contig):
                 write_row(clv_rec, csvwriter)
 
