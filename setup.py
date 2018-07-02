@@ -11,7 +11,7 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = ['pysam>=0.14.1']
+requirements = ['pysam>=0.14.1', 'tqdm>=4.23.4']
 
 setup_requirements = ['pytest-runner', ]
 
