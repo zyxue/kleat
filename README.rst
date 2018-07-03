@@ -18,9 +18,8 @@ kleat
 
 Cleavage site prediction via de novo assembly
 
-
-* Free software: MIT license
-* Documentation: https://kleat.readthedocs.io.
+..
+   * Documentation: https://kleat.readthedocs.io.
 
 
 Install
@@ -66,14 +65,6 @@ Features
 
 * TODO
 
-Credits
--------
-
-This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
-
-.. _Cookiecutter: https://github.com/audreyr/cookiecutter
-.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
-
 
 Development
 -----------
@@ -92,3 +83,11 @@ To uninstall
 
    python setup.py develop --uninstall
 
+
+Credits
+-------
+
+This package was created with Cookiecutter_ and the `audreyr/cookiecutter-pypackage`_ project template.
+
+.. _Cookiecutter: https://github.com/audreyr/cookiecutter
+.. _`audreyr/cookiecutter-pypackage`: https://github.com/audreyr/cookiecutter-pypackage
