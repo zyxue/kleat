@@ -26,7 +26,38 @@ Cleavage site prediction via de novo assembly
 Install
 --------
 
+kleat (>3.0.0) supports only Python3 (>=py34). A few key packages include
+pysam_, pandas_, scikit-learn_.
+
+.. _pysam: https://github.com/pysam-developers/pysam
+.. _pandas: https://github.com/pandas-dev/pandas
+.. _scikit-learn: https://github.com/scikit-learn/scikit-learn
+
+First, it's recommended to create a virtual environment, using either
+conda_
+
+.. _conda: https://conda.io/miniconda.html
+
 .. code-block:: bash
+
+   conda create -p venv-kleat python=3
+   source activate venv-kleat/
+
+or pip_ + virtualenv_
+
+.. _pip: https://github.com/pypa/pip
+.. _virtualenv: https://github.com/pypa/virtualenv
+
+.. code-block:: bash
+
+   pip install virtualenv # skip this step if virtualenv is available already
+   virtualenv venv-kleat
+   . venv-kleat/bin/activate
+
+Then install kleat with pip
+
+.. code-block:: bash
+
    pip install git+https://github.com/zyxue/kleat.git#egg=kleat
 
 
