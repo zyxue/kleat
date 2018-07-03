@@ -42,7 +42,7 @@ def gen_clv_record(suffix_contig, r2c_bam, tail_side):
 
         # other types of evidence are left empty
         num_bridge_reads=0,
-        max_bridge_read_tail_length=0,
+        max_bridge_read_tail_len=0,
         num_link_reads=0,
         num_blank_contigs=0
     )
