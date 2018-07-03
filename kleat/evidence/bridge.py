@@ -64,7 +64,7 @@ def calc_offset(contig, match_len_cutoff):
 
 def analyze_bridge_read(contig, read):
     # beginning and end wst to genome
-    gnm_beg = apautils.infer_contig_abs_ref_start(contig)
+    gnm_beg = apautils.infer_abs_ref_start(contig)
 
     seqname = contig.reference_name
     if not contig.is_reverse:

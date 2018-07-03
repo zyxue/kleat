@@ -45,8 +45,8 @@ def calc_next_reference_end(read):
 
 def analyze_link(contig, poly_A_or_T_read):
     """poly_read refers to the read with all A or T rather than its mate"""
-    ctg_beg = apautils.infer_contig_abs_ref_start(contig)
-    ctg_end = apautils.infer_contig_abs_ref_end(contig)
+    ctg_beg = apautils.infer_abs_ref_start(contig)
+    ctg_end = apautils.infer_abs_ref_end(contig)
 
     read = poly_A_or_T_read
     seq = read.query_sequence

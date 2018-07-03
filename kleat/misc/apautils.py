@@ -9,26 +9,26 @@ def gen_clv_key_str(seqname, strand, clv):
     return '{seqname}|{strand}|{clv}'.format(**locals())
 
 
-def infer_contig_abs_ref_start(contig):
+def infer_abs_ref_start(segment):
     """
-    infer the absolute reference starting position taking into consideration
-    the non-M bases (esp. softclipped bases)
+    infer the absolute starting position wst. reference taking into
+    consideration the non-M bases (e.g. soft-clipped bases)
     """
-    pos = contig.reference_start
-    for key, val in contig.cigartuples:
+    pos = segment.reference_start
+    for key, val in segment.cigartuples:
         if key != BAM_CMATCH:
             pos -= val
         break
     return pos
 
 
-def infer_contig_abs_ref_end(contig):
+def infer_abs_ref_end(segment):
     """
-    infer the absolute reference starting position taking into consideration
-    the non-M bases (esp. softclipped bases)
+    infer the absolute ending position wst. reference taking into consideration
+    the non-M bases (e.g. soft-clipped bases)
     """
-    pos = contig.reference_end
-    for key, val in reversed(contig.cigartuples):
+    pos = segment.reference_end
+    for key, val in reversed(segment.cigartuples):
         if key != BAM_CMATCH:
             pos += val
         break

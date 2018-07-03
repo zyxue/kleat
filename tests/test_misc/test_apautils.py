@@ -13,14 +13,27 @@ mock_left_tailed_read = MagicMock()
 mock_left_tailed_read.query_sequence = "TTTAT"
 mock_left_tailed_read.cigartuples = [(BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 2)]
 # start is set to one base from A, consistent with pysam + IGV observation
-mock_left_tailed_read.reference_start = 1
-mock_left_tailed_read.reference_end = 3
+mock_left_tailed_read.reference_start = 11  # this is artbitray
+mock_left_tailed_read.reference_end = 13
 
 mock_right_tailed_read = MagicMock()
 mock_right_tailed_read.query_sequence = "ATAAAA"
 mock_right_tailed_read.cigartuples = [(BAM_CMATCH, 2), (BAM_CSOFT_CLIP, 4)]
-mock_right_tailed_read.reference_start = 1
-mock_right_tailed_read.reference_end = 3
+mock_right_tailed_read.reference_start = 11  # this is arbitray
+mock_right_tailed_read.reference_end = 13
+
+
+def test_infer_abs_ref_start_with_soft_clipped_cigar():
+    # TODO: may need to test more situations (e.g. hard clip), may gain insight
+    # from simulation data
+    f = A.infer_abs_ref_start
+    assert f(mock_left_tailed_read) == 8 # 11 (reference_start) - 3 (soft-clipped bases/tail)
+
+
+def test_infer_abs_ref_end_with_soft_clipped_cigar():
+    # TODO: similar to above
+    f = A.infer_abs_ref_end
+    assert f(mock_right_tailed_read) == 17 # 13 (reference_end) + 4 (soft-clipped bases/tail)
 
 
 def test_left_tail():
@@ -37,16 +50,16 @@ def test_right_tail():
 
 def test_calc_ref_clv():
     f = A.calc_ref_clv
-    assert f(mock_left_tailed_read) == 2
-    assert f(mock_right_tailed_read) == 3
+    assert f(mock_left_tailed_read) == 12
+    assert f(mock_right_tailed_read) == 13
     with pytest.raises(ValueError, match=r'not a suffix segment'):
         f(mock_non_tailed_read)
 
 
 def test_calc_ref_clv_passing_tail_side_argument():
     f = A.calc_ref_clv
-    assert f(mock_left_tailed_read, 'left') == 2
-    assert f(mock_right_tailed_read, 'right') == 3
+    assert f(mock_left_tailed_read, 'left') == 12
+    assert f(mock_right_tailed_read, 'right') == 13
 
 
 def test_calc_tail_length():
