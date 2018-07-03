@@ -1,5 +1,45 @@
+from collections import defaultdict
+
 from kleat.misc import apautils
 from kleat.misc.settings import ClvRecord, BAM_CMATCH, BAM_CREF_SKIP, BAM_CDEL
+
+
+def write_evidence(dd_bridge, contig, csvwriter):
+    for clv_key in dd_bridge['num_reads']:
+        clv_record = gen_clv_record(
+            contig, clv_key,
+            dd_bridge['num_reads'][clv_key],
+            dd_bridge['max_tail_len'][clv_key]
+        )
+        apautils.write_row(clv_record, csvwriter)
+
+
+def update_evidence(evid_tuple, evid_holder):
+    """
+    update the bridge evidence holder with extracted bridge evidence
+
+    :param evid_tuple: evidence tuple
+    :param evid_holder: A dict holder bridge evidence for a given contig
+    """
+    seqname, strand, ref_clv, tail_len = evid_tuple
+    clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
+    evid_holder['num_reads'][clv_key] += 1
+    evid_holder['max_tail_len'][clv_key] = max(
+        evid_holder['max_tail_len'][clv_key], tail_len)
+
+
+def is_a_bridge_read(read):
+    return not read.is_unmapped and apautils.has_tail(read)
+
+
+def init_evidence_holder():
+    """
+    initialize holders for bridge and link evidence of a given contig
+    """
+    return {
+        'num_reads': defaultdict(int),
+        'max_tail_len': defaultdict(int),
+    }
 
 
 def calc_offset(contig, match_len_cutoff):

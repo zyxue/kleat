@@ -1,5 +1,38 @@
+from collections import defaultdict
+
 from kleat.misc.settings import ClvRecord
 from kleat.misc import apautils
+
+
+def write_evidence(dd_link, contig, csvwriter):
+    for clv_key in dd_link['num_reads']:
+        clv_record = gen_clv_record(
+            contig, clv_key, dd_link['num_reads'][clv_key])
+        apautils.write_row(clv_record, csvwriter)
+
+
+def update_evidence(evid_tuple, evid_holder):
+    seqname, strand, ref_clv = evid_tuple
+    clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
+    evid_holder['num_reads'][clv_key] += 1
+
+
+def is_a_link_read(read):
+    # Here we focused on the unmapped all A/T read, but in
+    # principle, we could also check from the perspecitve and
+    # the mate of a link read, but it would be harder to verify
+    # the sequence composition of the link read
+    return (not read.mate_is_unmapped
+            # assume reference_id comparison is faster than
+            # reference_name
+            and read.reference_id == read.next_reference_id
+            and set(read.query_sequence) in [{'A'}, {'T'}])
+
+
+def init_evidence_holder():
+    return {
+        'num_reads': defaultdict(int)
+    }
 
 
 def allN(seq, N):

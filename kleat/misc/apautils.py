@@ -1,4 +1,4 @@
-from .settings import BAM_CMATCH, BAM_CSOFT_CLIP
+from .settings import BAM_CMATCH, BAM_CSOFT_CLIP, HEADER
 
 
 def gen_clv_key_tuple(seqname, strand, clv):
@@ -116,3 +116,7 @@ def calc_strand(suffix_segment):
         return '-'
     else:
         raise ValueError(f'{suffix_segment} is not a suffix segment')
+
+
+def write_row(clv_record, csvwriter):
+    csvwriter.writerow([getattr(clv_record, _) for _ in HEADER])
