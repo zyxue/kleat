@@ -52,8 +52,10 @@ def process_bridge_and_link(contig, r2c_bam, csvwriter):
     # bridge & link
     aligned_reads = r2c_bam.fetch(contig.query_name)
     dd_bridge, dd_link = extract_bridge_and_link(contig, aligned_reads)
-    write_bridge(dd_bridge, contig, csvwriter)
-    write_link(dd_link, contig, csvwriter)
+    if len(dd_bridge['num_reads']) > 0:
+        write_bridge(dd_bridge, contig, csvwriter)
+    if len(dd_link['num_reads']) > 0:
+        write_link(dd_link, contig, csvwriter)
 
 
 def process_blank(contig, csvwriter):
@@ -134,8 +136,6 @@ def extract_bridge_and_link(contig, aligned_reads):
 
 
 def write_bridge(dd_bridge, contig, csvwriter):
-    if len(dd_bridge['num_reads']) == 0:
-        return
     for clv_key in dd_bridge['num_reads']:
         clv_record = bridge.gen_clv_record(
             contig, clv_key,
@@ -146,8 +146,6 @@ def write_bridge(dd_bridge, contig, csvwriter):
 
 
 def write_link(dd_link, contig, csvwriter):
-    if len(dd_link['num_reads']) == 0:
-        return
     for clv_key in dd_link['num_reads']:
         clv_record = link.gen_clv_record(
             contig, clv_key, dd_link['num_reads'][clv_key])
