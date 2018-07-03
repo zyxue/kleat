@@ -36,30 +36,34 @@ def test_right_tail():
 
 
 def test_calc_ref_clv():
-    assert A.calc_ref_clv(mock_left_tailed_read) == 2
-    assert A.calc_ref_clv(mock_right_tailed_read) == 3
+    f = A.calc_ref_clv
+    assert f(mock_left_tailed_read) == 2
+    assert f(mock_right_tailed_read) == 3
     with pytest.raises(ValueError, match=r'not a suffix segment'):
-        A.calc_ref_clv(mock_non_tailed_read)
+        f(mock_non_tailed_read)
 
 
 def test_calc_ref_clv_passing_tail_side_argument():
-    assert A.calc_ref_clv(mock_left_tailed_read, 'left') == 2
-    assert A.calc_ref_clv(mock_right_tailed_read, 'right') == 3
+    f = A.calc_ref_clv
+    assert f(mock_left_tailed_read, 'left') == 2
+    assert f(mock_right_tailed_read, 'right') == 3
 
 
 def test_calc_tail_length():
-    assert A.calc_tail_length(mock_left_tailed_read) == 3
-    assert A.calc_tail_length(mock_right_tailed_read) == 4
+    f = A.calc_tail_length
+    assert f(mock_left_tailed_read) == 3
+    assert f(mock_right_tailed_read) == 4
     with pytest.raises(ValueError, match=r'not a suffix segment'):
-        A.calc_ref_clv(mock_non_tailed_read)
+        f(mock_non_tailed_read)
 
 
 def test_calc_tail_length_passing_tail_side_argument():
-    assert A.calc_tail_length(mock_left_tailed_read, 'left') == 3
-    assert A.calc_tail_length(mock_right_tailed_read, 'right') == 4
+    f = A.calc_tail_length
+    assert f(mock_left_tailed_read, 'left') == 3
+    assert f(mock_right_tailed_read, 'right') == 4
     err_msg = r'not be a right tailed segment as its last CIGAR is not BAM_CSOFT_CLIP'
     with pytest.raises(ValueError, match=err_msg):
-        A.calc_tail_length(mock_left_tailed_read, 'right')
+        f(mock_left_tailed_read, 'right')
 
 
 def test_calc_strand_from_suffix_segment():
@@ -71,8 +75,9 @@ def test_calc_strand_from_suffix_segment():
 
 
 def test_calc_strand_passing_tail_side_argument():
-    assert A.calc_strand('left') == '-'
-    assert A.calc_strand('right') == '+'
+    f = A.calc_strand
+    assert f('left') == '-'
+    assert f('right') == '+'
     err_msg = 'tail_side must be "left" or "right", but None passed'
     with pytest.raises(ValueError, match=err_msg):
-        A.calc_strand(None)
+        f(None)
