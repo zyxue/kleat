@@ -64,7 +64,7 @@ def analyze_link(contig, poly_A_or_T_read):
             contig_clv = calc_next_reference_end(read)
             ref_clv = ctg_beg + contig_clv
         else:
-            raise ValueError(f'NOT a polyA/T read: {read}')
+            raise ValueError('NOT a polyA/T read: {0}'.format(read))
     else:
         if allN(seq, 'T'):
             strand = '+'
@@ -75,7 +75,7 @@ def analyze_link(contig, poly_A_or_T_read):
             contig_clv = calc_next_reference_end(read)
             ref_clv = ctg_end - contig_clv
         else:
-            raise ValueError(f'NOT a polyA/T read: {read}')
+            raise ValueError('NOT a polyA/T read: {0}'.format(read))
     return seqname, strand, ref_clv
 
 

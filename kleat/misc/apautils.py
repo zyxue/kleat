@@ -6,7 +6,7 @@ def gen_clv_key_tuple(seqname, strand, clv):
 
 
 def gen_clv_key_str(seqname, strand, clv):
-    return f'{seqname}|{strand}|{clv}'
+    return '{seqname}|{strand}|{clv}'.format(**locals())
 
 
 def infer_contig_abs_ref_start(contig):
@@ -90,7 +90,8 @@ def calc_ref_clv(suffix_segment, right_tailed=None):
         elif left_tail(suffix_segment):
             right_tailed = False
         else:
-            raise ValueError(f'{suffix_segment} is not a suffix segment')
+            raise ValueError(
+                '{0} is not a suffix segment'.format(suffix_segment))
 
     # the coordinates (+1 or not) are verified against visualization on IGV
     if right_tailed is True:
@@ -109,7 +110,7 @@ def calc_tail_length(suffix_segment):
     elif left_tail(suffix_segment):
         return suffix_segment.cigartuples[0][1]
     else:
-        raise ValueError(f'{suffix_segment} is not a suffix segment')
+        raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
 
 
 def calc_strand(suffix_segment):
@@ -122,7 +123,7 @@ def calc_strand(suffix_segment):
     elif left_tail(suffix_segment):
         return '-'
     else:
-        raise ValueError(f'{suffix_segment} is not a suffix segment')
+        raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
 
 
 def write_row(clv_record, csvwriter):

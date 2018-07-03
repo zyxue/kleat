@@ -81,7 +81,7 @@ def analyze_bridge_read(contig, read):
             gnm_clv = gnm_beg + offset
             tail_len = read.cigartuples[-1][1]
         else:
-            raise ValueError(f'no tail found for read {read}')
+            raise ValueError('no tail found for read {0}'.format(read))
     else:
         # set always=True to include hard-clipped bases
         # https://pysam.readthedocs.io/en/latest/api.html?highlight=parse_region#pysam.AlignedSegment.infer_query_length
@@ -99,7 +99,7 @@ def analyze_bridge_read(contig, read):
             gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[-1][1]
         else:
-            raise ValueError(f'no tail found for read {read}')
+            raise ValueError('no tail found for read {0}'.format(read))
     return seqname, strand, gnm_clv, tail_len
 
 
