@@ -77,27 +77,31 @@ def left_tail(segment, tail_base='T'):
     )
 
 
-def calc_ref_clv(suffix_segment, right_tailed=None):
+def is_left_or_right_tail(segment):
+    if left_tail(segment):
+        return 'left'
+    elif right_tail(segment):
+        return 'right'
+    else:
+        return None
+
+
+def calc_ref_clv(suffix_segment, left_or_right_tail=None):
     """
     Calculate cleavage site position wst the reference
 
-    TODO: parse addition right_or_left to avoid double checking for right or
-    left tail
+    :param left_or_right_tailed: pass to avoid redundant checking of tail
     """
-    if right_tailed is None:
-        if right_tail(suffix_segment):
-            right_tailed = True
-        elif left_tail(suffix_segment):
-            right_tailed = False
-        else:
-            raise ValueError(
-                '{0} is not a suffix segment'.format(suffix_segment))
+    if left_or_right_tail is None:
+        left_or_right_tail = is_left_or_right_tail(suffix_segment)
 
     # the coordinates (+1 or not) are verified against visualization on IGV
-    if right_tailed is True:
-        return suffix_segment.reference_end
-    elif right_tailed is False:
+    if left_or_right_tail == 'left':
         return suffix_segment.reference_start + 1
+    elif left_or_right_tail == 'right':
+        return suffix_segment.reference_end
+    else:
+        raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
 
 
 def calc_tail_length(suffix_segment):
