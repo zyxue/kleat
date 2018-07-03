@@ -40,8 +40,10 @@ def get_args():
 
 
 def process_suffix(contig, r2c_bam, csvwriter):
-    clv_record = suffix.gen_clv_record(contig, r2c_bam)
-    apautils.write_row(clv_record, csvwriter)
+    tail_side = apautils.has_tail(contig)
+    if tail_side is not None:
+        clv_record = suffix.gen_clv_record(contig, r2c_bam, tail_side)
+        apautils.write_row(clv_record, csvwriter)
 
 
 def process_bridge_and_link(contig, r2c_bam, csvwriter):
@@ -95,8 +97,7 @@ def main():
             if contig.is_unmapped:
                 continue
 
-            if apautils.has_tail(contig):
-                process_suffix(contig, r2c_bam, csvwriter)
+            process_suffix(contig, r2c_bam, csvwriter)
             process_bridge_and_link(contig, r2c_bam, csvwriter)
             process_blank(contig, csvwriter)
 
