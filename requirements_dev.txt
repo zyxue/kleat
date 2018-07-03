@@ -10,5 +10,6 @@ twine==1.10.0
 
 pytest==3.4.2
 pytest-runner==2.11.1
+pytest-xdist==1.22.2
 
 pysam==0.14.1
