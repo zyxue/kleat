@@ -123,17 +123,26 @@ def calc_tail_length(suffix_segment, tail_side=None):
     return the_cigar[1]
 
 
-def calc_strand(suffix_segment):
+def calc_strand_from_suffix_segment(suffix_segment):
     """
-    calculate the strand of clv (hence the corresponding gene) this contig may
-    support
+    calculate the strand of clv (hence the corresponding gene) from a suffix
+    segment
     """
-    if right_tail(suffix_segment):
-        return '+'
-    elif left_tail(suffix_segment):
+    tail_side = has_tail(suffix_segment)
+    if tail_side is None:
+        raise ValueError('{0} is not a suffix segment, hence strand cannot be '
+                         'inferred'.format(suffix_segment))
+    return calc_strand(tail_side)
+
+
+def calc_strand(tail_side):
+    if tail_side == 'left':
         return '-'
+    elif tail_side == 'right':
+        return '+'
     else:
-        raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
+        raise ValueError('tail_side must be "left" or "right", '
+                         'but {0} passed'.format(tail_side))
 
 
 def write_row(clv_record, csvwriter):
