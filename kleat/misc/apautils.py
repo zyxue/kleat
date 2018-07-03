@@ -100,17 +100,27 @@ def calc_ref_clv(suffix_segment, tail_side=None):
         raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
 
 
-def calc_tail_length(suffix_segment):
+def calc_tail_length(suffix_segment, tail_side=None):
     """
     Calculate A/T length of a contig or a read, this information is extracted
     from softclip in the CIGAR
     """
-    if right_tail(suffix_segment):
-        return suffix_segment.cigartuples[-1][1]
-    elif left_tail(suffix_segment):
-        return suffix_segment.cigartuples[0][1]
+    if tail_side is None:
+        tail_side = has_tail(suffix_segment)
+
+    if tail_side == 'left':
+        the_cigar = suffix_segment.cigartuples[0]
+    elif tail_side == 'right':
+        the_cigar = suffix_segment.cigartuples[-1]
     else:
         raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
+
+    if the_cigar[0] != BAM_CSOFT_CLIP:
+        cigar_idx = 'first' if tail_side == 'left' else 'last'
+        raise ValueError('this may not be a {0} tailed segment as its '
+                         '{1} CIGAR is not BAM_CSOFT_CLIP ({2})'.format(
+                             tail_side, cigar_idx, BAM_CSOFT_CLIP))
+    return the_cigar[1]
 
 
 def calc_strand(suffix_segment):
