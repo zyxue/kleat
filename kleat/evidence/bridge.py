@@ -76,7 +76,18 @@ def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
             # coordinates, so needs subtraction
             ctg_offset -= val
             if cur_ctg_ofs > ctg_offset:
-                break
+                # this means that the clv happens to be in the middle of the
+                # inserted sequence
+                if tail_direction == 'left':
+                    break
+                elif tail_direction == 'right':
+                    # jump to the next position in genome coordinate
+                    cur_gnm_ofs += 1
+                    break
+                else:
+                    err_msg = ('tail_direction must be "left" or "right", '
+                               'but received {0}'.format(tail_direction))
+                    raise ValueError(err_msg)
         else:
             pass
             # Not sure about S.BAM_CPAD & BAM_CBACK,
