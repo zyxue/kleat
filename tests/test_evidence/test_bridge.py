@@ -117,3 +117,22 @@ def test_do_reverse_contig_left_tail_brdige_read():
     contig_clv_pos = 4
     tail_len = 3
     assert bridge.do_rev_ctg_lt_bdg(mock_read, contig_len) == ('+', contig_clv_pos, tail_len)
+
+
+def test_do_reverse_contig_right_tail_brdige_read():
+    """
+    e.g. CCGGAA, reference_end at 4 points to the position of G (based on IGV)
+
+          AA
+       CCG┘  <-right-tail read
+      XCCGXX <-contig
+     0123456 <-contig coord
+      6543210<-genome coord after reverse contig
+    """
+    mock_read = get_mock_read(1, 4, [(BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 2)])
+    # in genome coordinates, it's reversed, the the clv points to the position
+    # of A, while position 0 point to the position after G.
+    contig_len = 6
+    contig_clv_pos = 3
+    tail_len = 2
+    assert bridge.do_rev_ctg_rt_bdg(mock_read, contig_len) == ('-', contig_clv_pos, tail_len)
