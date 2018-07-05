@@ -42,7 +42,7 @@ def init_evidence_holder():
     }
 
 
-def calc_genome_offset(ctg_cigartuples, ctg_offset):
+def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
     """
     Calculate the offset needed for inferring the clv in genomic coordinate
 
@@ -105,9 +105,9 @@ def do_rev_ctg_rt_bdg(read, ctg_len):
 
 def do_forward_contig(contig, read):
     if apautils.left_tail(read, 'T'):
-        return do_fwd_ctg_lt_bdg(read)
+        return do_fwd_ctg_lt_bdg(read) + ('left', )
     elif apautils.right_tail(read, 'A'):
-        return do_fwd_ctg_rt_bdg(read)
+        return do_fwd_ctg_rt_bdg(read) + ('right', )
     else:
         raise ValueError('no tail found for read {0}'.format(read))
 
@@ -116,10 +116,11 @@ def do_reverse_contig(contig, read):
     # set always=True to include hard-clipped bases
     # https://pysam.readthedocs.io/en/latest/api.html?highlight=parse_region#pysam.AlignedSegment.infer_query_length
     ctg_len = contig.infer_query_length(always=True)
+    # TODO: avoid multiple calling of left_tail/right_tail
     if apautils.left_tail(read, 'T'):
-        return do_rev_ctg_lt_bdg(read, ctg_len)
+        return do_rev_ctg_lt_bdg(read, ctg_len) + ('left',)
     elif apautils.right_tail(read, 'A'):
-        return do_rev_ctg_rt_bdg(read, ctg_len)
+        return do_rev_ctg_rt_bdg(read, ctg_len) + ('right',)
     else:
         raise ValueError('no tail found for read {0}'.format(read))
 
@@ -134,8 +135,9 @@ def do_bridge(contig, read):
 def analyze_bridge(contig, read):
     seqname = contig.reference_name
 
-    strand, ctg_offset, tail_len = do_bridge(contig, read)
-    offset = calc_genome_offset(contig.cigartuples, ctg_offset)
+    print(do_bridge(contig, read))
+    strand, ctg_offset, tail_len, tail_direction = do_bridge(contig, read)
+    offset = calc_genome_offset(contig.cigartuples, ctg_offset, tail_direction)
     gnm_clv = contig.reference_start + offset
 
     return seqname, strand, gnm_clv, tail_len
