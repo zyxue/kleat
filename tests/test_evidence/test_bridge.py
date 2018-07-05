@@ -40,16 +40,37 @@ def test_calc_genome_offset_for_skipped_contig(
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 31, 31],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 32, 34],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 33, 35],
-
-    # insertion, softclip or hardclip shouldn't have an effect
-    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CINS, 100), (BAM_CMATCH, 44)), 5, 5],
-    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CSOFT_CLIP, 100), (BAM_CMATCH, 44)), 31, 31],
-    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CHARD_CLIP, 200), (BAM_CMATCH, 44)), 32, 34],
-    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CINS, 300), (BAM_CMATCH, 44)), 33, 35],
 ])
 def test_calc_genome_offset_for_skipped_contig_with_deletion(
         ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff) == gnm_offset
+
+
+@pytest.mark.parametrize("ctg_offset_cutoff, expected_gnm_offset", [
+    [2, 2],                # before the insertion, see example in the docstring
+    [7, 4],                # after the insertion
+
+    # If the polyA/T tail starts inside the inserted sequence, use the lowest
+    # genome coordinate to represent clv. Ideally strand (A or T) could also be
+    # considered, but that requires more information passed to
+    # calc_genome_offset for now (TODO).
+    [4, 3],
+    [5, 3],
+    [6, 3],
+])
+def test_calc_genome_offset_for_skipped_contig_with_insertion(ctg_offset_cutoff, expected_gnm_offset):
+    """
+       AGC  <-inserted sequence
+       456  <-contig coord for inserted sequence
+        ┬
+     XXX XX <-contig
+    0123 78 <-contig coord
+    0123 45 <-genome offset
+    """
+    ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 3), (BAM_CMATCH, 2))
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff) == expected_gnm_offset
+
+
 
 
 def get_mock_read(reference_start, reference_end, cigartuples):

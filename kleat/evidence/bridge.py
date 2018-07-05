@@ -71,10 +71,14 @@ def calc_genome_offset(ctg_cigartuples, ctg_offset):
             cur_gnm_ofs += val
         elif key in [S.BAM_CREF_SKIP, S.BAM_CDEL]:
             cur_gnm_ofs += val
+        elif key in [S.BAM_CINS, S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
+            # these don't consume reference coordinates, but consumes contig
+            # coordinates, so needs subtraction
+            ctg_offset -= val
+            if cur_ctg_ofs > ctg_offset:
+                break
         else:
             pass
-            # these don't consume reference coordinates
-            # S.BAM_CINS, S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP
             # Not sure about S.BAM_CPAD & BAM_CBACK,
             # please let me know if you do
     return cur_gnm_ofs
