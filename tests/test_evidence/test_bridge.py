@@ -62,27 +62,58 @@ def get_mock_read(reference_start, reference_end, cigartuples):
 
 def test_do_forwad_contig_left_tail_brdige_read_1():
     """
-    e.g. TTTACG, reference_start at 3 points to the position of the first T (based on IGV)
+    e.g. TTTACG, reference_start at 2 points to the position of the first T
+    (based on IGV)
+
+     TTT
+       └ACG  <-left-tail read
+      XXACGX <-contig
+     0123456 <-contig coord
     """
-    mock_read = get_mock_read(3, 6, [(BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 3)])
-    contig_offset_cutoff = 4    # 3 + 1
+    mock_read = get_mock_read(2, 5, [(BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 3)])
+    contig_clv_pos = 3          # 2 + 1
     tail_len = 3
-    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', contig_offset_cutoff, tail_len)
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', contig_clv_pos, tail_len)
 
 
 def test_do_forwad_contig_left_tail_brdige_read_2():
-    """e.g. TTAATTCCGG"""
+    """
+    e.g. TTAATTCCGG
+    """
     mock_read = get_mock_read(10, 18, [(BAM_CSOFT_CLIP, 2), (BAM_CMATCH, 8)])
-    contig_offset_cutoff = 11
+    contig_clv_pos = 11         # 10 + 1
     tail_len = 2
-    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', contig_offset_cutoff, tail_len)
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', contig_clv_pos, tail_len)
 
 
 def test_do_forwad_contig_right_tail_brdige_read():
     """
-    e.g. CCGGAA, reference_start at 10 points to the position of the last G (based on IGV)
+    e.g. CCGGAA, reference_end at 4 points to the position of G (based on IGV)
+
+          AA
+       CCG┘  <-right-tail read
+      XCCGXX <-contig
+     0123456 <-contig coord
     """
-    mock_read = get_mock_read(10, 14, [(BAM_CMATCH, 4), (BAM_CSOFT_CLIP, 2)])
-    contig_offset_cutoff = 14
+    mock_read = get_mock_read(1, 4, [(BAM_CMATCH, 4), (BAM_CSOFT_CLIP, 2)])
+    contig_clv_pos = 4
     tail_len = 2
-    assert bridge.do_fwd_ctg_rt_bdg(mock_read) == ('+', contig_offset_cutoff, tail_len)
+    assert bridge.do_fwd_ctg_rt_bdg(mock_read) == ('+', contig_clv_pos, tail_len)
+
+
+def test_do_reverse_contig_left_tail_brdige_read():
+    """
+    e.g. TTTACG
+     TTT
+       └ACG  <-left-tail read
+      XXACGX <-contig
+     0123456 <-contig coord
+      6543210<-genome coord after reverse contig
+    """
+    mock_read = get_mock_read(2, 5, [(BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 3)])
+    # in genome coordinates, it's reversed, the the clv points to the position
+    # of A, while position 0 point to the position after G.
+    contig_len = 6
+    contig_clv_pos = 4
+    tail_len = 3
+    assert bridge.do_rev_ctg_lt_bdg(mock_read, contig_len) == ('+', contig_clv_pos, tail_len)
