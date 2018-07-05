@@ -42,8 +42,7 @@ def test_calc_genome_offset_for_skipped_contig(
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 32, 34],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 33, 35],
 ])
-def test_calc_genome_offset_for_contig_with_deletion(
-        ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
+def test_calc_genome_offset_for_contig_with_deletion(ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, 'left') == gnm_offset
 
 
@@ -52,10 +51,8 @@ def test_calc_genome_offset_for_contig_with_deletion(
     [2, 2],
     [3, 3],
 
-    # If the polyA/T tail starts inside the inserted sequence, use the lowest
-    # genome coordinate to represent clv. Ideally strand (A or T) could also be
-    # considered, but that requires more information passed to
-    # calc_genome_offset for now (TODO).
+    # inside the insertion, here only left-tail case is tested, see
+    # ./test_bridge_clv_inside_insertion.py for more comprehensive test cases
     [4, 3],
     [5, 3],
     [6, 3],
@@ -90,14 +87,7 @@ def test_calc_genome_offset_for_contig_with_three_base_insertion(ctg_offset_cuto
     [6, 5],
 ])
 def test_calc_genome_offset_for_contig_with_one_base_insertion(ctg_offset_cutoff, expected_gnm_offset):
-    # thought one-base case would be more suitable for testing edgecases for if
-    #
-    # cur_ctg_ofs >= ctg_offset
-    # or
-    # cur_ctg_ofs > ctg_offset
-    #
-    # but turns out it doesn't matter, as the increase of the contig coordinate
-    # already takes into consideration the >, = wouldn't happen.
+    # thought one-base case might be more suitable for testing edgecases
     """
         G   <-inserted sequence
         4   <-contig coord for inserted sequence
