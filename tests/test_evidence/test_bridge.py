@@ -35,13 +35,14 @@ def test_calc_genome_offset_for_skipped_contig(
         ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff) == gnm_offset
 
+
 @pytest.mark.parametrize("ctg_cigartuples, ctg_offset_cutoff, gnm_offset", [
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 5, 5],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 31, 31],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 32, 34],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 33, 35],
 ])
-def test_calc_genome_offset_for_skipped_contig_with_deletion(
+def test_calc_genome_offset_for_contig_with_deletion(
         ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff) == gnm_offset
 
@@ -58,7 +59,7 @@ def test_calc_genome_offset_for_skipped_contig_with_deletion(
     [5, 3],
     [6, 3],
 ])
-def test_calc_genome_offset_for_skipped_contig_with_insertion(ctg_offset_cutoff, expected_gnm_offset):
+def test_calc_genome_offset_for_contig_with_insertion(ctg_offset_cutoff, expected_gnm_offset):
     """
        AGC  <-inserted sequence
        456  <-contig coord for inserted sequence
@@ -75,7 +76,7 @@ def test_calc_genome_offset_for_skipped_contig_with_insertion(ctg_offset_cutoff,
     [2, 0],                   # overlap with clv extracted from suffix evidence
     [3, 1],                   # bridge tail is a bit after the contig tail
 ])
-def test_calc_genome_offset_for_skipped_contig_with_softclip(ctg_offset_cutoff, expected_gnm_offset):
+def test_calc_genome_offset_for_contig_with_softclip(ctg_offset_cutoff, expected_gnm_offset):
     """
      TT
      01
