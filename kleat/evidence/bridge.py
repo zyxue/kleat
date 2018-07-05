@@ -75,45 +75,62 @@ def calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff):
     return gnm_ofs
 
 
-def analyze_bridge_read(contig, read):
-    # beginning and end wst to genome
-    gnm_beg = apautils.infer_abs_ref_start(contig)
-    cigartuples = contig.cigartuples
+def do_fwd_ctg_lt_bdg(read):
+    """fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge"""
+    return '-', read.reference_start + 1, read.cigartuples[0][1]
 
-    seqname = contig.reference_name
-    if not contig.is_reverse:
-        if apautils.left_tail(read, 'T'):
-            strand = '-'
-            match_len_cutoff = read.reference_start
-            offset = calc_genome_offset(cigartuples, match_len_cutoff)
-            gnm_clv = gnm_beg + offset + 1
-            tail_len = read.cigartuples[0][1]
-        elif apautils.right_tail(read, 'A'):
-            strand = '+'
-            match_len_cutoff = read.reference_end - 1
-            offset = calc_genome_offset(cigartuples, match_len_cutoff)
-            gnm_clv = gnm_beg + offset
-            tail_len = read.cigartuples[-1][1]
-        else:
-            raise ValueError('no tail found for read {0}'.format(read))
+
+def do_fwd_ctg_rt_bdg(read):
+    """rt: right-tailed"""
+    return '+', read.reference_end, read.cigartuples[-1][1]
+
+
+def do_rev_ctg_lt_bdg(read, ctg_len):
+    # rev (reverse), opposite of fwd (forward)
+    return '+', ctg_len - read.reference_start - 1, read.cigartuples[0][1]
+
+
+def do_rev_ctg_rt_bdg(read, ctg_len):
+    return '-', read.reference_end, read.cigartuples[-1][1]
+
+
+def do_forward_contig(contig, read):
+    if apautils.left_tail(read, 'T'):
+        return do_fwd_ctg_lt_bdg(read)
+    elif apautils.right_tail(read, 'A'):
+        return do_fwd_ctg_rt_bdg(read)
     else:
-        # set always=True to include hard-clipped bases
-        # https://pysam.readthedocs.io/en/latest/api.html?highlight=parse_region#pysam.AlignedSegment.infer_query_length
-        ctg_len = contig.infer_query_length(always=True)
-        if apautils.left_tail(read, 'T'):
-            strand = '+'
-            match_len_cutoff = ctg_len - read.reference_start
-            offset = calc_genome_offset(cigartuples, match_len_cutoff)
-            gnm_clv = gnm_beg + offset + 1
-            tail_len = read.cigartuples[0][1]
-        elif apautils.right_tail(read, 'A'):
-            strand = '-'
-            match_len_cutoff = ctg_len - read.reference_end
-            offset = calc_genome_offset(cigartuples, match_len_cutoff)
-            gnm_clv = gnm_beg + offset + 1
-            tail_len = read.cigartuples[-1][1]
-        else:
-            raise ValueError('no tail found for read {0}'.format(read))
+        raise ValueError('no tail found for read {0}'.format(read))
+
+
+def do_reverse_contig(contig, read):
+    # set always=True to include hard-clipped bases
+    # https://pysam.readthedocs.io/en/latest/api.html?highlight=parse_region#pysam.AlignedSegment.infer_query_length
+    ctg_len = contig.infer_query_length(always=True)
+    if apautils.left_tail(read, 'T'):
+        return do_rev_ctg_lt_bdg(read, ctg_len)
+    elif apautils.right_tail(read, 'A'):
+        return do_rev_ctg_rt_bdg(read, ctg_len)
+    else:
+        raise ValueError('no tail found for read {0}'.format(read))
+
+
+def do_bridge(contig, read):
+    if contig.is_reverse:
+        return do_reverse_contig(contig, read)
+    else:
+        return do_forward_contig(contig, read)
+
+
+def analyze_bridge(contig, read):
+    seqname = contig.reference_name
+
+    strand, ctg_offset_cutoff, tail_len = do_bridge(contig, read)
+
+    gnm_beg = apautils.infer_abs_ref_start(contig)  # beginning wst to genome
+    offset = calc_genome_offset(contig.cigartuples, ctg_offset_cutoff)
+    gnm_clv = gnm_beg + offset
+
     return seqname, strand, gnm_clv, tail_len
 
 
