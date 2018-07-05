@@ -39,43 +39,45 @@ def allN(seq, N):
     return set(seq) == {N}
 
 
-def calc_next_reference_end(read):
-    return read.next_reference_start + read.query_length
-
-
-def analyze_link(contig, poly_A_or_T_read):
-    """poly_read refers to the read with all A or T rather than its mate"""
-    ctg_beg = apautils.infer_abs_ref_start(contig)
-    ctg_end = apautils.infer_abs_ref_end(contig)
-
-    read = poly_A_or_T_read
+def analyze_forward_link(contig, read):
+    """
+    :param read: a pysam.libcalignedsegment.AlignedSegment instance for a
+                 polyA/T read
+    :rtype: A tuple of (strand, reference_clv)
+    """
     seq = read.query_sequence
+    if allN(seq, 'T'):
+        return '-', contig.reference_start + 1
+    elif allN(seq, 'A'):
+        return '+', contig.reference_end
+    else:
+        raise ValueError('NOT a polyA/T read: {0}'.format(read))
 
+
+def analyze_reverse_link(contig, read):
+    """
+    :param read: a pysam.libcalignedsegment.AlignedSegment instance for a
+                 polyA/T read
+    :rtype: A tuple of (strand, reference_clv)
+    """
+    seq = read.query_sequence
+    if allN(seq, 'T'):
+        return '+', contig.reference_end
+    elif allN(seq, 'A'):
+        return '-', contig.reference_start + 1
+    else:
+        raise ValueError('NOT a polyA/T read: {0}'.format(read))
+
+
+def analyze_link(contig, polyA_or_T_read):
+    """poly_read refers to the read with all A or T rather than its mate"""
     seqname = contig.reference_name
 
-    if not contig.is_reverse:
-        if allN(seq, 'T'):
-            strand = '-'
-            contig_clv = read.next_reference_start
-            ref_clv = ctg_beg + contig_clv     # convert to genome coordinate
-        elif allN(seq, 'A'):
-            strand = '+'
-            # oddly, next_reference_end API doesn't exist, just compute it
-            contig_clv = calc_next_reference_end(read)
-            ref_clv = ctg_beg + contig_clv
-        else:
-            raise ValueError('NOT a polyA/T read: {0}'.format(read))
+    if contig.is_reverse:
+        strand, ref_clv = analyze_reverse_link(contig, polyA_or_T_read)
     else:
-        if allN(seq, 'T'):
-            strand = '+'
-            contig_clv = read.next_reference_start
-            ref_clv = ctg_end - contig_clv
-        elif allN(seq, 'A'):
-            strand = '-'
-            contig_clv = calc_next_reference_end(read)
-            ref_clv = ctg_end - contig_clv
-        else:
-            raise ValueError('NOT a polyA/T read: {0}'.format(read))
+        strand, ref_clv = analyze_forward_link(contig, polyA_or_T_read)
+
     return seqname, strand, ref_clv
 
 
