@@ -1,4 +1,5 @@
 from collections import defaultdict
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -49,3 +50,27 @@ def test_calc_genome_offset_for_skipped_contig(
 def test_calc_genome_offset_for_skipped_contig_with_deletion(
         ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff) == gnm_offset
+
+
+def get_mock_read(reference_start, reference_end, cigartuples):
+    r = MagicMock()
+    r.reference_start = reference_start
+    r.reference_end = reference_end
+    r.cigartuples = cigartuples
+    return r
+
+
+def test_do_forwad_contig_left_tail_brdige_read_1():
+    """e.g. TTTACG"""
+    mock_read = get_mock_read(3, 6, [(BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 3)])
+    contig_offset_cutoff = 4    # 3 + 1
+    tail_len = 3
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', contig_offset_cutoff, tail_len)
+
+
+def test_do_forwad_contig_left_tail_brdige_read_2():
+    """e.g. TTAATTCCGG"""
+    mock_read = get_mock_read(10, 18, [(BAM_CSOFT_CLIP, 2), (BAM_CMATCH, 8)])
+    contig_offset_cutoff = 11
+    tail_len = 2
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', contig_offset_cutoff, tail_len)
