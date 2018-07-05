@@ -135,10 +135,8 @@ def analyze_bridge(contig, read):
     seqname = contig.reference_name
 
     strand, ctg_offset, tail_len = do_bridge(contig, read)
-
-    gnm_beg = apautils.infer_abs_ref_start(contig)  # beginning wst to genome
     offset = calc_genome_offset(contig.cigartuples, ctg_offset)
-    gnm_clv = gnm_beg + offset
+    gnm_clv = contig.reference_start + offset
 
     return seqname, strand, gnm_clv, tail_len
 
