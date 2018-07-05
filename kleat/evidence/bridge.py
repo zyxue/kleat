@@ -75,7 +75,6 @@ def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
             # these don't consume reference coordinates, but consumes contig
             # coordinates, so needs subtraction
             ctg_offset -= val
-            print(cur_ctg_ofs, ctg_offset)
             if cur_ctg_ofs >= ctg_offset:
                 # this means that the clv happens to be in the middle of the
                 # inserted sequence
@@ -149,7 +148,6 @@ def do_bridge(contig, read):
 def analyze_bridge(contig, read):
     seqname = contig.reference_name
 
-    print(do_bridge(contig, read))
     strand, ctg_offset, tail_len, tail_direction = do_bridge(contig, read)
     offset = calc_genome_offset(contig.cigartuples, ctg_offset, tail_direction)
     gnm_clv = contig.reference_start + offset
