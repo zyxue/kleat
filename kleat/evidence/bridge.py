@@ -75,7 +75,8 @@ def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
             # these don't consume reference coordinates, but consumes contig
             # coordinates, so needs subtraction
             ctg_offset -= val
-            if cur_ctg_ofs > ctg_offset:
+            print(cur_ctg_ofs, ctg_offset)
+            if cur_ctg_ofs >= ctg_offset:
                 # this means that the clv happens to be in the middle of the
                 # inserted sequence
                 if tail_direction == 'left':
