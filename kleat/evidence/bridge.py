@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 from kleat.misc import apautils
-from kleat.misc.settings import ClvRecord, BAM_CMATCH, BAM_CREF_SKIP, BAM_CDEL
+import kleat.misc.settings as S
 
 
 def write_evidence(dd_bridge, contig, csvwriter):
@@ -57,15 +57,21 @@ def calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff):
     ctg_ofs = 0                 # offset in contig coordinate
     gnm_ofs = 0                 # offset in genome coordinate
     for key, val in ctg_cigartuples:
-        if key in [BAM_CMATCH]:
+        if key in [S.BAM_CMATCH, S.BAM_CEQUAL, S.BAM_CDIFF]:
             ctg_ofs += val
             if ctg_ofs >= ctg_offset_cutoff:
                 delta = val - (ctg_ofs - ctg_offset_cutoff)
                 gnm_ofs += delta
                 break
             gnm_ofs += val
-        if key in [BAM_CREF_SKIP, BAM_CDEL]:
+        elif key in [S.BAM_CREF_SKIP, S.BAM_CDEL]:
             gnm_ofs += val
+        else:
+            pass
+            # these don't consume reference coordinates
+            # S.BAM_CINS, S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP
+            # Not sure about S.BAM_CPAD & BAM_CBACK,
+            # please let me know if you do
     return gnm_ofs
 
 
@@ -114,7 +120,7 @@ def analyze_bridge_read(contig, read):
 def gen_clv_record(
         bridge_contig, clv_key_tuple, num_bridge_reads, max_bridge_tail_len):
     seqname, strand, gnm_clv = clv_key_tuple
-    return ClvRecord(
+    return S.ClvRecord(
         seqname, strand, gnm_clv,
 
         'bridge',

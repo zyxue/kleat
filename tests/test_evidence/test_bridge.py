@@ -3,8 +3,9 @@ from collections import defaultdict
 import pytest
 
 from kleat.evidence import bridge
-from kleat.misc.settings import (BAM_CMATCH, BAM_CDEL,
-                                 BAM_CSOFT_CLIP, BAM_CREF_SKIP)
+from kleat.misc.settings import (
+    BAM_CMATCH, BAM_CDEL, BAM_CREF_SKIP,
+    BAM_CINS, BAM_CSOFT_CLIP, BAM_CHARD_CLIP)
 
 
 def test_bridge_init_evidence_holder():
@@ -38,6 +39,12 @@ def test_calc_genome_offset_for_skipped_contig(
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 31, 31],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 32, 34],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 33, 35],
+
+    # insertion, softclip or hardclip shouldn't have an effect
+    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CINS, 100), (BAM_CMATCH, 44)), 5, 5],
+    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CSOFT_CLIP, 100), (BAM_CMATCH, 44)), 31, 31],
+    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CHARD_CLIP, 200), (BAM_CMATCH, 44)), 32, 34],
+    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CINS, 300), (BAM_CMATCH, 44)), 33, 35],
 ])
 def test_calc_genome_offset_for_skipped_contig_with_deletion(
         ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
