@@ -48,8 +48,9 @@ def test_calc_genome_offset_for_contig_with_deletion(
 
 
 @pytest.mark.parametrize("ctg_offset_cutoff, expected_gnm_offset", [
-    [2, 2],                # before the insertion, see example in the docstring
-    [7, 4],                # after the insertion
+    # before the insertion, see example in the docstring
+    [2, 2],
+    [3, 3],
 
     # If the polyA/T tail starts inside the inserted sequence, use the lowest
     # genome coordinate to represent clv. Ideally strand (A or T) could also be
@@ -58,8 +59,12 @@ def test_calc_genome_offset_for_contig_with_deletion(
     [4, 3],
     [5, 3],
     [6, 3],
+
+    # after the insertion
+    [7, 4],
+    [8, 5],
 ])
-def test_calc_genome_offset_for_contig_with_insertion(ctg_offset_cutoff, expected_gnm_offset):
+def test_calc_genome_offset_for_contig_with_three_base_insertion(ctg_offset_cutoff, expected_gnm_offset):
     """
        AGC  <-inserted sequence
        456  <-contig coord for inserted sequence
@@ -70,6 +75,41 @@ def test_calc_genome_offset_for_contig_with_insertion(ctg_offset_cutoff, expecte
     """
     ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 3), (BAM_CMATCH, 2))
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff) == expected_gnm_offset
+
+
+@pytest.mark.parametrize("ctg_offset_cutoff, expected_gnm_offset", [
+    # before the insertion, see example in the docstring
+    [2, 2],
+    [3, 3],
+
+    # in the insertion
+    [4, 3],
+
+    # after the insertion
+    [5, 4],
+    [6, 5],
+])
+def test_calc_genome_offset_for_contig_with_one_base_insertion(ctg_offset_cutoff, expected_gnm_offset):
+    # thought one-base case would be more suitable for testing edgecases for if
+    #
+    # cur_ctg_ofs >= ctg_offset
+    # or
+    # cur_ctg_ofs > ctg_offset
+    #
+    # but turns out it doesn't matter, as the increase of the contig coordinate
+    # already takes into consideration the >, = wouldn't happen.
+    """
+        G   <-inserted sequence
+        4   <-contig coord for inserted sequence
+        ┬
+     XXX XX <-contig
+    0123 56 <-contig coord
+    0123 45 <-genome offset
+    """
+    ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 1), (BAM_CMATCH, 2))
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff) == expected_gnm_offset
+
+
 
 
 @pytest.mark.parametrize("ctg_offset_cutoff, expected_gnm_offset", [
