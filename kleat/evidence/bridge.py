@@ -42,42 +42,50 @@ def init_evidence_holder():
     }
 
 
-def calc_offset(contig, match_len_cutoff):
+def calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff):
     """
-    Calculate the offset caused by skipped region (e.g. intron) until stop_pos
-    relative to contig
+    Calculate the offset needed for inferring the clv in genomic coordinate
+
+    Offset needs taking into oconsideration the skipped region caused by intron
+    or deletion
+
+    :param ctg_offset_cutoff: the cutoff calculated based on clv in contig
+    coordinate, depending on whether the contig is reversed and it's a polyA or
+    polyT reads, this cutoff could be calculated from left or right and
+    including or excluding the read length
     """
-    match_len = 0
-    offset = 0
-    for key, val in contig.cigartuples:
-        if key in [BAM_CMATCH, BAM_CDEL]:
-            match_len += val
-            if match_len >= match_len_cutoff:
-                delta = val - (match_len - match_len_cutoff)
-                offset += delta
+    ctg_ofs = 0                 # offset in contig coordinate
+    gnm_ofs = 0                 # offset in genome coordinate
+    for key, val in ctg_cigartuples:
+        if key in [BAM_CMATCH]:
+            ctg_ofs += val
+            if ctg_ofs >= ctg_offset_cutoff:
+                delta = val - (ctg_ofs - ctg_offset_cutoff)
+                gnm_ofs += delta
                 break
-            offset += val
-        if key == BAM_CREF_SKIP:
-            offset += val
-    return offset
+            gnm_ofs += val
+        if key in [BAM_CREF_SKIP, BAM_CDEL]:
+            gnm_ofs += val
+    return gnm_ofs
 
 
 def analyze_bridge_read(contig, read):
     # beginning and end wst to genome
     gnm_beg = apautils.infer_abs_ref_start(contig)
+    cigartuples = contig.cigartuples
 
     seqname = contig.reference_name
     if not contig.is_reverse:
         if apautils.left_tail(read, 'T'):
             strand = '-'
             match_len_cutoff = read.reference_start
-            offset = calc_offset(contig, match_len_cutoff)
+            offset = calc_genome_offset(cigartuples, match_len_cutoff)
             gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[0][1]
         elif apautils.right_tail(read, 'A'):
             strand = '+'
             match_len_cutoff = read.reference_end - 1
-            offset = calc_offset(contig, match_len_cutoff)
+            offset = calc_genome_offset(cigartuples, match_len_cutoff)
             gnm_clv = gnm_beg + offset
             tail_len = read.cigartuples[-1][1]
         else:
@@ -89,13 +97,13 @@ def analyze_bridge_read(contig, read):
         if apautils.left_tail(read, 'T'):
             strand = '+'
             match_len_cutoff = ctg_len - read.reference_start
-            offset = calc_offset(contig, match_len_cutoff)
+            offset = calc_genome_offset(cigartuples, match_len_cutoff)
             gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[0][1]
         elif apautils.right_tail(read, 'A'):
             strand = '-'
             match_len_cutoff = ctg_len - read.reference_end
-            offset = calc_offset(contig, match_len_cutoff)
+            offset = calc_genome_offset(cigartuples, match_len_cutoff)
             gnm_clv = gnm_beg + offset + 1
             tail_len = read.cigartuples[-1][1]
         else:
