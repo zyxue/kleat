@@ -33,8 +33,8 @@ def get_args():
         help='input read-to-contig alignment BAM file'
     )
     parser.add_argument(
-        '-o', '--output', type=str, default='./output.csv',
-        help='output csv file'
+        '-o', '--output', type=str, default='./output.tsv',
+        help='output tsv file'
     )
     return parser.parse_args()
 
@@ -90,7 +90,7 @@ def main():
         U.backup_file(output)
 
     with open(output, 'wt') as opf:
-        csvwriter = csv.writer(opf)
+        csvwriter = csv.writer(opf, delimiter='\t')
         csvwriter.writerow(S.HEADER)
 
         for k, contig in tqdm(enumerate(c2g_bam)):
