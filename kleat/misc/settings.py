@@ -25,3 +25,35 @@ HEADER = [
 
 
 ClvRecord = namedtuple('ClvRecord', HEADER)
+
+
+CANDIDATE_HEXAMERS = [
+    ('AATAAA', 1),
+    ('ATTAAA', 2),
+    ('AGTAAA', 3),
+    ('TATAAA', 4),
+    ('CATAAA', 5),
+    ('GATAAA', 6),
+    ('AATATA', 7),
+    ('AATACA', 8),
+    ('AATAGA', 9),
+    ('AAAAAG', 10),
+    ('ACTAAA', 11),
+    ('AAGAAA', 12),
+    ('AATGAA', 13),
+    ('TTTAAA', 14),
+    ('AAAACA', 15),
+    ('GGGGCT', 16),
+
+    # 6 more from QAPA paper: but not sure of their strength (TODO)
+    # https://genomebiology.biomedcentral.com/articles/10.1186/s13059-018-1414-4
+    # ('AACAAA', 17),
+    # ('AACAAG', 18),
+    # ('AATAAG', 19),
+    # ('AATAAT', 20),
+    # ('ATTACA', 21),
+    # ('ATTATA', 22)
+]
+
+
+COMPLEMENT_DICT = str.maketrans("ACTG", "TGAC")
