@@ -93,7 +93,8 @@ def main():
         csvwriter = csv.writer(opf, delimiter='\t')
         csvwriter.writerow(S.HEADER)
 
-        for k, contig in tqdm(enumerate(c2g_bam)):
+        iters = tqdm(enumerate(c2g_bam), desc='processed', unit=' contigs')
+        for k, contig in iters:
             if contig.is_unmapped:
                 continue
 
