@@ -42,37 +42,42 @@ def init_evidence_holder():
     }
 
 
-def calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff):
+def calc_genome_offset(ctg_cigartuples, ctg_offset):
     """
     Calculate the offset needed for inferring the clv in genomic coordinate
 
     Offset needs taking into oconsideration the skipped region caused by intron
     or deletion
 
-    :param ctg_offset_cutoff: the cutoff calculated based on clv in contig
-    coordinate, depending on whether the contig is reversed and it's a polyA or
-    polyT reads, this cutoff could be calculated from left or right and
-    including or excluding the read length
+    :param ctg_offset: the offset calculated based on clv in contig coordinate.
+    ctg_offset is always forward. If the contig is reversed, its value is still
+    based based forward coordinates of this contig. See the following test
+    cases for details in test_bridge.py
+
+    test_do_forwad_contig_left_tail_brdige_read()
+    test_do_forwad_contig_right_tail_brdige_read()
+    test_do_reverse_contig_left_tail_brdige_read()
+    test_do_reverse_contig_right_tail_brdige_read()
     """
-    ctg_ofs = 0                 # offset in contig coordinate
-    gnm_ofs = 0                 # offset in genome coordinate
+    cur_ctg_ofs = 0             # curent offset in contig coordinate
+    cur_gnm_ofs = 0             # current offset in genome coordinate
     for key, val in ctg_cigartuples:
         if key in [S.BAM_CMATCH, S.BAM_CEQUAL, S.BAM_CDIFF]:
-            ctg_ofs += val
-            if ctg_ofs >= ctg_offset_cutoff:
-                delta = val - (ctg_ofs - ctg_offset_cutoff)
-                gnm_ofs += delta
+            cur_ctg_ofs += val
+            if cur_ctg_ofs >= ctg_offset:
+                delta = val - (cur_ctg_ofs - ctg_offset)
+                cur_gnm_ofs += delta
                 break
-            gnm_ofs += val
+            cur_gnm_ofs += val
         elif key in [S.BAM_CREF_SKIP, S.BAM_CDEL]:
-            gnm_ofs += val
+            cur_gnm_ofs += val
         else:
             pass
             # these don't consume reference coordinates
             # S.BAM_CINS, S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP
             # Not sure about S.BAM_CPAD & BAM_CBACK,
             # please let me know if you do
-    return gnm_ofs
+    return cur_gnm_ofs
 
 
 def do_fwd_ctg_lt_bdg(read):
@@ -125,10 +130,10 @@ def do_bridge(contig, read):
 def analyze_bridge(contig, read):
     seqname = contig.reference_name
 
-    strand, ctg_offset_cutoff, tail_len = do_bridge(contig, read)
+    strand, ctg_offset, tail_len = do_bridge(contig, read)
 
     gnm_beg = apautils.infer_abs_ref_start(contig)  # beginning wst to genome
-    offset = calc_genome_offset(contig.cigartuples, ctg_offset_cutoff)
+    offset = calc_genome_offset(contig.cigartuples, ctg_offset)
     gnm_clv = gnm_beg + offset
 
     return seqname, strand, gnm_clv, tail_len
