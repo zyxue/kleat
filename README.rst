@@ -1,5 +1,5 @@
 ======
-kleat
+KLEAT
 ======
 
 
@@ -13,10 +13,18 @@ kleat
         :target: https://kleat.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
 
+Cleavage site prediction via de novo assembly.
 
+**Note**: this is a reimplementation from scratch of the following paper (PMID: 25592595_),
 
+.. _25592595: https://www.ncbi.nlm.nih.gov/pubmed/25592595
 
-Cleavage site prediction via de novo assembly
+- Birol I, Raymond A, Chiu R, Nip KM, Jackman SD, Kreitzman M, et al. KLEAT:
+  cleavage site analysis of transcriptomes. Pac Symp Biocomput. World
+  Scientific. 2015;:347–58.
+
+..
+   memo: adding hyperlink to a sentence is really awkward in rst!
 
 ..
    * Documentation: https://kleat.readthedocs.io.
@@ -25,7 +33,7 @@ Cleavage site prediction via de novo assembly
 Install
 --------
 
-kleat (>3.0.0) supports only Python3 (>=py34). A few key packages include
+KLEAT (>3.0.0) supports only Python3 (>=py34). A few key packages include
 pysam_, pandas_, scikit-learn_.
 
 .. _pysam: https://github.com/pysam-developers/pysam
