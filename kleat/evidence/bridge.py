@@ -118,9 +118,11 @@ def do_reverse_contig(contig, read):
     ctg_len = contig.infer_query_length(always=True)
     # TODO: avoid multiple calling of left_tail/right_tail
     if apautils.left_tail(read, 'T'):
-        return do_rev_ctg_lt_bdg(read, ctg_len) + ('left',)
+        # it's right because it should be reversed again to match the forward
+        # direction
+        return do_rev_ctg_lt_bdg(read, ctg_len) + ('right',)
     elif apautils.right_tail(read, 'A'):
-        return do_rev_ctg_rt_bdg(read, ctg_len) + ('right',)
+        return do_rev_ctg_rt_bdg(read, ctg_len) + ('left',)
     else:
         raise ValueError('no tail found for read {0}'.format(read))
 
