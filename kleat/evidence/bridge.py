@@ -111,7 +111,7 @@ def do_fwd_ctg_rt_bdg(read):
 
 def do_rev_ctg_lt_bdg(read, ctg_len):
     # rev (reverse), opposite of fwd (forward)
-    return '+', ctg_len - read.reference_start, read.cigartuples[0][1]
+    return '+', ctg_len - read.reference_start - 1, read.cigartuples[0][1]
 
 
 def do_rev_ctg_rt_bdg(read, ctg_len):

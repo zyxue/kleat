@@ -62,17 +62,17 @@ def test_do_forwad_contig_right_tail_bridge_read():
 
 def test_do_reverse_contig_left_tail_bridge_read():
     """
-    e.g. TTTACG
-     TTT
-       └ACG  <-left-tail read
-      XXACGX <-contig
-     0123456 <-contig coord
-      6543210<-contig coord after reverse
+           TTT
+             └ACG   <-left-tail read
+            XXXACGX <-contig
+            0123456 <-contig coord
+            6543210 <-reversed contig coord, i.e. gnm offset from right to left
+    ctg_offset^
     """
     mock_read = get_mock_read(2, 5, [(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
     # in genome coordinates, it's reversed, the the clv points to the position
     # of A, while position 0 point to the position after G.
-    contig_len = 6
+    contig_len = 7
     ctg_offset = 4
     tail_len = 3
     assert bridge.do_rev_ctg_lt_bdg(mock_read, contig_len) == ('+', ctg_offset, tail_len)
