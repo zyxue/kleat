@@ -4,36 +4,47 @@ from kleat.evidence import bridge
 import kleat.misc.settings as S
 
 
-def get_mock_read(reference_start, reference_end, cigartuples):
+def get_mock_read(ref_beg, ref_end, cigartuples):
     r = MagicMock()
-    r.reference_start = reference_start
-    r.reference_end = reference_end
+    r.reference_start = ref_beg
+    r.reference_end = ref_end
     r.cigartuples = cigartuples
     return r
 
 
 def test_do_forwad_contig_left_tail_brdige_read():
-    """
-    e.g. TTTACG, reference_start at 2 points to the position of the first T
-    (based on IGV)
+    """e.g. TTTACG, reference_start at pos 2 (0-based) with the first three Ts
+    soft-clipped
 
-     TTT
-       └ACG  <-left-tail read
-      XXACGX <-contig
+    compared to igv visualization, which is 1-based, the contig coord are
+    shifted to the right by one-base, a quick comparison is available at
+    http://zyxue.github.io/2018/06/21/coordinates-in-bioinformatics.html
+
+    TTT
+      └ACG   <-left-tail read
+     XXACGXX  <-contig
      0123456 <-contig coord
+
     """
-    mock_read = get_mock_read(2, 5, [(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
-    ctg_offset = 3          # 2 + 1
+    mock_read = get_mock_read(
+        ref_beg=2, ref_end=5, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
+    ctg_offset = 2            # basically the clv wst. to the contig coordinate
     tail_len = 3
     assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', ctg_offset, tail_len)
 
 
 def test_do_forwad_contig_left_tail_brdige_read_2():
     """
-    e.g. TTAATTCCGG
+    e.g. TT
+
+     TT
+      └AATTCCGG   <-left-tail read
+     XXAATTCCGGXX <-contig
+       0123456789 <-contig coord
+       1
     """
     mock_read = get_mock_read(10, 18, [(S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 8)])
-    ctg_offset = 11         # 10 + 1
+    ctg_offset = 10
     tail_len = 2
     assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', ctg_offset, tail_len)
 

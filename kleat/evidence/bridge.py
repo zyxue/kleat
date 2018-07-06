@@ -101,7 +101,7 @@ def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
 
 def do_fwd_ctg_lt_bdg(read):
     """fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge"""
-    return '-', read.reference_start + 1, read.cigartuples[0][1]
+    return '-', read.reference_start, read.cigartuples[0][1]
 
 
 def do_fwd_ctg_rt_bdg(read):
