@@ -4,10 +4,11 @@ import os
 import logging
 import csv
 import argparse
-from collections import defaultdict
 
 import pysam
 from tqdm import tqdm
+import pandas as pd
+import numpy as np
 
 from kleat.evidence import suffix, bridge, link, blank
 from kleat.misc import apautils
@@ -40,6 +41,11 @@ def get_args():
               'checking mutations that may affect PAS hexmaer.  '
               'Note this fasta file needs to be consistent with the one '
               'used for generating the read-to-contig BAM alignments')
+    )
+    parser.add_argument(
+        '-m', '--clv-sc-mapping', type=str, required=True,
+        help=('the mapping pickle (TODO: support CSV) file of clv-to-stop '
+              'codon extracted from annotation')
     )
     parser.add_argument(
         '-o', '--output', type=str, default='./output.tsv',
@@ -102,16 +108,62 @@ def gen_ref_fa(ref_genome_file):
         return pysam.FastaFile(ref_genome_file)
 
 
+def calc_abs_dist_to_annot_clv(grp, annot_clvs):
+    aclvs = annot_clvs.loc[grp.name]
+    aclvs = annot_clvs.loc[grp.name] # grp.name holds the group key
+    bcast = np.broadcast_to(grp.clv.values, (aclvs.shape[0], grp.shape[0])).T
+    grp['abs_dist_to_aclv'] = np.min(np.abs(bcast - aclvs), axis=1)
+    return grp
+
+
+def add_abs_dist_to_annot_clv(df_clv, df_mapping):
+    """
+    add absolute distance to the closest annotated clv as an addition column
+
+    :param df_mapping: clv-stop codon mapping in dataframe
+    """
+    # do some checking about which version of seqnames are used, use whatever
+    # is used by df_clv as the reference
+    mapping_seqname_is_ucsc = df_mapping.seqname.values[0] in S.UCSC_SEQNAMES
+    cleavge_seqname_is_ucsc = df_clv.seqname.values[0] in S.UCSC_SEQNAMES
+
+    if mapping_seqname_is_ucsc != cleavge_seqname_is_ucsc:
+        if mapping_seqname_is_ucsc:
+            df_mapping.seqname = df_mapping.seqname.replace(S.UCSC_TO_ENSEMBL_SEQNAME)
+        else:
+            df_mapping.seqname = df_mapping.seqname.replace(S.ENSEMBL_TO_UCSC_SEQNAME)
+
+    annot_clvs = df_mapping.groupby(['seqname', 'strand']).apply(
+        lambda g: g.clv.sort_values().values)
+
+    # remove patch chromosomes
+    if cleavge_seqname_is_ucsc:
+        ndf_clv = df_clv.query('seqname in {0}'.format(S.UCSC_SEQNAMES))
+    else:
+        ndf_clv = df_clv.query('seqname in {0}'.format(S.ENSEMBL_SEQNAMES))
+
+    logger.info('calculating absolute distances to annotated cleavage sites')
+    timed = U.timeit(
+        lambda _df: _df.groupby(['seqname', 'strand'])\
+        .apply(calc_abs_dist_to_annot_clv, annot_clvs=annot_clvs)
+    )
+    out = timed(ndf_clv)
+    return out
+
+
 def main():
     args = get_args()
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
     r2c_bam = pysam.AlignmentFile(args.read_to_contig)
     ref_fa = gen_ref_fa(args.reference_genome)
+    clv_sc_mapping = args.clv_sc_mapping
     output = args.output
+    tmp_output = os.path.join(os.path.dirname(output),
+                              'tmp_{0}'.format(os.path.basename(output)))
     if os.path.exists(output):
         U.backup_file(output)
 
-    with open(output, 'wt') as opf:
+    with open(tmp_output, 'wt') as opf:
         csvwriter = csv.writer(opf, delimiter='\t')
         csvwriter.writerow(S.HEADER)
 
@@ -136,8 +188,18 @@ def main():
             if not apautils.has_tail(contig):
                 process_blank(contig, ref_fa, csvwriter, ascs)
 
-    logger.info('reading {0} into a pandas.DataFrame')
+    logger.info('reading {0}'.format(clv_sc_mapping))
+    df_mapping = pd.read_pickle(clv_sc_mapping)
+    logger.info('df.shape: {0}'.format(df_mapping.shape))
 
+    logger.info('reading {0} into a pandas.DataFrame'.format(tmp_output))
+    df_clv = U.timeit(pd.read_csv)(tmp_output, sep='\t')
+    logger.info('df.shape: {0}'.format(df_clv.shape))
+
+    df_clv_with_adist = add_abs_dist_to_annot_clv(df_clv, df_mapping)
+    df_clv_with_adist.to_csv(output, sep='\t')
+
+    # TODO: remove tmp_output
 
 
 if __name__ == "__main__":
