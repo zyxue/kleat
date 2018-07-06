@@ -20,7 +20,10 @@ class TestSearchHexamer(unittest.TestCase):
         self.assertEqual(plus_search('GTTTATTC', 6), None)
 
     def test_plus_search_lowercase(self):
-        self.assertEqual(plus_search('GAATaaaC', 10), ('AATAAA', 1, 4))
+        seq = 'GAATaaaC'
+        #       4567890
+        #             1
+        self.assertEqual(plus_search(seq, 10), ('AATAAA', 1, 4))
 
     def test_plus_search_take_right_most_hexamer(self):
         self.assertEqual(plus_search('CAATAAANAATAAAC', 200), ('AATAAA', 1, 194))
@@ -32,8 +35,14 @@ class TestSearchHexamer(unittest.TestCase):
         self.assertEqual(plus_search('GCAATAAAATTAAAC', 200), ('AATAAA', 1, 188))
 
     def test_minus_search(self):
-        self.assertEqual(minus_search('ATTTATTCCC', 9), ('AATAAA', 1, 15))
-        self.assertEqual(minus_search('ATTTAATCCC', 9), ('ATTAAA', 2, 15))
+        seq = 'ATTTATTCCC'
+        #      90123456789 <- one coord
+        #       1          <- ten coord
+        self.assertEqual(minus_search(seq, 9), ('AATAAA', 1, 15))
+        seq = 'ATTTAATCCC'
+        #      90123456789 <- one coord
+        #       1          <- ten coord
+        self.assertEqual(minus_search(seq, 9), ('ATTAAA', 2, 15))
         self.assertEqual(minus_search('GTTTATTC', 1), ('AATAAA', 1, 7))
         self.assertEqual(minus_search('ATCGTATATTGC', 5), ('AATATA', 7, 14))
 
