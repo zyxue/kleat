@@ -17,7 +17,7 @@ def test_bridge_init_evidence_holder():
 
 
 @pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
-    [((BAM_CMATCH, 4),), 1, 1],  # with ascii drawing
+    [((BAM_CMATCH, 4),), 1, 1],  # with ascii drawing below
 
     [((BAM_CMATCH, 10),), 2, 2],
     [((BAM_CMATCH, 20),), 5, 5],
