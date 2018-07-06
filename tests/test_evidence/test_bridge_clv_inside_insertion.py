@@ -44,7 +44,7 @@ def test_calc_genome_offset_for_contig_with_three_base_insertion_with_varying_ta
        AGC  <-inserted sequence
        456  <-contig coord for inserted sequence
         ┬
-     XXX XX <-contig
+    XXXX XX <-contig
     0123 78 <-contig coord
     0123 45 <-genome offset
     """
@@ -83,7 +83,7 @@ def test_calc_genome_offset_for_contig_with_one_base_insertion_with_varying_tail
         G   <-inserted sequence
         4   <-contig coord for inserted sequence
         ┬
-     XXX XX <-contig
+    XXXX XX <-contig
     0123 56 <-contig coord
     0123 45 <-genome offset
     """
