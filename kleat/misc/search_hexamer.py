@@ -130,7 +130,10 @@ def extract_seq(contig):
 
 
 def gen_contig_hexamer_tuple(contig, strand, ref_clv):
-    """search PAS hexamer in contig"""
+    """
+    search PAS hexamer in contig, this ONLY works for suffix and link as the
+    ref_clv nees to be at an end of the contig (not including the clipped bases)
+    """
     # no need to reverse_complement the seq as the hexamer search function is
     # designed to search reference genome sequence, rev_comp is taken care of
     # within the function
