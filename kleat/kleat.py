@@ -55,14 +55,14 @@ def process_suffix(contig, r2c_bam, ref_fa, csvwriter):
         apautils.write_row(clv_record, csvwriter)
 
 
-def process_bridge_and_link(contig, r2c_bam, csvwriter):
+def process_bridge_and_link(contig, r2c_bam, ref_fa, csvwriter):
     # bridge & link
     aligned_reads = r2c_bam.fetch(contig.query_name)
     dd_bridge, dd_link = extract_bridge_and_link(contig, aligned_reads)
     if len(dd_bridge['num_reads']) > 0:
-        bridge.write_evidence(dd_bridge, contig, csvwriter)
+        bridge.write_evidence(dd_bridge, contig, ref_fa, csvwriter)
     if len(dd_link['num_reads']) > 0:
-        link.write_evidence(dd_link, contig, csvwriter)
+        link.write_evidence(dd_link, contig, ref_fa, csvwriter)
 
 
 def process_blank(contig, csvwriter):
@@ -113,8 +113,10 @@ def main():
             if contig.is_unmapped:
                 continue
 
-            process_suffix(contig, r2c_bam, ref_fa, csvwriter)
-            # process_bridge_and_link(contig, r2c_bam, csvwriter)
+            process_suffix(
+                contig, r2c_bam, ref_fa, csvwriter)
+            process_bridge_and_link(
+                contig, r2c_bam, ref_fa, csvwriter)
             # process_blank(contig, csvwriter)
 
 if __name__ == "__main__":

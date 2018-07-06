@@ -2,14 +2,18 @@ from collections import defaultdict
 
 from kleat.misc import apautils
 import kleat.misc.settings as S
+from kleat.misc.search_hexamer import (
+    gen_contig_hexamer_tuple, gen_reference_hexamer_tuple
+)
 
 
-def write_evidence(dd_bridge, contig, csvwriter):
+def write_evidence(dd_bridge, contig, ref_fa, csvwriter):
     for clv_key in dd_bridge['num_reads']:
         clv_record = gen_clv_record(
             contig, clv_key,
             dd_bridge['num_reads'][clv_key],
-            dd_bridge['max_tail_len'][clv_key]
+            dd_bridge['max_tail_len'][clv_key],
+            ref_fa
         )
         apautils.write_row(clv_record, csvwriter)
 
@@ -155,16 +159,30 @@ def analyze_bridge(contig, read):
     return seqname, strand, gnm_clv, tail_len
 
 
-def gen_clv_record(
-        bridge_contig, clv_key_tuple, num_bridge_reads, max_bridge_tail_len):
-    seqname, strand, gnm_clv = clv_key_tuple
+def gen_clv_record(contig, clv_key_tuple,
+                   num_bridge_reads, max_bridge_tail_len, ref_fa=None):
+    """
+    :param contig: bridge contig
+    :clv_key_tuple: a tuple of (seqname, strand, cleavage_site_position)
+    :param ref_fa: if provided, search PAS hexamer on reference genome, too
+    """
+    seqname, strand, ref_clv = clv_key_tuple
+
+    ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
+        contig, strand, ref_clv)
+
+    ref_hex, ref_hex_id, ref_hex_pos = gen_reference_hexamer_tuple(
+        ref_fa, contig.reference_name, strand, ref_clv)
+
     return S.ClvRecord(
-        seqname, strand, gnm_clv,
+        seqname,
+        strand,
+        ref_clv,
 
         'bridge',
-        bridge_contig.query_name,
-        bridge_contig.infer_query_length(True),
-        bridge_contig.mapq,
+        contig.query_name,
+        contig.infer_query_length(True),
+        contig.mapq,
 
         0,                      # num_tail_reads
         0,                      # tail_length
@@ -172,6 +190,10 @@ def gen_clv_record(
         num_bridge_reads,
         max_bridge_tail_len,
 
-        num_link_reads=0,
-        num_blank_contigs=0
+        0,                      # num_link_reads,
+
+        0,                      # num_blank_contigs
+
+        ctg_hex, ctg_hex_id, ctg_hex_pos,
+        ref_hex, ref_hex_id, ref_hex_pos
     )
