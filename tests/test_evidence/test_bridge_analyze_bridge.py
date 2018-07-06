@@ -27,7 +27,8 @@ def test_do_forwad_contig_left_tail_bridge_read():
     """
     mock_read = get_mock_read(
         ref_beg=2, ref_end=5, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
-    ctg_offset = 2            # basically the clv wst. to the contig coordinate
+    # basically the clv wst. to the contig coordinate when in forward contig
+    ctg_offset = 2
     tail_len = 3
     assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', ctg_offset, tail_len)
 
