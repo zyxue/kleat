@@ -9,6 +9,10 @@ mock_non_tailed_read = MagicMock()
 mock_non_tailed_read.query_sequence = "ATCG"
 mock_non_tailed_read.cigartuples = [(BAM_CMATCH, 4)]
 
+#  TTT
+#  ||└AT
+# 789012 <- coord (0-based)
+#    1
 mock_left_tailed_read = MagicMock()
 mock_left_tailed_read.query_sequence = "TTTAT"
 mock_left_tailed_read.cigartuples = [(BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 2)]
@@ -16,6 +20,10 @@ mock_left_tailed_read.cigartuples = [(BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 2)]
 mock_left_tailed_read.reference_start = 11  # this is artbitray
 mock_left_tailed_read.reference_end = 13
 
+#    AAAA
+#  AT┘|||
+# 0123456 <- coord
+# 1
 mock_right_tailed_read = MagicMock()
 mock_right_tailed_read.query_sequence = "ATAAAA"
 mock_right_tailed_read.cigartuples = [(BAM_CMATCH, 2), (BAM_CSOFT_CLIP, 4)]
