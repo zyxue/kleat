@@ -9,6 +9,11 @@ from kleat.misc.settings import (
     BAM_CINS, BAM_CSOFT_CLIP, BAM_CHARD_CLIP)
 
 
+"""When calculating offset, reversed contig should have already been flipped to
+match the strand of the genome as illustrated in the ascii drawings in the test
+cases here"""
+
+
 def test_bridge_init_evidence_holder():
     assert bridge.init_evidence_holder() == {
         'num_reads': defaultdict(int),
@@ -22,7 +27,7 @@ def test_bridge_init_evidence_holder():
     [((BAM_CMATCH, 10),), 2, 2],
     [((BAM_CMATCH, 20),), 5, 5],
 ])
-def test_calc_genome_offset_for_nonskipped_forward_contig(
+def test_calc_genome_offset_for_nonskipped_contig(
         ctg_cigartuples, ctg_offset, gnm_offset):
     """
      TT
@@ -40,7 +45,7 @@ def test_calc_genome_offset_for_nonskipped_forward_contig(
     [((BAM_CMATCH, 6), (BAM_CREF_SKIP, 2), (BAM_CMATCH, 4)), 2, 2],  # with ascii drawing below
     [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 2, 2],
 ])
-def test_calc_genome_offset_for_skipped_forward_contig_when_ctg_offset_is_before_skipping_happens(
+def test_calc_genome_offset_for_skipped_contig_when_ctg_offset_is_before_skipping_happens(
         ctg_cigartuples, ctg_offset, gnm_offset):
     """
       TT
@@ -58,7 +63,7 @@ def test_calc_genome_offset_for_skipped_forward_contig_when_ctg_offset_is_before
 
     [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 12, 17],
 ])
-def test_calc_genome_offset_for_skipped_forward_contig_when_ctg_offset_is_after_skipping_happens(
+def test_calc_genome_offset_for_skipped_contig_when_ctg_offset_is_after_skipping_happens(
         ctg_cigartuples, ctg_offset, gnm_offset):
     """
           TT
