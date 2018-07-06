@@ -106,9 +106,11 @@ def test_calc_genome_offset_for_contig_with_three_base_insertion(ctg_offset, exp
        AGC  <-inserted sequence
        456  <-contig coord for inserted sequence
         ┬
-     XXX XX <-contig
+    XXXX XX <-contig
     0123 78 <-contig coord
     0123 45 <-genome offset
+
+    see parameters in the decorator for various ctg_offset
     """
     ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 3), (BAM_CMATCH, 2))
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
@@ -132,9 +134,11 @@ def test_calc_genome_offset_for_contig_with_one_base_insertion(ctg_offset, expec
         G   <-inserted sequence
         4   <-contig coord for inserted sequence
         ┬
-     XXX XX <-contig
+    XXXX XX <-contig
     0123 56 <-contig coord
     0123 45 <-genome offset
+
+    see parameters in the decorator for various ctg_offset
     """
     ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 1), (BAM_CMATCH, 2))
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
@@ -143,34 +147,36 @@ def test_calc_genome_offset_for_contig_with_one_base_insertion(ctg_offset, expec
 
 
 @pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
-    [3, 1],                   # overlap with clv extracted from suffix evidence
-    [4, 2],                   # bridge tail is a bit after the contig tail
+    [3, 0],                   # overlap with clv extracted from suffix evidence
+    [4, 1],                   # bridge tail is a bit after the contig tail
 ])
 def test_calc_genome_offset_for_contig_with_softclip(ctg_offset, expected_gnm_offset):
     """
-     TT
-    012
+    TTT
+    012    <-contig coord for tail
       └XXX <-contig
        345 <-contig coord
-      0123 <-genome offset
+       012 <-genome offset
+
+    see parameters in the decorator for various ctg_offset
     """
-    ctg_cigartuples = ((BAM_CSOFT_CLIP, 2), (BAM_CMATCH, 3))
+    ctg_cigartuples = ((BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 3))
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
 
 
 @pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
-    [3, 1],                   # overlap with clv extracted from suffix evidence
-    [4, 2],                   # bridge tail is a bit after the contig tail
+    [2, 0],                   # overlap with clv extracted from suffix evidence
+    [3, 1],                   # bridge tail is a bit after the contig tail
 ])
 def test_calc_genome_offset_for_contig_with_hardclip(ctg_offset, expected_gnm_offset):
     """
     The calculation with soft-clipped contig is the same except the CIGAR
 
      TT
-    012
+     01    <-contig coord for tail
       └XXX <-contig
-       345 <-contig coord
-      0123 <-genome offset
+       234 <-contig coord
+       012 <-genome offset
 
     """
     ctg_cigartuples = ((BAM_CHARD_CLIP, 2), (BAM_CMATCH, 3))
