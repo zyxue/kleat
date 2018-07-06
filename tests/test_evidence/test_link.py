@@ -76,9 +76,8 @@ def test_analyze_reverse_link_for_polyT_reads():
 
     c = MagicMock()
     c.reference_start = 2
-    c.reference_end = 7
+    c.reference_end = 8
 
     strand, ref_clv = link.analyze_reverse_link(c, r)
-    assert strand == '-'
+    assert strand == '+'
     assert ref_clv == 7
-
