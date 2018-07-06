@@ -53,20 +53,27 @@ def process_suffix(contig, r2c_bam, ref_fa, csvwriter):
     if tail_side is not None:
         clv_record = suffix.gen_clv_record(contig, r2c_bam, tail_side, ref_fa)
         apautils.write_row(clv_record, csvwriter)
+        return clv_record
 
 
 def process_bridge_and_link(contig, r2c_bam, ref_fa, csvwriter):
     # bridge & link
     aligned_reads = r2c_bam.fetch(contig.query_name)
     dd_bridge, dd_link = extract_bridge_and_link(contig, aligned_reads)
+    bdg_clvs, lnk_clvs = [], []
     if len(dd_bridge['num_reads']) > 0:
-        bridge.write_evidence(dd_bridge, contig, ref_fa, csvwriter)
+        bdg_clvs.extend(
+            bridge.write_evidence(dd_bridge, contig, ref_fa, csvwriter))
     if len(dd_link['num_reads']) > 0:
-        link.write_evidence(dd_link, contig, ref_fa, csvwriter)
+        lnk_clvs.extend(
+            link.write_evidence(dd_link, contig, ref_fa, csvwriter))
+    return bdg_clvs + lnk_clvs
 
 
-def process_blank(contig, ref_fa, csvwriter):
-    for clv_rec in blank.gen_two_clv_records(contig, ref_fa, ):
+def process_blank(contig, ref_fa, csvwriter, asp_clv_keys):
+    """:param asp_clv_keys: list of already supported clv key tuples"""
+    asp_clv_keys = set(asp_clv_keys)
+    for clv_rec in blank.gen_two_clv_records(contig, ref_fa, asp_clv_keys):
         apautils.write_row(clv_rec, csvwriter)
 
 
@@ -108,16 +115,23 @@ def main():
         csvwriter = csv.writer(opf, delimiter='\t')
         csvwriter.writerow(S.HEADER)
 
+        gen_key = apautils.gen_clv_key_tuple_from_clv_record
         iters = tqdm(enumerate(c2g_bam), desc='processed', unit=' contigs')
         for k, contig in iters:
             if contig.is_unmapped:
                 continue
 
-            process_suffix(
+            ascs = []           # already supported clvs
+            rec = process_suffix(
                 contig, r2c_bam, ref_fa, csvwriter)
-            process_bridge_and_link(
-                contig, r2c_bam, ref_fa, csvwriter)
-            process_blank(contig, ref_fa, csvwriter)
+            if rec is not None:
+                ascs.append(gen_key(rec))
+
+            for rec in process_bridge_and_link(contig, r2c_bam,
+                                               ref_fa, csvwriter):
+                ascs.append(gen_key(rec))
+
+            process_blank(contig, ref_fa, csvwriter, ascs)
 
     logger.info('reading {0} into a pandas.DataFrame')
 

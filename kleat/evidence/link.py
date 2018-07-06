@@ -8,10 +8,13 @@ from kleat.misc.search_hexamer import (
 
 
 def write_evidence(dd_link, contig, ref_fa, csvwriter):
+    res = []
     for clv_key in dd_link['num_reads']:
         clv_record = gen_clv_record(
             contig, clv_key, dd_link['num_reads'][clv_key], ref_fa)
         apautils.write_row(clv_record, csvwriter)
+        res.append(clv_record)
+    return res
 
 
 def update_evidence(evid_tuple, evid_holder):

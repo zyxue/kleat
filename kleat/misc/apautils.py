@@ -5,6 +5,11 @@ def gen_clv_key_tuple(seqname, strand, clv):
     return (seqname, strand, clv)
 
 
+def gen_clv_key_tuple_from_clv_record(clv_record):
+    crec = clv_record
+    return gen_clv_key_tuple(crec.seqname, crec.strand, crec.clv)
+
+
 def gen_clv_key_str(seqname, strand, clv):
     return '{seqname}|{strand}|{clv}'.format(**locals())
 

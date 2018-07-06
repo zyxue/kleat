@@ -1,3 +1,4 @@
+from kleat.misc.apautils import gen_clv_key_tuple
 from kleat.misc.settings import ClvRecord
 
 from kleat.misc.search_hexamer import (
@@ -5,13 +6,13 @@ from kleat.misc.search_hexamer import (
 )
 
 
-def gen_two_clv_records(contig, ref_fa):
+def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
     """
     Assume there is still a clv at the 3' end of the contig even without any
     polya evidence, in thus case, there is no direction, so either end of the
     contig could be a clv. Hence add two to the function name explicitly
     """
-
+    seqname = contig.reference_name
     strands = ['+', '-']
     ref_clv_candidates = [
         contig.reference_end + 1,
@@ -19,6 +20,10 @@ def gen_two_clv_records(contig, ref_fa):
     ]
 
     for strand, ref_clv in zip(strands, ref_clv_candidates):
+        clv_key = gen_clv_key_tuple(seqname, strand, ref_clv)
+        if clv_key in already_supported_clv_keys:
+            continue
+
         ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
             contig, strand, ref_clv)
 
