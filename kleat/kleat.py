@@ -131,7 +131,8 @@ def main():
                                                ref_fa, csvwriter):
                 ascs.append(gen_key(rec))
 
-            process_blank(contig, ref_fa, csvwriter, ascs)
+            if not apautils.has_tail(contig):
+                process_blank(contig, ref_fa, csvwriter, ascs)
 
     logger.info('reading {0} into a pandas.DataFrame')
 
