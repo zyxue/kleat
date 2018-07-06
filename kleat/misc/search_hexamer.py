@@ -12,7 +12,7 @@ from kleat.misc.settings import CANDIDATE_HEXAMERS, COMPLEMENT_DICT
 
 
 def reverse_complement(seq):
-    return Seq.Seq(seq).reverse_complement().upper()
+    return str(Seq.Seq(seq).reverse_complement().upper())
     # TODO: if prefer to drop dependency on biopython, test this function
     # thoroughly
     # return seq.translate(COMPLEMENT_DICT)[::-1]
