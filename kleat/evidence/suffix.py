@@ -29,9 +29,10 @@ def calc_num_suffix_reads(r2c_bam, suffix_contig, ref_clv):
 def gen_clv_record(contig, r2c_bam, tail_side, ref_fa=None):
     """
     :param contig: suffix contig
-    :param r2c_bam: pysam read2genome alignment BAM
+    :param r2c_bam: pysam instance of read2genome alignment BAM
     :param tail_side (TODO, rename to tail_direction): 'left' or 'right'
-    :param ref_fa: if provided, search PAS hexamer on reference genome, too
+    :param ref_fa: pysam instance of reference genome fasta. if provided,
+                   will also search PAS hexamer on reference genome.
     """
     strand = apautils.calc_strand(tail_side)
     ref_clv = apautils.calc_ref_clv(contig, tail_side)
@@ -61,7 +62,9 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa=None):
         # other types of evidence are left empty
         0,    # num_bridge_reads
         0,    # max_bridge_read_tail_len
+
         0,    # num_link_reads
+
         0,    # num_blank_contigs
 
         ctg_hex, ctg_hex_id, ctg_hex_pos,
