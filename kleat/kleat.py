@@ -159,6 +159,19 @@ def add_abs_dist_to_annot_clv(df_clv, df_mapping):
     return out
 
 
+def set_sort_join_strs(vals):
+    return '|'.join(sorted(set(vals)))
+
+
+def agg_polya_evidence(grp):
+    sum_cols = grp[S.COLS_TO_SUM].sum()
+    max_cols = grp[S.COLS_TO_MAX].max()
+    str_cols = grp[S.COLS_TO_JOIN].apply(set_sort_join_strs)
+    hex_cols = grp[S.COLS_CONTIG_HEXAMERS].loc[grp.ctg_hex_id.idxmax()]
+    any_cols = grp[S.COLS_PICK_ANY_ONE].iloc[0]
+    return pd.concat([sum_cols, max_cols, str_cols, hex_cols, any_cols])
+
+
 def main():
     args = get_args()
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
@@ -196,15 +209,24 @@ def main():
             if not apautils.has_tail(contig):
                 process_blank(contig, ref_fa, csvwriter, ascs)
 
-    logger.info('reading {0}'.format(clv_sc_mapping))
-    df_mapping = pd.read_pickle(clv_sc_mapping)
-    logger.info('df.shape: {0}'.format(df_mapping.shape))
-
-    logger.info('reading {0} into a pandas.DataFrame'.format(tmp_output))
+    logger.info('Reading {0} into a pandas.DataFrame...'.format(tmp_output))
     df_clv = U.timeit(pd.read_csv)(tmp_output, sep='\t')
     logger.info('df.shape: {0}'.format(df_clv.shape))
 
-    df_clv_with_adist = add_abs_dist_to_annot_clv(df_clv, df_mapping)
+    # TODO: slow step, maybe parallize it
+    logger.info('Aggregating evidence for the same (seqname, strand, clv)...')
+    grped = df_clv.groupby(['seqname', 'strand', 'clv'])
+    pre_df_clv_agg = U.timeit(grped.apply)(agg_polya_evidence)
+    df_clv_agg = pre_df_clv_agg.reset_index()[S.HEADER]
+
+    logger.info('Reading {0}'.format(clv_sc_mapping))
+    df_mapping = pd.read_pickle(clv_sc_mapping)
+    logger.info('df.shape: {0}'.format(df_mapping.shape))
+
+    logger.info('Calculating closest annotated clv...')
+    df_clv_with_adist = add_abs_dist_to_annot_clv(df_clv_agg, df_mapping)
+
+    logger.info('Writing to {0}...'.format(output))
     df_clv_with_adist.to_csv(output, sep='\t', index=False)
 
     # TODO: remove tmp_output
