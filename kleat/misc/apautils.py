@@ -67,9 +67,9 @@ def calc_ref_clv(suffix_segment, tail_side=None):
 
     # the coordinates (+1 or not) are verified against visualization on IGV
     if tail_side == 'left':
-        return suffix_segment.reference_start + 1
+        return suffix_segment.reference_start
     elif tail_side == 'right':
-        return suffix_segment.reference_end
+        return suffix_segment.reference_end - 1
     else:
         raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
 

@@ -45,16 +45,16 @@ def test_right_tail():
 
 def test_calc_ref_clv():
     f = A.calc_ref_clv
-    assert f(mock_left_tailed_read) == 12
-    assert f(mock_right_tailed_read) == 13
+    assert f(mock_left_tailed_read) == 11
+    assert f(mock_right_tailed_read) == 12
     with pytest.raises(ValueError, match=r'not a suffix segment'):
         f(mock_non_tailed_read)
 
 
 def test_calc_ref_clv_passing_tail_side_argument():
     f = A.calc_ref_clv
-    assert f(mock_left_tailed_read, 'left') == 12
-    assert f(mock_right_tailed_read, 'right') == 13
+    assert f(mock_left_tailed_read, 'left') == 11
+    assert f(mock_right_tailed_read, 'right') == 12
 
 
 def test_calc_tail_length():
