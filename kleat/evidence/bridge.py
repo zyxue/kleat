@@ -106,7 +106,7 @@ def do_fwd_ctg_lt_bdg(read):
 
 def do_fwd_ctg_rt_bdg(read):
     """rt: right-tailed"""
-    return '+', read.reference_end, read.cigartuples[-1][1]
+    return '+', read.reference_end - 1, read.cigartuples[-1][1]
 
 
 def do_rev_ctg_lt_bdg(read, ctg_len):
