@@ -33,11 +33,13 @@ def get_args():
         help='input read-to-contig alignment BAM file'
     )
     parser.add_argument(
-        '-f', '--reference-genome', type=str,
+        '-f', '--reference-genome', type=str, default=None,
         help=('(optional) reference genome FASTA file, if provided, '
               'KLEAT will search polyadenylation signal (PAS) hexamer in '
               'both contig and reference genome, which is useful for '
-              'checking mutations that may affect PAS hexmaer')
+              'checking mutations that may affect PAS hexmaer.  '
+              'Note this fasta file needs to be consistent with the one '
+              'used for generating the read-to-contig BAM alignments')
     )
     parser.add_argument(
         '-o', '--output', type=str, default='./output.tsv',
@@ -46,10 +48,10 @@ def get_args():
     return parser.parse_args()
 
 
-def process_suffix(contig, r2c_bam, csvwriter):
+def process_suffix(contig, r2c_bam, ref_fa, csvwriter):
     tail_side = apautils.has_tail(contig)
     if tail_side is not None:
-        clv_record = suffix.gen_clv_record(contig, r2c_bam, tail_side)
+        clv_record = suffix.gen_clv_record(contig, r2c_bam, tail_side, ref_fa)
         apautils.write_row(clv_record, csvwriter)
 
 
@@ -88,10 +90,16 @@ def extract_bridge_and_link(contig, aligned_reads):
     return dd_bridge, dd_link
 
 
+def gen_ref_fa(ref_genome_file):
+    if ref_genome_file is not None:
+        return pysam.FastaFile(ref_genome_file)
+
+
 def main():
     args = get_args()
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
     r2c_bam = pysam.AlignmentFile(args.read_to_contig)
+    ref_fa = gen_ref_fa(args.reference_genome)
     output = args.output
     if os.path.exists(output):
         U.backup_file(output)
@@ -105,9 +113,9 @@ def main():
             if contig.is_unmapped:
                 continue
 
-            process_suffix(contig, r2c_bam, csvwriter)
-            process_bridge_and_link(contig, r2c_bam, csvwriter)
-            process_blank(contig, csvwriter)
+            process_suffix(contig, r2c_bam, ref_fa, csvwriter)
+            # process_bridge_and_link(contig, r2c_bam, csvwriter)
+            # process_blank(contig, csvwriter)
 
 if __name__ == "__main__":
     main()
