@@ -21,9 +21,10 @@ def test_do_forwad_contig_left_tail_bridge_read():
     http://zyxue.github.io/2018/06/21/coordinates-in-bioinformatics.html
 
     TTT
-      └ACG   <-left-tail read
+     |└ACG   <-left-tail read
      XXACGXX  <-contig
      0123456 <-contig coord
+       ^ctg_offset
     """
     mock_read = get_mock_read(
         ref_beg=2, ref_end=5, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
@@ -36,10 +37,11 @@ def test_do_forwad_contig_left_tail_bridge_read():
 def test_do_forwad_contig_left_tail_bridge_read_2():
     """
     TT
-     └AATTCCGG   <-left-tail read
+    |└AATTCCGG   <-left-tail read
     XXAATTCCGGXX <-contig
     890123456789 <-contig coord
       1
+      ^ctg_offset
     """
     mock_read = get_mock_read(10, 18, [(S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 8)])
     ctg_offset = 10
@@ -50,9 +52,10 @@ def test_do_forwad_contig_left_tail_bridge_read_2():
 def test_do_forwad_contig_right_tail_bridge_read():
     """
          AA
-      CCG┘  <-right-tail read
+      CCG┘| <-right-tail read
     XXCCGXX <-contig
     0123456 <-contig coord
+        ^ctg_offset
     """
     mock_read = get_mock_read(1, 4, [(S.BAM_CMATCH, 4), (S.BAM_CSOFT_CLIP, 2)])
     ctg_offset = 4
@@ -63,7 +66,7 @@ def test_do_forwad_contig_right_tail_bridge_read():
 def test_do_reverse_contig_left_tail_bridge_read():
     """
            TTT
-             └ACG   <-left-tail read
+            |└ACG   <-left-tail read
             XXXACGX <-contig
             0123456 <-contig coord
             6543210 <-reversed contig coord, i.e. gnm offset from right to left
