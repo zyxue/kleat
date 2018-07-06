@@ -91,6 +91,23 @@ To uninstall
 
    python setup.py develop --uninstall
 
+Zero-based index
+----------------
+
+Every index is 0-based, including ascii visualization such as
+
+-- code-block::
+
+    TTT
+      └AT
+    89012 <- one coord (0-based)
+      1   <- ten coord
+
+which is different from the display on IGV that is 1-based (although its
+underlying system is still 0-based_).
+
+.. _0-based: https://software.broadinstitute.org/software/igv/IGV.
+
 
 Credits
 -------
