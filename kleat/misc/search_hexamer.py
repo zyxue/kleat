@@ -116,13 +116,18 @@ def extract_seq(contig):
     """remove clipped ends before searching for hexamer, the clipped ends would
     affect calculation of genomics coordinates of the found PAS hexamer"""
     beg_offset = 0
-    end_offset = -1
+    end_offset = None
     for key, val in contig.cigartuples:
         if key == S.BAM_CSOFT_CLIP:
             beg_offset = val
         if key == S.BAM_CHARD_CLIP:
             end_offset = val
-    return contig.query_sequence[beg_offset: end_offset]
+
+    seq = contig.query_sequence
+    if end_offset is None:
+        return seq[beg_offset:end_offset]
+    else:
+        return seq[beg_offset:]
 
 
 def gen_contig_hexamer_tuple(contig, strand, ref_clv):
