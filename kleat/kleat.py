@@ -82,7 +82,7 @@ def extract_bridge_and_link(contig, aligned_reads):
     dd_link = link.init_evidence_holder()
     for read in aligned_reads:
         if bridge.is_a_bridge_read(read):
-            bdg_evid = bridge.analyze_bridge(contig, read)
+            bdg_evid = bridge.analyze_bridge(contig, read, dd_bridge)
             bridge.update_evidence(bdg_evid, dd_bridge)
         elif link.is_a_link_read(read):
             link_evid = link.analyze_link(contig, read)

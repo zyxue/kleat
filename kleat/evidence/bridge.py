@@ -3,7 +3,9 @@ from collections import defaultdict
 from kleat.misc import apautils
 import kleat.misc.settings as S
 from kleat.misc.search_hexamer import (
-    gen_contig_hexamer_tuple, gen_reference_hexamer_tuple
+    search,  # do PAS hexamer search in a more customized way instead of using
+             # gen_contig_hexamer_tuple
+    gen_reference_hexamer_tuple
 )
 
 
@@ -13,6 +15,7 @@ def write_evidence(dd_bridge, contig, ref_fa, csvwriter):
             contig, clv_key,
             dd_bridge['num_reads'][clv_key],
             dd_bridge['max_tail_len'][clv_key],
+            dd_bridge['hexamer_tuple'][clv_key],
             ref_fa
         )
         apautils.write_row(clv_record, csvwriter)
@@ -25,11 +28,13 @@ def update_evidence(evid_tuple, evid_holder):
     :param evid_tuple: evidence tuple
     :param evid_holder: A dict holder bridge evidence for a given contig
     """
-    seqname, strand, ref_clv, tail_len = evid_tuple
+    seqname, strand, ref_clv, tail_len, hex_tuple = evid_tuple
     clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
     evid_holder['num_reads'][clv_key] += 1
     evid_holder['max_tail_len'][clv_key] = max(
         evid_holder['max_tail_len'][clv_key], tail_len)
+    if hex_tuple is not None:
+        evid_holder['hexamer_tuple'][clv_key] = hex_tuple
 
 
 def is_a_bridge_read(read):
@@ -43,6 +48,7 @@ def init_evidence_holder():
     return {
         'num_reads': defaultdict(int),
         'max_tail_len': defaultdict(int),
+        'hexamer_tuple': defaultdict(lambda: None),  # TODO: maybe defaultdict(tuple)
     }
 
 
@@ -149,18 +155,43 @@ def do_bridge(contig, read):
         return do_forward_contig(contig, read)
 
 
-def analyze_bridge(contig, read):
+def analyze_bridge(contig, read, dd_bridge):
+    """
+    :param dd_bridge: holds bridge_evidence for a given contig, here it's just
+    used to check if hexamer_search has already been done for a given ref_clv
+    """
     seqname = contig.reference_name
 
     strand, ctg_offset, tail_len, tail_direction = do_bridge(contig, read)
-    offset = calc_genome_offset(contig.cigartuples, ctg_offset, tail_direction)
-    gnm_clv = contig.reference_start + offset
 
-    return seqname, strand, gnm_clv, tail_len
+    offset = calc_genome_offset(contig.cigartuples, ctg_offset, tail_direction)
+
+    ref_clv = contig.reference_start + offset
+
+    # TODO: factor out
+    clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
+    if dd_bridge['hexamer_tuple'][clv_key] is None:  # do search
+        window = 50
+        ctg_seq = contig.query_sequence
+        if strand == '+':
+            # sequence to search for potential hexamer
+            hex_src_seq = ctg_seq[ctg_offset - window + 1:ctg_offset + 1]
+        else:
+            hex_src_seq = ctg_seq[ctg_offset:ctg_offset + window]
+
+        ctg_hex_tuple = search(strand, ref_clv, hex_src_seq)
+        if ctg_hex_tuple is None:
+            ctg_hex_tuple = ('NA', -1, -1)
+    else:
+        ctg_hex_tuple = None
+
+    return seqname, strand, ref_clv, tail_len, ctg_hex_tuple
 
 
 def gen_clv_record(contig, clv_key_tuple,
-                   num_bridge_reads, max_bridge_tail_len, ref_fa=None):
+                   num_bridge_reads, max_bridge_tail_len,
+                   ctg_hex_tuple,
+                   ref_fa=None):
     """
     :param contig: bridge contig
     :clv_key_tuple: a tuple of (seqname, strand, cleavage_site_position)
@@ -168,9 +199,7 @@ def gen_clv_record(contig, clv_key_tuple,
     """
     seqname, strand, ref_clv = clv_key_tuple
 
-    ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
-        contig, strand, ref_clv)
-
+    ctg_hex, ctg_hex_id, ctg_hex_pos = ctg_hex_tuple
     ref_hex, ref_hex_id, ref_hex_pos = gen_reference_hexamer_tuple(
         ref_fa, contig.reference_name, strand, ref_clv)
 
