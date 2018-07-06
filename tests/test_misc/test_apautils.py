@@ -31,19 +31,6 @@ mock_right_tailed_read.reference_start = 11  # this is arbitray
 mock_right_tailed_read.reference_end = 13
 
 
-def test_infer_abs_ref_start_with_soft_clipped_cigar():
-    # TODO: may need to test more situations (e.g. hard clip), may gain insight
-    # from simulation data
-    f = A.infer_abs_ref_start
-    assert f(mock_left_tailed_read) == 8 # 11 (reference_start) - 3 (soft-clipped bases/tail)
-
-
-def test_infer_abs_ref_end_with_soft_clipped_cigar():
-    # TODO: similar to above
-    f = A.infer_abs_ref_end
-    assert f(mock_right_tailed_read) == 17 # 13 (reference_end) + 4 (soft-clipped bases/tail)
-
-
 def test_left_tail():
     assert A.left_tail(mock_left_tailed_read) is True
     assert A.left_tail(mock_right_tailed_read) is False

@@ -9,32 +9,6 @@ def gen_clv_key_str(seqname, strand, clv):
     return '{seqname}|{strand}|{clv}'.format(**locals())
 
 
-def infer_abs_ref_start(segment):
-    """
-    infer the absolute starting position wst. reference taking into
-    consideration the non-M bases (e.g. soft-clipped bases)
-    """
-    pos = segment.reference_start
-    for key, val in segment.cigartuples:
-        if key != BAM_CMATCH:
-            pos -= val
-        break
-    return pos
-
-
-def infer_abs_ref_end(segment):
-    """
-    infer the absolute ending position wst. reference taking into consideration
-    the non-M bases (e.g. soft-clipped bases)
-    """
-    pos = segment.reference_end
-    for key, val in reversed(segment.cigartuples):
-        if key != BAM_CMATCH:
-            pos += val
-        break
-    return pos
-
-
 """
 Below are utility functions that apply to both contig and read as long as
 they have a tail
