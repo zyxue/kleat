@@ -205,7 +205,7 @@ def main():
     logger.info('df.shape: {0}'.format(df_clv.shape))
 
     df_clv_with_adist = add_abs_dist_to_annot_clv(df_clv, df_mapping)
-    df_clv_with_adist.to_csv(output, sep='\t')
+    df_clv_with_adist.to_csv(output, sep='\t', index=False)
 
     # TODO: remove tmp_output
 
