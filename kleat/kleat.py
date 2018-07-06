@@ -33,6 +33,13 @@ def get_args():
         help='input read-to-contig alignment BAM file'
     )
     parser.add_argument(
+        '-f', '--reference-genome', type=str,
+        help=('(optional) reference genome FASTA file, if provided, '
+              'KLEAT will search polyadenylation signal (PAS) hexamer in '
+              'both contig and reference genome, which is useful for '
+              'checking mutations that may affect PAS hexmaer')
+    )
+    parser.add_argument(
         '-o', '--output', type=str, default='./output.tsv',
         help='output tsv file'
     )
