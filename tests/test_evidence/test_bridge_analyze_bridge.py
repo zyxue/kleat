@@ -1,6 +1,7 @@
 from unittest.mock import MagicMock
 
 from kleat.evidence import bridge
+from kleat.misc.apautils import gen_clv_key_tuple
 import kleat.misc.settings as S
 
 
@@ -126,7 +127,13 @@ def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():
 
     ref_clv = 2                 # =ctg_offset because c.reference_end = 0
     tail_len = 3
-    assert bridge.analyze_bridge(c, r) == ('chr1', '-', ref_clv, tail_len)
+
+    # just for the sake of fullfilling API requirement
+    mock_dd_bridge = bridge.init_evidence_holder()
+    clv_key = gen_clv_key_tuple('chr1', '-', ref_clv)
+    mock_dd_bridge['hexamer_tuple'][clv_key] = ('NA', -1, -1)
+
+    assert bridge.analyze_bridge(c, r, mock_dd_bridge) == ('chr1', '-', ref_clv, tail_len, None)
 
 
 def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
@@ -152,4 +159,10 @@ def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
 
     ref_clv = 3                 # =ctg_offset because c.reference_end = 0
     tail_len = 2
-    assert bridge.analyze_bridge(c, r) == ('chr1', '+', ref_clv, tail_len)
+
+    # just for the sake of fullfilling API requirement
+    mock_dd_bridge = bridge.init_evidence_holder()
+    clv_key = gen_clv_key_tuple('chr1', '+', ref_clv)
+    mock_dd_bridge['hexamer_tuple'][clv_key] = ('NA', -1, -1)
+
+    assert bridge.analyze_bridge(c, r, mock_dd_bridge) == ('chr1', '+', ref_clv, tail_len, None)
