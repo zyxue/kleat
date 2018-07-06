@@ -115,19 +115,18 @@ def search_reference_genome(refseq, chrom, clv, strand, window=50):
 def extract_seq(contig):
     """remove clipped ends before searching for hexamer, the clipped ends would
     affect calculation of genomics coordinates of the found PAS hexamer"""
-    beg_offset = 0
-    end_offset = None
-    for key, val in contig.cigartuples:
-        if key == S.BAM_CSOFT_CLIP:
-            beg_offset = val
-        if key == S.BAM_CHARD_CLIP:
-            end_offset = val
-
     seq = contig.query_sequence
-    if end_offset is None:
-        return seq[beg_offset:end_offset]
-    else:
-        return seq[beg_offset:]
+
+    head_idx = 0
+    tail_idx = len(seq)
+    for k, (key, val) in enumerate(contig.cigartuples):
+        if k == 0:
+            if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
+                head_idx = val
+        else:
+            if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
+                tail_idx = -val
+    return seq[head_idx:tail_idx]
 
 
 def gen_contig_hexamer_tuple(contig, strand, ref_clv):
