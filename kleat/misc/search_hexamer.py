@@ -16,7 +16,7 @@ def reverse_complement(seq):
 
 def gen_coords(clv, strand, window=50):
     """
-    generate the coordinates to be used for fetching sequence
+    generate the coordinates to be used for cutoff of searching range
     """
     if strand == '+':
         beg = clv - window + 1
