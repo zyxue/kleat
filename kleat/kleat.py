@@ -65,8 +65,8 @@ def process_bridge_and_link(contig, r2c_bam, ref_fa, csvwriter):
         link.write_evidence(dd_link, contig, ref_fa, csvwriter)
 
 
-def process_blank(contig, csvwriter):
-    for clv_rec in blank.gen_two_clv_records(contig):
+def process_blank(contig, ref_fa, csvwriter):
+    for clv_rec in blank.gen_two_clv_records(contig, ref_fa, ):
         apautils.write_row(clv_rec, csvwriter)
 
 
@@ -117,7 +117,11 @@ def main():
                 contig, r2c_bam, ref_fa, csvwriter)
             process_bridge_and_link(
                 contig, r2c_bam, ref_fa, csvwriter)
-            # process_blank(contig, csvwriter)
+            process_blank(contig, ref_fa, csvwriter)
+
+    logger.info('reading {0} into a pandas.DataFrame')
+
+
 
 if __name__ == "__main__":
     main()

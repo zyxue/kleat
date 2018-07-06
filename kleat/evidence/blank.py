@@ -1,7 +1,11 @@
 from kleat.misc.settings import ClvRecord
 
+from kleat.misc.search_hexamer import (
+    gen_contig_hexamer_tuple, gen_reference_hexamer_tuple
+)
 
-def gen_two_clv_records(blank_contig):
+
+def gen_two_clv_records(contig, ref_fa):
     """
     Assume there is still a clv at the 3' end of the contig even without any
     polya evidence, in thus case, there is no direction, so either end of the
@@ -10,18 +14,24 @@ def gen_two_clv_records(blank_contig):
 
     strands = ['+', '-']
     ref_clv_candidates = [
-        blank_contig.reference_end + 1,
-        blank_contig.reference_start
+        contig.reference_end + 1,
+        contig.reference_start
     ]
 
     for strand, ref_clv in zip(strands, ref_clv_candidates):
+        ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
+            contig, strand, ref_clv)
+
+        ref_hex, ref_hex_id, ref_hex_pos = gen_reference_hexamer_tuple(
+            ref_fa, contig.reference_name, strand, ref_clv)
+
         yield ClvRecord(
-            blank_contig.reference_name, strand, ref_clv,
+            contig.reference_name, strand, ref_clv,
 
             'blank',
-            blank_contig.query_name,
-            blank_contig.query_length,
-            blank_contig.mapq,
+            contig.query_name,
+            contig.query_length,
+            contig.mapq,
 
             0,                   # num_tail_reads
             0,                   # tail_length
@@ -29,5 +39,9 @@ def gen_two_clv_records(blank_contig):
             0,                   # max_bridge_tail_len
 
             0,                   # num_link_reads
-            num_blank_contigs=1
+            1,                   # num_blank_contigs
+
+            ctg_hex, ctg_hex_id, ctg_hex_pos,
+            ref_hex, ref_hex_id, ref_hex_pos
+
         )
