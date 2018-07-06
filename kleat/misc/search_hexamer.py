@@ -79,3 +79,30 @@ def search(strand, clv, seq, window=50):
     # -1 as it's 0-based
     res = search_hexamer(seq, strand, beg, end - 1)
     return res
+
+
+def fetch_seq(refseq, chrom, beg, end):
+    """.fetch seems to be (beg, end]"""
+    beg = max(beg, 0)
+    end = min(end, refseq.get_reference_length(chrom))
+    return refseq.fetch(chrom, beg, end)
+
+
+def search_reference_genome(refseq, chrom, clv, strand, window=50):
+    """
+    Different from search, this function search hexamer on reference genome
+
+    :param refseq: an object returned by pysam.FastaFile, see TestSearch for
+    its usage
+
+    :param clv: 0-based. suppposed to be the 1-based coordinate of last base of
+    3' UTR (e.g. output by KLEAT) - 1. converted to 0-based because pysam is
+    0-based.
+
+    return: a tuple of (hexamer, hexamer id (indicates strength), 0-based hexamer location)
+    """
+    beg, end = gen_coords(clv, strand, window)
+    seq = fetch_seq(refseq, chrom, beg, end)
+    # -1 as it's 0-based
+    res = search_hexamer(seq, strand, beg, end - 1)
+    return res
