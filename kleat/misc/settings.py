@@ -60,4 +60,22 @@ CANDIDATE_HEXAMERS = [
 ]
 
 
-COMPLEMENT_DICT = str.maketrans("ACTG", "TGAC")
+# # kept for reference
+# COMPLEMENT_DICT = str.maketrans("ACTG", "TGAC")
+
+
+# For later use
+# # used when merging polyA evidence
+# COLUMS_TO_SUM = [
+#     'num_suffix_reads',
+#     'num_bridge_reads',
+#     'num_link_reads',
+#     'num_blank_contigs'
+# ]
+
+# COLUMS_TO_MAX = [
+#     'contig_len',
+#     'contig_mapq',
+#     'suffix_contig_tail_len',
+#     'max_bridge_read_tail_len'
+# ]
