@@ -34,28 +34,28 @@ def test_calc_genome_offset_for_nonskipped_forward_contig(
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
 
 
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset_cutoff, gnm_offset", [
-    # ctg_offset_cutoff before skip happens
+@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
+    # ctg_offset before skip happens
     [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 2, 2],
-    # ctg_offset_cutoff after skip happens
+    # ctg_offset after skip happens
     [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 12, 17],
 ])
 def test_calc_genome_offset_for_skipped_contig(
-        ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, 'left') == gnm_offset
+        ctg_cigartuples, ctg_offset, gnm_offset):
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
 
 
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset_cutoff, gnm_offset", [
+@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 5, 5],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 31, 31],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 32, 34],
     [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 33, 35],
 ])
-def test_calc_genome_offset_for_contig_with_deletion(ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, 'left') == gnm_offset
+def test_calc_genome_offset_for_contig_with_deletion(ctg_cigartuples, ctg_offset, gnm_offset):
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
 
 
-@pytest.mark.parametrize("ctg_offset_cutoff, expected_gnm_offset", [
+@pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
     # before the insertion, see example in the docstring
     [2, 2],
     [3, 3],
@@ -70,7 +70,7 @@ def test_calc_genome_offset_for_contig_with_deletion(ctg_cigartuples, ctg_offset
     [7, 4],
     [8, 5],
 ])
-def test_calc_genome_offset_for_contig_with_three_base_insertion(ctg_offset_cutoff, expected_gnm_offset):
+def test_calc_genome_offset_for_contig_with_three_base_insertion(ctg_offset, expected_gnm_offset):
     """
        AGC  <-inserted sequence
        456  <-contig coord for inserted sequence
@@ -80,10 +80,10 @@ def test_calc_genome_offset_for_contig_with_three_base_insertion(ctg_offset_cuto
     0123 45 <-genome offset
     """
     ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 3), (BAM_CMATCH, 2))
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, 'left') == expected_gnm_offset
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
 
 
-@pytest.mark.parametrize("ctg_offset_cutoff, expected_gnm_offset", [
+@pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
     # before the insertion, see example in the docstring
     [2, 2],
     [3, 3],
@@ -95,7 +95,7 @@ def test_calc_genome_offset_for_contig_with_three_base_insertion(ctg_offset_cuto
     [5, 4],
     [6, 5],
 ])
-def test_calc_genome_offset_for_contig_with_one_base_insertion(ctg_offset_cutoff, expected_gnm_offset):
+def test_calc_genome_offset_for_contig_with_one_base_insertion(ctg_offset, expected_gnm_offset):
     # thought one-base case might be more suitable for testing edgecases
     """
         G   <-inserted sequence
@@ -106,16 +106,16 @@ def test_calc_genome_offset_for_contig_with_one_base_insertion(ctg_offset_cutoff
     0123 45 <-genome offset
     """
     ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 1), (BAM_CMATCH, 2))
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, 'left') == expected_gnm_offset
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
 
 
 
 
-@pytest.mark.parametrize("ctg_offset_cutoff, expected_gnm_offset", [
+@pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
     [3, 1],                   # overlap with clv extracted from suffix evidence
     [4, 2],                   # bridge tail is a bit after the contig tail
 ])
-def test_calc_genome_offset_for_contig_with_softclip(ctg_offset_cutoff, expected_gnm_offset):
+def test_calc_genome_offset_for_contig_with_softclip(ctg_offset, expected_gnm_offset):
     """
      TT
     012
@@ -124,14 +124,14 @@ def test_calc_genome_offset_for_contig_with_softclip(ctg_offset_cutoff, expected
       0123 <-genome offset
     """
     ctg_cigartuples = ((BAM_CSOFT_CLIP, 2), (BAM_CMATCH, 3))
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, 'left') == expected_gnm_offset
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
 
 
-@pytest.mark.parametrize("ctg_offset_cutoff, expected_gnm_offset", [
+@pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
     [3, 1],                   # overlap with clv extracted from suffix evidence
     [4, 2],                   # bridge tail is a bit after the contig tail
 ])
-def test_calc_genome_offset_for_contig_with_hardclip(ctg_offset_cutoff, expected_gnm_offset):
+def test_calc_genome_offset_for_contig_with_hardclip(ctg_offset, expected_gnm_offset):
     """
     The calculation with soft-clipped contig is the same except the CIGAR
 
@@ -143,4 +143,4 @@ def test_calc_genome_offset_for_contig_with_hardclip(ctg_offset_cutoff, expected
 
     """
     ctg_cigartuples = ((BAM_CHARD_CLIP, 2), (BAM_CMATCH, 3))
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, 'left') == expected_gnm_offset
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
