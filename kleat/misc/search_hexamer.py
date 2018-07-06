@@ -8,7 +8,7 @@ of a reference genome
 
 from Bio import Seq
 
-from kleat.misc.settings import CANDIDATE_HEXAMERS, COMPLEMENT_DICT
+import kleat.misc.settings as S
 
 
 def reverse_complement(seq):
@@ -41,7 +41,7 @@ def plus_search(seq, right_coord):
     """
     seq = seq.upper()
     left_coord = right_coord - len(seq) + 1
-    for (hmr, hid) in CANDIDATE_HEXAMERS:
+    for (hmr, hid) in S.CANDIDATE_HEXAMERS:
         idx = seq.rfind(hmr)
         if idx > -1:
             return hmr, hid, idx + left_coord
@@ -52,7 +52,7 @@ def minus_search(seq, left_coord):
     :param left_coord: the coordinate of the leftmost base in `seq`
     """
     seq = reverse_complement(seq.upper())
-    for (hmr, hid) in CANDIDATE_HEXAMERS:
+    for (hmr, hid) in S.CANDIDATE_HEXAMERS:
         idx = seq.rfind(hmr)
         if idx > -1:
             return hmr, hid, len(seq) - idx + left_coord - 1
@@ -110,3 +110,45 @@ def search_reference_genome(refseq, chrom, clv, strand, window=50):
     # -1 as it's 0-based
     res = search_hexamer(seq, strand, beg, end - 1)
     return res
+
+
+def extract_seq(contig):
+    """remove clipped ends before searching for hexamer, the clipped ends would
+    affect calculation of genomics coordinates of the found PAS hexamer"""
+    beg_offset = 0
+    end_offset = -1
+    for key, val in contig.cigartuples:
+        if key == S.BAM_CSOFT_CLIP:
+            beg_offset = val
+        if key == S.BAM_CHARD_CLIP:
+            end_offset = val
+    return contig.query_sequence[beg_offset: end_offset]
+
+
+def gen_contig_hexamer_tuple(contig, strand, ref_clv):
+    """search PAS hexamer in contig"""
+    # no need to reverse_complement the seq as the hexamer search function is
+    # designed to search reference genome sequence, rev_comp is taken care of
+    # within the function
+    ctg_seq = extract_seq(contig)
+    ctg_hex_tuple = search(strand, ref_clv, ctg_seq)
+
+    if ctg_hex_tuple is not None:
+        return ctg_hex_tuple
+    else:
+        return 'NA', -1, -1     # ctg_hex, ctg_hex_id, ctg_hex_pos
+
+
+def gen_reference_hexamer_tuple(ref_fa, chrom_name, strand, ref_clv):
+    """search PAS hexamer in reference genome"""
+    na_tuple = 'NA', -1, -1     # ref_hex, ref_hex_id, ref_hex_pos
+    if ref_fa is None:
+        return na_tuple
+    else:
+        ref_hex_tuple = search_reference_genome(
+            ref_fa, chrom_name, ref_clv, strand)
+
+        if ref_hex_tuple is None:
+            return na_tuple
+        else:
+            return ref_hex_tuple

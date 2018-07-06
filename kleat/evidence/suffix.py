@@ -4,8 +4,12 @@ assumed to be suffix contigs
 """
 
 from kleat.misc import apautils
-import kleat.misc.search_hexamer as srch_hex
-import kleat.misc.settings as S
+from kleat.misc.settings import ClvRecord
+from kleat.misc.search_hexamer import (
+    gen_contig_hexamer_tuple, gen_reference_hexamer_tuple
+)
+
+
 
 
 def calc_num_suffix_reads(r2c_bam, suffix_contig, ref_clv):
@@ -22,19 +26,6 @@ def calc_num_suffix_reads(r2c_bam, suffix_contig, ref_clv):
     return num_tail_reads
 
 
-def extract_seq(contig):
-    """remove clipped ends before searching for hexamer, the clipped ends would
-    affect calculation of genomics coordinates of the found PAS hexamer"""
-    beg_offset = 0
-    end_offset = -1
-    for key, val in contig.cigartuples:
-        if key == S.BAM_CSOFT_CLIP:
-            beg_offset = val
-        if key == S.BAM_CHARD_CLIP:
-            end_offset = val
-    return contig.query_sequence[beg_offset: end_offset]
-
-
 def gen_clv_record(contig, r2c_bam, tail_side, ref_fa=None):
     """
     :param contig: suffix contig
@@ -48,25 +39,13 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa=None):
 
     num_suffix_reads = calc_num_suffix_reads(r2c_bam, contig, ref_clv)
 
-    ctg_hex, ctg_hex_id, ctg_hex_pos = 'NA', -1, -1
-    ref_hex, ref_hex_id, ref_hex_pos = 'NA', -1, -1
+    ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
+        contig, strand, ref_clv)
 
-    # no need to reverse_complement the seq as the hexamer search function is
-    # designed to search reference genome sequence, rev_comp is taken care of
-    # within the function
-    ctg_seq = extract_seq(contig)
-    ctg_hex_tuple = srch_hex.search(strand, ref_clv, ctg_seq)
+    ref_hex, ref_hex_id, ref_hex_pos = gen_reference_hexamer_tuple(
+        ref_fa, contig.reference_name, strand, ref_clv)
 
-    if ctg_hex_tuple is not None:
-        ctg_hex, ctg_hex_id, ctg_hex_pos = ctg_hex_tuple
-
-    if ref_fa is not None:
-        ref_hex_tuple = srch_hex.search_reference_genome(
-            ref_fa, contig.reference_name, ref_clv, strand)
-        if ref_hex_tuple is not None:
-            ref_hex, ref_hex_id, ref_hex_pos = ref_hex_tuple
-
-    return S.ClvRecord(
+    return ClvRecord(
         contig.reference_name,
         strand,
         ref_clv,
