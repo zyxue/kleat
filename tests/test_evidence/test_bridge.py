@@ -16,13 +16,22 @@ def test_bridge_init_evidence_holder():
     }
 
 
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset_cutoff, gnm_offset", [
+@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
+    [((BAM_CMATCH, 4),), 1, 1],  # with ascii drawing
+
     [((BAM_CMATCH, 10),), 2, 2],
     [((BAM_CMATCH, 20),), 5, 5],
 ])
-def test_calc_genome_offset_for_nonskipped_contig(
-        ctg_cigartuples, ctg_offset_cutoff, gnm_offset):
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, 'left') == gnm_offset
+def test_calc_genome_offset_for_nonskipped_forward_contig(
+        ctg_cigartuples, ctg_offset, gnm_offset):
+    """
+     TT
+      └AC  <-bridge read
+      AACG <-bridge contig
+      0123 <-contig coord
+      0123 <-genome offset
+    """
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
 
 
 @pytest.mark.parametrize("ctg_cigartuples, ctg_offset_cutoff, gnm_offset", [
