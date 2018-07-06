@@ -30,18 +30,44 @@ def test_calc_genome_offset_for_nonskipped_forward_contig(
       AACG <-bridge contig
       0123 <-contig coord
       0123 <-genome offset
+       ^ctf/gnm_offset
+    """
+    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
+
+
+
+@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
+    [((BAM_CMATCH, 6), (BAM_CREF_SKIP, 2), (BAM_CMATCH, 4)), 2, 2],  # with ascii drawing below
+    [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 2, 2],
+])
+def test_calc_genome_offset_for_skipped_forward_contig_when_ctg_offset_is_before_skipping_happens(
+        ctg_cigartuples, ctg_offset, gnm_offset):
+    """
+      TT
+      |└AC  <-bridge read
+      AACGTA--ATCG <-bridge contig
+      012345  6789 <-contig coord
+      012345678901 <-genome offset
+        ^ctf/gnm_offset
     """
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
 
 
 @pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
-    # ctg_offset before skip happens
-    [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 2, 2],
-    # ctg_offset after skip happens
+    [((BAM_CMATCH, 2), (BAM_CREF_SKIP, 2), (BAM_CMATCH, 6)), 4, 6],  # with ascii drawing below
+
     [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 12, 17],
 ])
-def test_calc_genome_offset_for_skipped_contig(
+def test_calc_genome_offset_for_skipped_forward_contig_when_ctg_offset_is_after_skipping_happens(
         ctg_cigartuples, ctg_offset, gnm_offset):
+    """
+          TT
+          |└AC  <-bridge read
+      CG--ATCGAT <-bridge contig
+      01  234567 <-contig coord
+      0123456789 <-genome offset
+            ^ctf/gnm_offset
+    """
     assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
 
 
