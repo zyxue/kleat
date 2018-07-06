@@ -10,7 +10,7 @@ import kleat.misc.settings as S
 def test_analyze_forward_link_for_polyA_read():
     """
       CCG-------AAA   <-right-tail read
-     XCCGXX           <-contig
+    XXCCGX            <-contig
     0123456           <-genome coord
     """
     r = MagicMock()
@@ -20,56 +20,65 @@ def test_analyze_forward_link_for_polyA_read():
     c.reference_start = 0
     c.reference_end = 6
 
-    assert link.analyze_forward_link(c, r) == ('+', 6)
+    strand, ref_clv = link.analyze_forward_link(c, r) 
+    assert strand == '+'
+    assert ref_clv == 5
 
 
 def test_analyze_forward_link_for_polyT_read():
     """
-    TTT-------CCG   <-right-tail read
-             XCCGXX <-contig
-            0123456 <-genome coord
+    TTT-------CCG    <-right-tail read
+             XCCGXX  <-contig
+            01234567 <-genome coord
     """
     r = MagicMock()
     r.query_sequence = 'TTT'
 
     c = MagicMock()
-    c.reference_start = 0
+    c.reference_start = 1
     c.reference_end = 7
 
-    assert link.analyze_forward_link(c, r) == ('-', 1)
+    strand, ref_clv = link.analyze_forward_link(c, r)
+    assert strand == '-'
+    assert ref_clv == 1
 
 
 def test_analyze_reverse_link_for_polyA_read():
     """
     polyA read is polyT before reverse
 
-    TTT-------CCG   <-right-tail read
-             XCCGXX <-contig
-            0123456 <-genome coord
+    TTT-------CCG    <-right-tail read
+             XCCGXX  <-contig
+            01234567 <-genome coord
     """
     r = MagicMock()
     r.query_sequence = 'AAA'
 
     c = MagicMock()
-    c.reference_start = 0
+    c.reference_start = 1
     c.reference_end = 7
 
-    assert link.analyze_reverse_link(c, r) == ('-', 1)
+    strand, ref_clv = link.analyze_reverse_link(c, r)
+    assert strand == '-'
+    assert ref_clv == 1
 
 
 def test_analyze_reverse_link_for_polyT_reads():
     """
     polyT read is polyA before reverse
 
-      CCG-------AAA   <-right-tail read
-     XCCGXX           <-contig
-    0123456           <-genome coord
+       CCG-------AAA   <-right-tail read
+      XCCGXX           <-contig
+    012345678          <-genome coord
     """
     r = MagicMock()
     r.query_sequence = 'TTT'
 
     c = MagicMock()
-    c.reference_start = 0
-    c.reference_end = 6
+    c.reference_start = 2
+    c.reference_end = 7
 
-    assert link.analyze_reverse_link(c, r) == ('+', 6)
+    strand, ref_clv = link.analyze_reverse_link(c, r)
+    assert strand == '-'
+    assert ref_clv == 7
+

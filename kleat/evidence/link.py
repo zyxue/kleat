@@ -50,9 +50,9 @@ def analyze_forward_link(contig, read):
     """
     seq = read.query_sequence
     if allN(seq, 'T'):
-        return '-', contig.reference_start + 1
+        return '-', contig.reference_start
     elif allN(seq, 'A'):
-        return '+', contig.reference_end
+        return '+', contig.reference_end - 1
     else:
         raise ValueError('NOT a polyA/T read: {0}'.format(read))
 
@@ -65,9 +65,9 @@ def analyze_reverse_link(contig, read):
     """
     seq = read.query_sequence
     if allN(seq, 'T'):
-        return '+', contig.reference_end
+        return '+', contig.reference_end - 1
     elif allN(seq, 'A'):
-        return '-', contig.reference_start + 1
+        return '-', contig.reference_start
     else:
         raise ValueError('NOT a polyA/T read: {0}'.format(read))
 
