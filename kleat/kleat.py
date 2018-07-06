@@ -109,10 +109,18 @@ def gen_ref_fa(ref_genome_file):
 
 
 def calc_abs_dist_to_annot_clv(grp, annot_clvs):
-    aclvs = annot_clvs.loc[grp.name]
     aclvs = annot_clvs.loc[grp.name] # grp.name holds the group key
     bcast = np.broadcast_to(grp.clv.values, (aclvs.shape[0], grp.shape[0])).T
-    grp['abs_dist_to_aclv'] = np.min(np.abs(bcast - aclvs), axis=1)
+
+    sgn_dists = bcast - aclvs   # sgn: signed
+    abs_dists = np.abs(sgn_dists)
+    min_idxes = np.argmin(abs_dists, axis=1)
+
+    nrows = abs_dists.shape[0]
+    dists = sgn_dists[np.arange(nrows), min_idxes]
+
+    grp['aclv'] = aclvs[min_idxes]
+    grp['signed_dist_to_aclv'] = dists
     return grp
 
 
