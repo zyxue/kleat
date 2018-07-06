@@ -43,7 +43,8 @@ def test_do_forwad_contig_left_tail_bridge_read_2():
       1
       ^ctg_offset
     """
-    mock_read = get_mock_read(10, 18, [(S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 8)])
+    mock_read = get_mock_read(
+        ref_beg=10, ref_end=18, cigartuples=[(S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 8)])
     ctg_offset = 10
     tail_len = 2
     assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', ctg_offset, tail_len)
@@ -51,14 +52,15 @@ def test_do_forwad_contig_left_tail_bridge_read_2():
 
 def test_do_forwad_contig_right_tail_bridge_read():
     """
-         AA
-      CCG┘| <-right-tail read
+        AA
+     CCG┘| <-right-tail read
     XXCCGXX <-contig
     0123456 <-contig coord
-        ^ctg_offset
+       ^ctg_offset
     """
-    mock_read = get_mock_read(1, 4, [(S.BAM_CMATCH, 4), (S.BAM_CSOFT_CLIP, 2)])
-    ctg_offset = 4
+    mock_read = get_mock_read(
+        ref_beg=1, ref_end=4, cigartuples=[(S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 2)])
+    ctg_offset = 3
     tail_len = 2
     assert bridge.do_fwd_ctg_rt_bdg(mock_read) == ('+', ctg_offset, tail_len)
 
@@ -72,7 +74,8 @@ def test_do_reverse_contig_left_tail_bridge_read():
             6543210 <-reversed contig coord, i.e. gnm offset from right to left
     ctg_offset^
     """
-    mock_read = get_mock_read(2, 5, [(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
+    mock_read = get_mock_read(
+        ref_beg=2, ref_end=5, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
     # in genome coordinates, it's reversed, the the clv points to the position
     # of A, while position 0 point to the position after G.
     contig_len = 7
@@ -90,7 +93,8 @@ def test_do_reverse_contig_right_tail_bridge_read():
            6543210 <-reversed contig coord
     ctg_offset^
     """
-    mock_read = get_mock_read(1, 4, [(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 2)])
+    mock_read = get_mock_read(
+        ref_beg=1, ref_end=4, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 2)])
     # in genome coordinates, it's reversed, the the clv points to the position
     # of A, while position 0 point to the position after G.
     contig_len = 7
@@ -101,11 +105,11 @@ def test_do_reverse_contig_right_tail_bridge_read():
 
 def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():
     """
-     TTT
-       └ACG   <-left-tail read
-      XXACGX  <-contig
-      123456  <-contig coord
-     01234567 <-contig coord
+    TTT
+     |└ACG   <-left-tail read
+     XXACGXX <-contig
+     0123456 <-contig coord
+       ^ctg_offset
     """
     r = MagicMock()
     r.reference_start = 2
@@ -120,16 +124,18 @@ def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():
     c.reference_end = 7
     c.cigartuples = ((S.BAM_CMATCH, 7),)
 
-    assert bridge.analyze_bridge(c, r) == ('chr1', '-', 3, 3)
+    ref_clv = 2                 # =ctg_offset because c.reference_end = 0
+    tail_len = 3
+    assert bridge.analyze_bridge(c, r) == ('chr1', '-', ref_clv, tail_len)
 
 
 def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
     """
-          AA
-       CCG┘   <-right-tail read
-      XCCGXX  <-contig
+         AA
+      CCG┘|   <-right-tail read
+     XXCCGXX  <-contig
      0123456  <-contig coord
-     01234567 <-contig coord
+        ^ctg_offset
     """
     r = MagicMock()
     r.reference_start = 1
@@ -144,5 +150,6 @@ def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
     c.reference_end = 7
     c.cigartuples = ((S.BAM_CMATCH, 7),)
 
-    assert bridge.analyze_bridge(c, r) == ('chr1', '+', 4, 2)
-
+    ref_clv = 3                 # =ctg_offset because c.reference_end = 0
+    tail_len = 2
+    assert bridge.analyze_bridge(c, r) == ('chr1', '+', ref_clv, tail_len)
