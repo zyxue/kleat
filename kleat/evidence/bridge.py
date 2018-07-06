@@ -115,7 +115,7 @@ def do_rev_ctg_lt_bdg(read, ctg_len):
 
 
 def do_rev_ctg_rt_bdg(read, ctg_len):
-    return '-', ctg_len - read.reference_end + 1, read.cigartuples[-1][1]
+    return '-', ctg_len - read.reference_end, read.cigartuples[-1][1]
 
 
 def do_forward_contig(contig, read):
