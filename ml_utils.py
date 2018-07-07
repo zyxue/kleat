@@ -60,6 +60,16 @@ def compare(df_pred, df_ref, dist_cutoff=50):
     return sensitivity, precision, f1
 
 
+def load_polya_seq_df_114genes(sample_id):
+    dd = {
+        'UHRC1': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C1/polyA-Seq/polyA-Seq-truth-114-genes.csv',
+        'UHRC2': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C2/polyA-Seq/polyA-Seq-truth-114-genes.csv',
+        'HBRC4': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C4/polyA-Seq/polyA-Seq-truth-114-genes.csv',
+        'HBRC6': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C6/polyA-Seq/polyA-Seq-truth-114-genes.csv'
+    }
+    return load_bed(dd[sample_id])
+
+
 def load_polya_seq_df(sample_id):
     dd = {
         'UHRC1': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/UHR1.bed',
@@ -67,6 +77,4 @@ def load_polya_seq_df(sample_id):
         'HBRC4': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain1.bed',
         'HBRC6': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain2.bed'
     }
-
-    bed = dd[sample_id]
-    return load_bed(bed)
+    return load_bed(dd[sample_id])
