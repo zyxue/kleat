@@ -2,6 +2,7 @@ import os
 import sys
 import csv
 import logging
+import multiprocessing
 
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier
@@ -30,13 +31,23 @@ def map_df(df, sample_id, mapping_cutoff=50):
     return df
 
 
-def train(df_tr_mapped, max_depth):
+def prepare_args(df_tr_mapped, max_depth_list):
     Xs = df_tr_mapped[KARBOR_FEATURE_COLS]
     ys = df_tr_mapped.is_tp.values
-    clf = DecisionTreeClassifier(max_depth=max_depth)
-    logging.info('training in process ...')
+    res = []
+    for d in max_depth_list:
+        clf = DecisionTreeClassifier(max_depth=d)
+        res.append([clf, Xs, ys])
+    return res
+
+
+def train_it(clf, Xs, ys):
     clf.fit(Xs, ys)
     return clf
+
+
+def train_it_wrapper(args):
+    return train_it(*args)
 
 
 def predict(test_sample_id, clf):
@@ -59,37 +70,46 @@ def cluster_clv(df, cutoff=20):
     return out
 
 
-MAP_CUTOFF = 50
-SAMPLE_IDS = [
-    'HBRC4',
-    'HBRC6',
-    'UHRC1',
-    'UHRC2'
-]
+if __name__ == "__main__":
+    MAP_CUTOFF = 50
+    NUM_CPUS = 8
 
-ref_sample_id = sys.argv[1]
-df_tr = load_df(ref_sample_id)
-df_tr_mapped = map_df(df_tr, ref_sample_id)
+    SAMPLE_IDS = [
+        'HBRC4',
+        'HBRC6',
+        'UHRC1',
+        'UHRC2'
+    ]
 
-max_depth_list = range(2, 10, 1)
-outfile = './out.csv'
-backup_file(outfile)
-with open(outfile, 'wt') as opf:
-    csvwriter = csv.writer(opf)
-    csvwriter.writerow(
-        ['sample_id', 'precision', 'recall', 'f1', 'tree_max_depth']
-    )
-    for max_depth in max_depth_list:
-        print(f'training on {ref_sample_id} with max tree depth: {max_depth}')
-        clf = train(df_tr_mapped, max_depth)
+    ref_sample_id = sys.argv[1]
+    df_tr = load_df(ref_sample_id)
 
-        for test_sample_id in SAMPLE_IDS:
-            print(f'testing on {test_sample_id}')
-            df_predicted = predict(test_sample_id, clf)
-            df_clustered = cluster_clv(df_predicted)
-            df_ref = load_polya_seq_df(test_sample_id)
+    df_tr_mapped = map_df(df_tr, ref_sample_id)
+    max_depth_list = range(2, 20, 1)
 
-            reca, prec, f1 = compare(df_clustered, df_ref)
-            csvwriter.writerow(
-                [test_sample_id, prec, reca, f1, max_depth]
-            )
+    train_args = prepare_args(df_tr_mapped, max_depth_list)
+
+    with multiprocessing.Pool(NUM_CPUS) as p:
+        logging.info('start training in parallel ...')
+        clf_list = p.map(train_it_wrapper, train_args)
+
+    outfile = './out.csv'
+    backup_file(outfile)
+    with open(outfile, 'wt') as opf:
+        csvwriter = csv.writer(opf)
+        csvwriter.writerow(
+            ['sample_id', 'precision', 'recall', 'f1', 'tree_max_depth']
+        )
+        for clf, max_depth in zip(clf_list, max_depth_list):
+            for test_sample_id in SAMPLE_IDS:
+                logging.info('testing on {0} with tree max_depth={1}'.format(
+                    test_sample_id, max_depth))
+
+                df_predicted = predict(test_sample_id, clf)
+                df_clustered = cluster_clv(df_predicted)
+                df_ref = load_polya_seq_df(test_sample_id)
+
+                reca, prec, f1 = compare(df_clustered, df_ref)
+                csvwriter.writerow(
+                    [test_sample_id, prec, reca, f1, max_depth]
+                )
