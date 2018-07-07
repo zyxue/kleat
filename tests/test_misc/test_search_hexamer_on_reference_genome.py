@@ -89,7 +89,7 @@ if os.path.exists(REF_FA):
             )
             self.assertEqual(
                 search_reference_genome(self.refseq, chrom, clv, '+', 50),
-                ('AATAAA', 1, 102316872)
+                ('AATAAA', 16, 102316872)
             )
 
         def test_chr19_AKT2_minus_strand(self):
@@ -102,7 +102,7 @@ if os.path.exists(REF_FA):
             )
             self.assertEqual(
                 search_reference_genome(self.refseq, chrom, clv, '-', 50),
-                ('AATAAA', 1, 40737011)
+                ('AATAAA', 16, 40737011)
             )
 
 
