@@ -12,6 +12,8 @@ KARBOR_FEATURE_COLS = [
     'num_link_reads',
     'num_blank_contigs',
 
+    'abs_dist_to_aclv',
+
     'AATAAA', 'ATTAAA', 'AGTAAA', 'TATAAA',
     'CATAAA', 'GATAAA', 'AATATA', 'AATACA',
     'AATAGA', 'AAAAAG', 'ACTAAA', 'AAGAAA',
