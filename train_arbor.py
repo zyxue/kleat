@@ -78,7 +78,7 @@ def run_test(sample_id, df_te_mapped, clf):
     df_ref = load_polya_seq_df(test_sample_id)
 
     recall, precision, f1 = compare(df_clustered, df_ref)
-    return sample_id, recall, precision, f1, clf.max_depth
+    return sample_id, precision, recall, f1, clf.max_depth
 
 
 def run_test_wrapper(args):
