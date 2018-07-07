@@ -19,13 +19,6 @@ KARBOR_FEATURE_COLS = [
 ]
 
 
-def load_bed(input_bed):
-    """"mostly for whole transcriptome"""
-    return pd.read_csv(
-        input_bed, header=None, sep='\t',
-        names=['seqname', 'clv', 'clv1', 'hexamer_str', 'unknown', 'strand'])
-
-
 def map_clvs(df_pred, df_ref):
     ref_dd = df_ref.groupby(['seqname', 'strand']).apply(
         lambda g: g.clv.values).to_dict()
@@ -67,7 +60,14 @@ def load_polya_seq_df_114genes(sample_id):
         'HBRC4': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C4/polyA-Seq/polyA-Seq-truth-114-genes.csv',
         'HBRC6': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C6/polyA-Seq/polyA-Seq-truth-114-genes.csv'
     }
-    return load_bed(dd[sample_id])
+    return pd.read_csv(dd[sample_id])
+
+
+def load_bed(input_bed):
+    """"mostly for whole transcriptome"""
+    return pd.read_csv(
+        input_bed, header=None, sep='\t',
+        names=['seqname', 'clv', 'clv1', 'hexamer_str', 'unknown', 'strand'])
 
 
 def load_polya_seq_df(sample_id):
