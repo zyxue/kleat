@@ -167,6 +167,7 @@ def agg_polya_evidence(grp):
     sum_cols = grp[S.COLS_TO_SUM].sum()
     max_cols = grp[S.COLS_TO_MAX].max()
     str_cols = grp[S.COLS_TO_JOIN].apply(set_sort_join_strs)
+    # pick the strongest PAS hexamer
     hex_cols = grp[S.COLS_CONTIG_HEXAMERS].loc[grp.ctg_hex_id.idxmax()]
     any_cols = grp[S.COLS_PICK_ANY_ONE].iloc[0]
     return pd.concat([sum_cols, max_cols, str_cols, hex_cols, any_cols])
@@ -210,7 +211,7 @@ def main():
                 process_blank(contig, ref_fa, csvwriter, ascs)
 
     logger.info('Reading {0} into a pandas.DataFrame...'.format(tmp_output))
-    df_clv = U.timeit(pd.read_csv)(tmp_output, sep='\t')
+    df_clv = U.timeit(pd.read_csv)(tmp_output, keep_default_na=False, sep='\t')
     logger.info('df.shape: {0}'.format(df_clv.shape))
 
     # TODO: slow step, maybe parallize it
