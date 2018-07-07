@@ -50,10 +50,7 @@ def train_it_wrapper(args):
     return train_it(*args)
 
 
-def predict(test_sample_id, clf):
-    df_te = load_df(test_sample_id)
-    df_te_mapped = map_df(df_te, test_sample_id)
-
+def predict(df_te_mapped, clf):
     Xs_te = df_te_mapped[KARBOR_FEATURE_COLS]
     df_te_mapped['predicted'] = clf.predict(Xs_te)
 
@@ -73,8 +70,7 @@ def cluster_clv(df, cutoff=20):
 if __name__ == "__main__":
     MAP_CUTOFF = 50
     NUM_CPUS = 8
-
-    SAMPLE_IDS = [
+    TEST_SAMPLE_IDS = [
         'HBRC4',
         'HBRC6',
         'UHRC1',
@@ -82,11 +78,11 @@ if __name__ == "__main__":
     ]
 
     ref_sample_id = sys.argv[1]
+
     df_tr = load_df(ref_sample_id)
-
     df_tr_mapped = map_df(df_tr, ref_sample_id)
-    max_depth_list = range(2, 20, 1)
 
+    max_depth_list = range(2, 20, 1)
     train_args = prepare_args(df_tr_mapped, max_depth_list)
 
     with multiprocessing.Pool(NUM_CPUS) as p:
@@ -100,12 +96,18 @@ if __name__ == "__main__":
         csvwriter.writerow(
             ['sample_id', 'precision', 'recall', 'f1', 'tree_max_depth']
         )
-        for clf, max_depth in zip(clf_list, max_depth_list):
-            for test_sample_id in SAMPLE_IDS:
+        for test_sample_id in TEST_SAMPLE_IDS:
+            if test_sample_id == ref_sample_id:
+                df_te_mapped = df_tr_mapped
+            else:
+                df_te = load_df(test_sample_id)
+                df_te_mapped = map_df(df_te, test_sample_id)
+
+            for clf, max_depth in zip(clf_list, max_depth_list):
                 logging.info('testing on {0} with tree max_depth={1}'.format(
                     test_sample_id, max_depth))
 
-                df_predicted = predict(test_sample_id, clf)
+                df_predicted = predict(df_te_mapped, clf)
                 df_clustered = cluster_clv(df_predicted)
                 df_ref = load_polya_seq_df(test_sample_id)
 
