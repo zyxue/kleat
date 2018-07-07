@@ -66,10 +66,11 @@ with open('./out.csv', 'wt') as opf:
         ['sample', 'precision', 'recall', 'F1', 'tree_max_depth']
     )
     for max_depth in max_depth_list:
-        print(f'working on depth: {max_depth}')
+        print(f'training on {ref_sample_id} with max tree depth: {max_depth}')
         clf = train(df_tr_mapped, max_depth)
 
         for test_sample_id in SAMPLE_IDS:
+            print(f'testing on {ref_sample_id}')
             df_predicted = predict(test_sample_id, clf)
             df_clustered = cluster_clv(df_predicted)
             df_ref = load_polya_seq_df_114genes(test_sample_id)
