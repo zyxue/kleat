@@ -14,10 +14,17 @@ KARBOR_FEATURE_COLS = [
 
     'abs_dist_to_aclv',
 
-    'AATAAA', 'ATTAAA', 'AGTAAA', 'TATAAA',
-    'CATAAA', 'GATAAA', 'AATATA', 'AATACA',
-    'AATAGA', 'AAAAAG', 'ACTAAA', 'AAGAAA',
-    'AATGAA', 'TTTAAA', 'AAAACA', 'GGGGCT', 'NA'
+    # PAS hexamer shown on contig
+    'ctg_AATAAA', 'ctg_ATTAAA', 'ctg_AGTAAA', 'ctg_TATAAA',
+    'ctg_CATAAA', 'ctg_GATAAA', 'ctg_AATATA', 'ctg_AATACA',
+    'ctg_AATAGA', 'ctg_AAAAAG', 'ctg_ACTAAA', 'ctg_AAGAAA',
+    'ctg_AATGAA', 'ctg_TTTAAA', 'ctg_AAAACA', 'ctg_GGGGCT', 'ctg_NA',
+
+    # PAS hexamer shown on reference genome
+    'ref_AATAAA', 'ref_ATTAAA', 'ref_AGTAAA', 'ref_TATAAA',
+    'ref_CATAAA', 'ref_GATAAA', 'ref_AATATA', 'ref_AATACA',
+    'ref_AATAGA', 'ref_AAAAAG', 'ref_ACTAAA', 'ref_AAGAAA',
+    'ref_AATGAA', 'ref_TTTAAA', 'ref_AAAACA', 'ref_GGGGCT', 'ref_NA',
 ]
 
 

@@ -25,8 +25,13 @@ if __name__ == "__main__":
     adf['abs_dist_to_aclv'] = adf['signed_dist_to_aclv']
 
     used_hexamers = [_[0] for _ in S.CANDIDATE_HEXAMERS] + ['NA']
-    dummy_hxm = pd.get_dummies(adf.ref_hex, columns=used_hexamers)
-    bdf = pd.concat([adf, dummy_hxm], axis=1)
+    ctg_dum_hxm = pd.get_dummies(adf.ctg_hex, columns=used_hexamers)
+    ctg_dum_hxm.columns = ['ctg_' + _ for _ in ctg_dum_hxm.columns.values]
+
+    ref_dum_hxm = pd.get_dummies(adf.ref_hex, columns=used_hexamers)
+    ref_dum_hxm.columns = ['ref_' + _ for _ in ref_dum_hxm.columns.values]
+
+    bdf = pd.concat([adf, ctg_dum_hxm, ref_dum_hxm], axis=1)
 
     logging.info('writing {0}'.format(outfile))
     timeit(bdf.to_pickle)(outfile.replace('.fea', '.pkl'))
