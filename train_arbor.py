@@ -67,9 +67,27 @@ def cluster_clv(df, cutoff=20):
     return out
 
 
+def run_test(sample_id, df_te_mapped, clf):
+    """args as list, otherwise this function can't be passed
+    multiprocessing.Pool"""
+    logging.info('testing on {0} with tree max_depth={1}'.format(
+        test_sample_id, clf.max_depth))
+
+    df_predicted = predict(df_te_mapped, clf)
+    df_clustered = cluster_clv(df_predicted)
+    df_ref = load_polya_seq_df(test_sample_id)
+
+    recall, precision, f1 = compare(df_clustered, df_ref)
+    return sample_id, recall, precision, f1, clf.max_depth
+
+
+def run_test_wrapper(args):
+    return run_test(*args)
+
+
 if __name__ == "__main__":
     MAP_CUTOFF = 50
-    NUM_CPUS = 8
+    NUM_CPUS = 16
     TEST_SAMPLE_IDS = [
         'HBRC4',
         'HBRC6',
@@ -103,15 +121,12 @@ if __name__ == "__main__":
                 df_te = load_df(test_sample_id)
                 df_te_mapped = map_df(df_te, test_sample_id)
 
-            for clf, max_depth in zip(clf_list, max_depth_list):
-                logging.info('testing on {0} with tree max_depth={1}'.format(
-                    test_sample_id, max_depth))
+            args_list_for_test = []
+            for clf in clf_list:
+                args_list_for_test.append((test_sample_id, df_te_mapped, clf))
 
-                df_predicted = predict(df_te_mapped, clf)
-                df_clustered = cluster_clv(df_predicted)
-                df_ref = load_polya_seq_df(test_sample_id)
+            with multiprocessing.Pool(NUM_CPUS) as p:
+                results_test = p.map(run_test_wrapper, args_list_for_test)
 
-                reca, prec, f1 = compare(df_clustered, df_ref)
-                csvwriter.writerow(
-                    [test_sample_id, prec, reca, f1, max_depth]
-                )
+            for row in results_test:
+                csvwriter.writerow(row)
