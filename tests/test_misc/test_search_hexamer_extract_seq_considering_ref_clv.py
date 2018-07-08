@@ -5,6 +5,51 @@ import kleat.misc.settings as S
 from kleat.misc.search_hexamer import extract_seq
 
 
+
+def test_extract_seq_for_plus_strand_clv_supported_by_link():
+    """
+       ATCGAC    <-link contig
+       012345    <-contig coord
+    ...789012... <-genome coord
+            ^ref_clv
+    """
+    clv = 1
+    strand = '+'
+    ref_fa = MagicMock()
+    contig = MagicMock()
+    contig.query_sequence = 'ATCGAC'
+    contig.cigartuples = ((S.BAM_CMATCH, 6),)
+
+    args = contig, strand, clv, ref_fa
+    assert extract_seq(*args) == 'ATCGAC'
+    assert extract_seq(*args, window=1) ==    'C'
+    assert extract_seq(*args, window=2) ==   'AC'
+    assert extract_seq(*args, window=3) ==  'GAC'
+    assert extract_seq(*args, window=4) == 'CGAC'
+
+
+def test_extract_seq_for_minus_strand_clv_supported_by_link():
+    """
+       ACATC    <-link contig
+       01234    <-contig coord
+    ...89012... <-genome coord
+       ^ref_clv
+    """
+    clv = 1
+    strand = '-'
+    ref_fa = MagicMock()
+    contig = MagicMock()
+    contig.query_sequence = 'ACATCG'
+    contig.cigartuples = ((S.BAM_CMATCH, 6),)
+
+    args = contig, strand, clv, ref_fa
+    assert extract_seq(*args) == 'ACATCG'
+    assert extract_seq(*args, window=1) == 'A'
+    assert extract_seq(*args, window=2) == 'AC'
+    assert extract_seq(*args, window=3) == 'ACA'
+    assert extract_seq(*args, window=4) == 'ACAT'
+
+
 def test_extract_seq_for_plus_strand_clv_supported_by_suffix():
     """
              AA  <-tail of suffix contig
