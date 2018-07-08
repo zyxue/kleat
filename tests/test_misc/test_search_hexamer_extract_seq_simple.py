@@ -12,7 +12,7 @@ def test_extract_seq_for_plus_strand_clv_supported_by_link():
     ...789012... <-genome coord
             ^ref_clv
     """
-    clv = 1
+    clv = 99999                 # its value doesn't matter
     strand = '+'
     ref_fa = MagicMock()
     contig = MagicMock()
@@ -34,7 +34,7 @@ def test_extract_seq_for_minus_strand_clv_supported_by_link():
     ...89012... <-genome coord
        ^ref_clv
     """
-    clv = 1
+    clv = 99999
     strand = '-'
     ref_fa = MagicMock()
     contig = MagicMock()
@@ -57,7 +57,7 @@ def test_extract_seq_for_plus_strand_clv_supported_by_suffix():
     ...789012... <-genome coord
             ^ref_clv
     """
-    clv = 1
+    clv = 99999
     strand = '+'
     ref_fa = MagicMock()
     contig = MagicMock()
@@ -80,7 +80,7 @@ def test_extract_seq_for_minus_strand_clv_supported_by_suffix():
     ...89012... <-genome coord
        ^ref_clv
     """
-    clv = 1
+    clv = 99999
     strand = '-'
     ref_fa = MagicMock()
     contig = MagicMock()
@@ -93,7 +93,6 @@ def test_extract_seq_for_minus_strand_clv_supported_by_suffix():
     assert extract_seq(*args, window=2) == 'AC'
     assert extract_seq(*args, window=3) == 'ACA'
     assert extract_seq(*args, window=4) == 'ACAT'
-
 
 
 class TestExtractSeqForSoftClippedSeq(unittest.TestCase):
