@@ -112,21 +112,51 @@ def search_reference_genome(refseq, chrom, clv, strand, window=50):
     return res
 
 
-def extract_seq(contig):
+def extract_seq(contig, strand, ref_clv, ref_fa, window=50):
     """remove clipped ends before searching for hexamer, the clipped ends would
-    affect calculation of genomics coordinates of the found PAS hexamer"""
-    seq = contig.query_sequence
+    affect calculation of genomics coordinates of the found PAS hexamer
 
-    head_idx = 0
-    tail_idx = len(seq)
-    for k, (key, val) in enumerate(contig.cigartuples):
-        if k == 0:
+    :param ref_clv: would be necessary needs to combine sequence from both
+                    contig and reference genome
+    """
+    seq = contig.query_sequence
+    res = ''
+    if strand == '+':
+        ctg_cur = len(seq)      # cursor
+        for idx, (key, val) in enumerate(reversed(contig.cigartuples)):
+            print(res)
             if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
-                head_idx = val
-        else:
+                if idx == 0:
+                    # meaning it's the upstream clip, downstream clip should
+                    # just be ignored
+                    ctg_cur -= val
+            elif key in [S.BAM_CMATCH]:
+                res = seq[ctg_cur - val: ctg_cur] + res
+                if len(res) >= window:
+                    res = res[-window:]
+                    break
+            else:
+                err = ("cigar '{0}' hasn't been delta properly "
+                       "for '{1}' strand, please report".format(key, strand))
+                raise NotImplementedError(err)
+    elif strand == '-':
+        ctg_cur = 0
+        for idx, (key, val) in enumerate(contig.cigartuples):
             if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
-                tail_idx = -val
-    return seq[head_idx:tail_idx]
+                if idx == 0:
+                    ctg_cur += val
+            elif key in [S.BAM_CMATCH]:
+                res += seq[ctg_cur: ctg_cur + val]
+                if len(res) >= window:
+                    res = res[:window]
+                    break
+            else:
+                err = ("cigar '{0}' hasn't been delta properly "
+                       "for '{1}' strand, please report".format(key, strand))
+                raise NotImplementedError(err)
+    else:
+        raise ValueError('unknown strand: "{0}"'.format(strand))
+    return res
 
 
 def gen_contig_hexamer_tuple(contig, strand, ref_clv):
