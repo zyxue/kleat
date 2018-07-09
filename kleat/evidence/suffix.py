@@ -26,7 +26,7 @@ def calc_num_suffix_reads(r2c_bam, suffix_contig, ref_clv):
     return num_tail_reads
 
 
-def gen_clv_record(contig, r2c_bam, tail_side, ref_fa=None):
+def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
     """
     :param contig: suffix contig
     :param r2c_bam: pysam instance of read2genome alignment BAM
@@ -40,8 +40,12 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa=None):
 
     num_suffix_reads = calc_num_suffix_reads(r2c_bam, contig, ref_clv)
 
+    if strand == '-':
+        ctg_clv = tail_len
+    else:
+        ctg_clv = len(contig.query_sequence) - tail_len - 1
     ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
-        contig, strand, ref_clv)
+        contig, strand, ref_clv, ref_fa, ctg_clv)
 
     ref_hex, ref_hex_id, ref_hex_pos = gen_reference_hexamer_tuple(
         ref_fa, contig.reference_name, strand, ref_clv)

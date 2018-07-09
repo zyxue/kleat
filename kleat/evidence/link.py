@@ -95,8 +95,13 @@ def gen_clv_record(contig, clv_key_tuple, num_link_reads, ref_fa):
     """
     seqname, strand, ref_clv = clv_key_tuple
 
+    if strand == '-':
+        ctg_clv = 0
+    else:
+        ctg_clv = len(contig.query_sequence) - 1
+
     ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
-        contig, strand, ref_clv)
+        contig, strand, ref_clv, ref_fa, ctg_clv)
 
     ref_hex, ref_hex_id, ref_hex_pos = gen_reference_hexamer_tuple(
         ref_fa, contig.reference_name, strand, ref_clv)

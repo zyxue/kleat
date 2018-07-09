@@ -113,7 +113,7 @@ def search_reference_genome(refseq, chrom, clv, strand, window=50):
     return res
 
 
-def gen_contig_hexamer_tuple(contig, strand, ref_clv):
+def gen_contig_hexamer_tuple(contig, strand, ref_clv, ref_fa, ctg_clv):
     """
     search PAS hexamer in contig, this ONLY works for suffix and link as the
     ref_clv nees to be at an end of the contig (not including the clipped bases)
@@ -121,7 +121,7 @@ def gen_contig_hexamer_tuple(contig, strand, ref_clv):
     # no need to reverse_complement the seq as the hexamer search function is
     # designed to search reference genome sequence, rev_comp is taken care of
     # within the function
-    ctg_seq = extract_seq(contig)
+    ctg_seq = extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv)
     ctg_hex_tuple = search(strand, ref_clv, ctg_seq)
 
     if ctg_hex_tuple is not None:
@@ -133,13 +133,10 @@ def gen_contig_hexamer_tuple(contig, strand, ref_clv):
 def gen_reference_hexamer_tuple(ref_fa, chrom_name, strand, ref_clv):
     """search PAS hexamer in reference genome"""
     na_tuple = 'NA', -1, -1     # ref_hex, ref_hex_id, ref_hex_pos
-    if ref_fa is None:
+    ref_hex_tuple = search_reference_genome(
+        ref_fa, chrom_name, ref_clv, strand)
+
+    if ref_hex_tuple is None:
         return na_tuple
     else:
-        ref_hex_tuple = search_reference_genome(
-            ref_fa, chrom_name, ref_clv, strand)
-
-        if ref_hex_tuple is None:
-            return na_tuple
-        else:
-            return ref_hex_tuple
+        return ref_hex_tuple
