@@ -3,7 +3,7 @@ import unittest
 
 import pysam
 
-from kleat.misc.search_hexamer import (
+from kleat.hexamer.search import (
     fetch_seq,
     gen_coords,
     search_reference_genome,

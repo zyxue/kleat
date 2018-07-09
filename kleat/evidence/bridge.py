@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from kleat.misc import apautils
 import kleat.misc.settings as S
-from kleat.misc.search_hexamer import (
+from kleat.hexamer.search import (
     search,  # do PAS hexamer search in a more customized way instead of using
              # gen_contig_hexamer_tuple
     gen_reference_hexamer_tuple

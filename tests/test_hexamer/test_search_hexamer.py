@@ -1,6 +1,6 @@
 import unittest
 
-from kleat.misc.search_hexamer import (
+from kleat.hexamer.search import (
     plus_search,
     minus_search,
     search,
@@ -85,3 +85,44 @@ class TestSearch(unittest.TestCase):
         seq = 'GGTTTATT'
         clv = 1
         self.assertEqual(search('-', clv, seq, 50), ('AATAAA', 16, 8))
+
+
+
+# Good drawing example, utilize them later
+# def test_extract_seq_where_for_plus_strand_clv_supported_by_suffix():
+#     """
+#            AATAAA     AA   <-tail of suffix contig
+#        ACGG┘||||└CGGCC┘    <-suffix contig
+#        0123456789012345    <-contig coord
+#               1      |
+#     ...7890123456789012... <-genome coord
+#           1         2|
+#                      ^ref_clv
+#     """
+#     clv = 11
+#     strand = '+'
+#     contig = MagicMock()
+#     contig.query_sequence = 'ACGGAATAAACGGCCAA'
+#     contig.cigartuples = ((S.BAM_CMATCH, 15), (S.BAM_CSOFT_CLIP, 2))
+#     ref_fa = MagicMock()
+#     assert extract_seq(contig, strand, clv, ref_fa) == 'ACGGAATAAACGGCC'
+
+
+# def test_extract_seq_where_for_minus_strand_clv_supported_by_suffix():
+#     """
+#      TTT  TTTATT        <-tail of suffix contig
+#        └AC┘||||└CGGC    <-suffix contig
+#         012345678901    <-contig coord
+#         |         1
+#      ...890123456789... <-genome coord
+#         | 1
+#         ^ref_clv
+#     """
+#     clv = 11
+#     strand = '+'
+#     contig = MagicMock()
+#     contig.query_sequence = 'TTACTTTATTCGC'
+#     contig.cigartuples = ((S.BAM_CMATCH, 15), (S.BAM_CSOFT_CLIP, 2))
+#     ref_fa = MagicMock()
+#     assert extract_seq(contig, strand, clv, ref_fa) == 'ACTTTATTCGC'
+
