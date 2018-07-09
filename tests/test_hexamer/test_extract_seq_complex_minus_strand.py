@@ -94,3 +94,38 @@ def test_extract_seq_with_skipped_region_and_insertion_and_mismatches_for_minus_
     ref_fa.fetch.assert_called_with('chr1', 8, 9)
     assert extract_seq(**kw, window=1) == 'A'
     assert extract_seq(**kw, window=5) == 'AGCGA'
+
+
+
+def test_extract_seq_with_skipped_region_and_indels_and_mismatches_for_minus_strand_clv():
+    """
+               GA
+         TTT   ┬           <-tail of suffix contig
+         ||└A-C TAG__GT    <-suffix contig
+         0123 4 78901234   <-contig coord
+      ici^  ^ctc x 1
+         XXXXGX XTXTAXX... <-genome
+         456789 01234567   <-genome coord
+         |  |   1
+      iri^  ^ref_clv
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr1'
+    ctg.query_sequence = 'TTTACGATAGGTA'
+    ctg.cigartuples = (
+        (S.BAM_CSOFT_CLIP, 3),
+        (S.BAM_CMATCH, 1),
+        (S.BAM_CREF_SKIP, 1),
+        (S.BAM_CMATCH, 1),
+        (S.BAM_CINS, 2),
+        (S.BAM_CMATCH, 3),
+        (S.BAM_CDEL, 2),
+        (S.BAM_CMATCH, 2),
+    )
+
+    ref_fa = MagicMock()
+    ref_fa.fetch.return_value = 'G'
+    kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=3)
+    assert extract_seq(**kw) == 'AGCGATAGGT'
+    ref_fa.fetch.assert_called_with('chr1', 8, 9)
+    assert extract_seq(**kw, window=9) == 'AGCGATAGG'
