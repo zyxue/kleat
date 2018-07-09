@@ -38,25 +38,34 @@ def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
 
 
 def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
-                                 ctg_idx, ref_idx, ref_fa, window):
+                                 ctg_clv, ref_clv, ref_fa, window):
+    ctg_b = 0
+    ref_e = ref_clv - ctg_clv
+
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
+        print(res_seq)
         if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
             if idx == 0:
-                ctg_idx += val
-                ref_idx += val
+                ctg_b += val
+                ref_e += val
         elif key in [S.BAM_CMATCH]:
-            res_seq += ctg_seq[ctg_idx: ctg_idx + val]
-            ctg_idx += val
-            ref_idx += val
+            ctg_e = ctg_b + val
+            if ctg_b <= ctg_clv:
+                if ctg_e > ctg_clv:
+                    res_seq += ctg_seq[ctg_clv: ctg_e]
+            else:
+                res_seq += ctg_seq[ctg_b: ctg_e]
+            ctg_b = ctg_e
+            ref_e += val
         elif key in [S.BAM_CREF_SKIP]:
-            ref_seq = ref_fa.fetch(seqname, ref_idx, ref_idx + val)
+            ref_seq = ref_fa.fetch(seqname, ref_e, ref_e + val)
             res_seq += ref_seq
         elif key in [S.BAM_CDEL]:
-            ref_idx += val
+            ref_e += val
         elif key in [S.BAM_CINS]:
-            res_seq += ctg_seq[ctg_idx: ctg_idx + val]
-            ctg_idx += val
+            res_seq += ctg_seq[ctg_b: ctg_b + val]
+            ctg_b += val
         else:
             err = ("cigar '{0}' hasn't been delta properly "
                    "for '{1}' strand, please report".format(key, strand))
@@ -83,12 +92,13 @@ def extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv=0, window=50):
         init_ctg_idx = len(ctg_seq) - 1
         init_ref_idx = ref_clv + (len(ctg_seq) - ctg_clv - 1)
         func = extract_seq_for_plus_strand
+        return func(cigartuples, ctg_seq, seqname, strand,
+                    init_ctg_idx, init_ref_idx, ref_fa, window)
     elif strand == '-':
-        init_ctg_idx = 0
-        init_ref_idx = ref_clv - ctg_clv
-        func = extract_seq_for_minus_strand
+        return extract_seq_for_minus_strand(
+            cigartuples, ctg_seq, seqname, strand,
+            ctg_clv, ref_clv, ref_fa, window
+        )
     else:
         raise ValueError('unknown strand: "{0}"'.format(strand))
 
-    return func(cigartuples, ctg_seq, seqname, strand,
-                init_ctg_idx, init_ref_idx, ref_fa, window)
