@@ -104,31 +104,6 @@ def test_extract_seq_with_deleted_region_for_plus_strand_clv():
     assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=5) == 'ACGGGC'
 
 
-def test_extract_seq_with_skipped_region_for_minus_strand_clv():
-    """
-    cc: ctg_clv; ici: init_clv_id
-    rc: ref_clv; iri: init_ref_id
-
-                TT          <-tail of suffix contig
-                |└GT--C     <-suffix contig with skip
-                01234  56   <-contig coord
-        init_ctg_clv^ ^ctg_clv  <-contig coord
-             ...ACGGTTGC... <-genome
-                567890123   <-genome coord
-                | | 1
-    init_ref_idx^ ^ref_clv
-    """
-    ctg = MagicMock()
-    ctg.reference_name = 'chr2'
-    ctg.query_sequence = 'TTGTC'
-    ctg.cigartuples = ((S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 2), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 1))
-
-    ref_fa = MagicMock()
-    ref_fa.fetch = MagicMock(return_value='TG')
-    assert extract_seq(contig=ctg, strand='-', ref_clv=8, ref_fa=ref_fa, ctg_clv=3) == 'GTTGC'
-    ref_fa.fetch.assert_called_with('chr2', 10, 12)
-
-
 def test_extract_seq_with_two_skipped_region_for_plus_strand_clv():
     """
                AAA             <-tail of suffix contig
