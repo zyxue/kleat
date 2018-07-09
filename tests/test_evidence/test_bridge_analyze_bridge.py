@@ -133,7 +133,8 @@ def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():
     clv_key = gen_clv_key_tuple('chr1', '-', ref_clv)
     mock_dd_bridge['hexamer_tuple'][clv_key] = ('NA', -1, -1)
 
-    assert bridge.analyze_bridge(c, r, mock_dd_bridge) == ('chr1', '-', ref_clv, tail_len, None)
+    ref_fa = MagicMock()
+    assert bridge.analyze_bridge(c, r, ref_fa, mock_dd_bridge) == ('chr1', '-', ref_clv, tail_len, None)
 
 
 def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
@@ -165,4 +166,6 @@ def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
     clv_key = gen_clv_key_tuple('chr1', '+', ref_clv)
     mock_dd_bridge['hexamer_tuple'][clv_key] = ('NA', -1, -1)
 
-    assert bridge.analyze_bridge(c, r, mock_dd_bridge) == ('chr1', '+', ref_clv, tail_len, None)
+    ref_fa = MagicMock()
+
+    assert bridge.analyze_bridge(c, r, ref_fa, mock_dd_bridge) == ('chr1', '+', ref_clv, tail_len, None)

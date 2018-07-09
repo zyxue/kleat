@@ -7,6 +7,7 @@ from kleat.hexamer.search import (
              # gen_contig_hexamer_tuple
     gen_reference_hexamer_tuple
 )
+from kleat.hexamer.extract_seq import extract_seq
 
 
 def write_evidence(dd_bridge, contig, ref_fa, csvwriter):
@@ -158,7 +159,23 @@ def do_bridge(contig, read):
         return do_forward_contig(contig, read)
 
 
-def analyze_bridge(contig, read, dd_bridge):
+def gen_hex_tuple(contig, strand, ref_clv, ref_fa, ctg_clv, dd_bridge):
+    # TODO: the returning of None is pretty ugly, to refactor
+    seqname = contig.reference_name
+    clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
+    if dd_bridge['hexamer_tuple'][clv_key] is None:  # do search
+        hex_src_seq = extract_seq(
+            contig, strand, ref_clv, ref_fa, ctg_clv)
+
+        ctg_hex_tuple = search(strand, ref_clv, hex_src_seq)
+        if ctg_hex_tuple is None:
+            ctg_hex_tuple = ('NA', -1, -1)
+    else:
+        ctg_hex_tuple = None
+    return ctg_hex_tuple
+
+
+def analyze_bridge(contig, read, ref_fa, dd_bridge):
     """
     :param dd_bridge: holds bridge_evidence for a given contig, here it's just
     used to check if hexamer_search has already been done for a given ref_clv
@@ -171,22 +188,9 @@ def analyze_bridge(contig, read, dd_bridge):
 
     ref_clv = contig.reference_start + offset
 
-    # TODO: factor out
-    clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
-    if dd_bridge['hexamer_tuple'][clv_key] is None:  # do search
-        window = 50
-        ctg_seq = contig.query_sequence
-        if strand == '+':
-            # sequence to search for potential hexamer
-            hex_src_seq = ctg_seq[ctg_offset - window + 1:ctg_offset + 1]
-        else:
-            hex_src_seq = ctg_seq[ctg_offset:ctg_offset + window]
-
-        ctg_hex_tuple = search(strand, ref_clv, hex_src_seq)
-        if ctg_hex_tuple is None:
-            ctg_hex_tuple = ('NA', -1, -1)
-    else:
-        ctg_hex_tuple = None
+    # ctg_clv is ctg_offset, i.e. the pos of clv in contig coordinate
+    ctg_hex_tuple = gen_hex_tuple(
+        contig, strand, ref_clv, ref_fa, ctg_offset, dd_bridge)
 
     return seqname, strand, ref_clv, tail_len, ctg_hex_tuple
 
