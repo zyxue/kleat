@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
 import kleat.misc.settings as S
 from kleat.hexamer.search import extract_seq
@@ -51,6 +51,39 @@ def test_extract_seq_with_skipped_region_for_minus_strand_clv():
     ref_fa.fetch = MagicMock(return_value='TG')
     assert extract_seq(contig=ctg, strand='-', ref_clv=8, ref_fa=ref_fa, ctg_clv=3) == 'GTTGC'
     ref_fa.fetch.assert_called_with('chr2', 10, 12)
+
+
+def test_extract_seq_with_two_skipped_region_for_plus_strand_clv():
+    """
+               AAA             <-tail of suffix contig
+       A-TT--GC┘||             <-suffix contig with skip
+       0 12  345678            <-contig coord
+              |
+       ctg_clv^  ^init_ctg_idx <-contig coord
+    ...ACTTAAGCGGT...          <-genome
+       789012345678            <-genome coord
+          1   |  |
+       ref_clv^  ^init_ref_idx
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr3'
+    ctg.query_sequence = 'ATTGCAAA'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 1),
+        (S.BAM_CREF_SKIP, 1),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CREF_SKIP, 2),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CSOFT_CLIP, 3),
+    )
+
+    ref_fa = MagicMock()
+    ref_fa.fetch.side_effect = ['AA', 'C']
+    assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=4) == 'ACTTAAGC'
+    assert ref_fa.fetch.call_count == 2
+    ref_fa.fetch.assert_has_calls([call('chr3', 11, 13), call('chr3', 8, 9)])
+
+
 
 
 # def test_extract_seq_where_for_plus_strand_clv_supported_by_suffix_with_specified_window_size():
