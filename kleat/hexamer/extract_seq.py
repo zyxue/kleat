@@ -21,6 +21,9 @@ def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
             ref_idx -= val
         elif key in [S.BAM_CDEL]:
             ref_idx -= val
+        elif key in [S.BAM_CINS]:
+            res_seq = ctg_seq[ctg_idx - val + 1: ctg_idx + 1] + res_seq
+            ctg_idx -= val
         else:
             err = ("cigar '{0}' hasn't been delta properly "
                    "for '{1}' strand, please report".format(key, strand))

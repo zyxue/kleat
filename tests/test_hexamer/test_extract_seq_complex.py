@@ -19,13 +19,68 @@ def test_extract_seq_with_skipped_region_for_plus_strand_clv():
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr1'
-    ctg.query_sequence = 'ACGGGCAAA'  # len 9
+    ctg.query_sequence = 'ACGGGCAAA'
     ctg.cigartuples = ((S.BAM_CMATCH, 4), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 2), (S.BAM_CSOFT_CLIP, 3))
 
     ref_fa = MagicMock()
     ref_fa.fetch = MagicMock(return_value='TT')
     assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=5) == 'ACGGTTGC'
     ref_fa.fetch.assert_called_with('chr1', 11, 13)
+
+
+def test_extract_seq_with_1_base_insertion_for_plus_strand_clv():
+    """
+           T
+           ┬  AAA              <-tail of suffix contig
+       ACGG GC┘||              <-suffix contig with skip
+       0123 56789             <-contig coord
+          | ||  |
+      ctg_clv^  ^init_ctg_idx <-contig coord
+    ...ACGG GCXXX...           <-genome
+       7890 1234567            <-genome coord
+          1  |  |
+      ref_clv^  ^init_ref_idx
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr1'
+    ctg.query_sequence = 'ACGGTGCAAA'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 4), 
+        (S.BAM_CINS, 5),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CSOFT_CLIP, 3),
+    )
+
+    ref_fa = MagicMock()
+    assert extract_seq(contig=ctg, strand='+', ref_clv=12, ref_fa=ref_fa, ctg_clv=6) == 'ACGGTGC'
+
+
+def test_extract_seq_with_5_base_inserted_region_for_plus_strand_clv():
+    """
+         AATCC
+           ┬   AA              <-tail of suffix contig
+       ACGG GCG┘|              <-suffix contig with skip
+       0123 9012            <-contig coord
+          | |1| |
+       ctg_clv^ ^init_ctg_idx <-contig coord
+    ...ACGG GCGXXX...           <-genome
+       7890 1234567            <-genome coord
+         1    | |
+       ref_clv^  ^init_ref_idx
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr1'
+    ctg.query_sequence = 'ACGGAATCCGCGAA'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 4), 
+        (S.BAM_CINS, 5),
+        (S.BAM_CMATCH, 3),
+        (S.BAM_CSOFT_CLIP, 2),
+    )
+
+    ref_fa = MagicMock()
+    assert extract_seq(contig=ctg, strand='+', ref_clv=13, ref_fa=ref_fa, ctg_clv=10) == 'ACGGAATCCGCG'
+
 
 
 def test_extract_seq_with_deleted_region_for_plus_strand_clv():
@@ -137,6 +192,38 @@ def test_extract_seq_with_two_skipped_region_for_plus_strand_clv():
     ref_fa.fetch.assert_has_calls([call('chr3', 11, 13), call('chr3', 8, 9)])
 
 
+def test_extract_seq_with_skipped_region_and_insertions_mismatches_for_plus_strand_clv():
+    """
+        G
+        ┬       AAA             <-tail of suffix contig
+       A TA--GCG┘||             <-suffix contig with skip
+       0 23  456789            <-contig coord
+       | |x  | |
+       ctg_clv ^  ^init_ctg_idx <-contig coord
+    ...A TTCCGCGXXX...          <-genome
+       7 8901234567            <-genome coord
+           1   |  |
+        ref_clv^  ^init_ref_idx
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr3'
+    ctg.query_sequence = 'AGTAGCGAAA'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 1),
+        (S.BAM_CINS, 1),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CREF_SKIP, 2),
+        (S.BAM_CMATCH, 3),
+        (S.BAM_CSOFT_CLIP, 3),
+    )
+
+    ref_fa = MagicMock()
+    ref_fa.fetch.return_value = 'CC'
+    assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=6) == 'AGTACCGCG'
+    ref_fa.fetch.assert_called_once_with('chr3', 10, 12)
+
+
+
 def test_extract_seq_with_skipped_and_deleted_regions_for_plus_strand_clv():
     """
                AAA             <-tail of suffix contig
@@ -201,44 +288,34 @@ def test_extract_seq_with_three_skipped_region_and_mismatches_for_plus_strand_cl
 
 
 
-# def test_extract_seq_where_for_plus_strand_clv_supported_by_suffix_with_specified_window_size():
-#     """
-#                       AA   <-tail of suffix contig
-#        ACGGAATTCCGCGGCC┘   <-suffix contig
-#        0123456789012345    <-contig coord
-#               1      |
-#     ...7890123456789012... <-genome coord
-#           1         2|
-#                      ^ref_clv
-#     """
-#     clv = 1
-#     strand = '+'
-#     ref_fa = MagicMock()
-#     window = 3
-#     contig = MagicMock()
-#     contig.query_sequence = 'ACGGAATTCCCGGCCAA'
-#     contig.cigartuples = ((S.BAM_CMATCH, 15), (S.BAM_CSOFT_CLIP, 2))
+def test_extract_seq_with_indel_and_skipped_regionS_and_mismatches_for_plus_strand_clv():
+    """
+             TC
+             ┬       AA             <-tail of suffix contig
+       A---CC GTA__GC┘|             <-suffix contig with skip
+       0   12 567  8901             <-contig coord
+           x   x    |1
+           x ctg_clv^ ^init_ctg_idx <-contig coord
+    ...ACTGTC GAATTGC...            <-genome
+       789012 345678901             <-genome coord
+          1         | |
+             ref_clv^ ^init_ref_idx
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr3'
+    ctg.query_sequence = 'ACCTCGTAGCAA'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 1),
+        (S.BAM_CREF_SKIP, 3),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CINS, 2),
+        (S.BAM_CMATCH, 3),
+        (S.BAM_CDEL, 2),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CSOFT_CLIP, 2),
+    )
 
-    # assert extract_seq(contig, strand, clv, ref_fa) == 'ACGGAATTCCCGGCC'
-
-
-# def test_extract_seq_where_for_minus_strand_clv_supported_by_suffix():
-#     """
-#      TTT                <-tail of suffix contig
-#        └ACATCGATCGGC    <-suffix contig
-#         012345678901    <-contig coord
-#         |         1
-#      ...890123456789... <-genome coord
-#         | 1
-#         ^ref_clv
-#     """
-#     clv = 11
-#     strand = '+'
-#     contig = MagicMock()
-#     contig.query_sequence = 'TTACATCGATCGC'
-#     contig.cigartuples = ((S.BAM_CMATCH, 15), (S.BAM_CSOFT_CLIP, 2))
-#     ref_fa = MagicMock()
-#     assert extract_seq(contig, strand, clv, ref_fa) == 'ACATCGATCGC'
-
-
-# def test_extract_seq_where_contig_has_skipped_cigars_for_plus_strand():
+    ref_fa = MagicMock()
+    ref_fa.fetch.return_value = 'CTG'
+    assert extract_seq(contig=ctg, strand='+', ref_clv=19, ref_fa=ref_fa, ctg_clv=9) == 'ACTGCCTCGTAGC'
+    ref_fa.fetch.assert_called_once_with('chr3', 8, 11)
