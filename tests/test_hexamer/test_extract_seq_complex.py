@@ -86,7 +86,7 @@ def test_extract_seq_with_5_base_inserted_region_for_plus_strand_clv():
 def test_extract_seq_with_deleted_region_for_plus_strand_clv():
     """
                AAA             <-tail of suffix contig
-       ACGG--GC┘||             <-suffix contig with skip
+       ACGG__GC┘||             <-suffix contig with skip
        0123  456789            <-contig coord
               |  1
        ctg_clv^  ^init_ctg_idx <-contig coord
@@ -227,7 +227,7 @@ def test_extract_seq_with_skipped_region_and_insertions_mismatches_for_plus_stra
 def test_extract_seq_with_skipped_and_deleted_regions_for_plus_strand_clv():
     """
                AAA             <-tail of suffix contig
-       A-TT--GC┘||             <-suffix contig with skip
+       A_TT--GC┘||             <-suffix contig with skip
        0 12  345678            <-contig coord
               |
        ctg_clv^  ^init_ctg_idx <-contig coord
