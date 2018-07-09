@@ -1,5 +1,8 @@
 import kleat.misc.settings as S
 
+"""Extract relevatn sequence, in which PAS hexamer is searched"""
+
+
 
 def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
                                 ctg_idx, ref_idx, ref_fa, window):
@@ -38,6 +41,7 @@ def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
                                  ctg_idx, ref_idx, ref_fa, window):
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
+        print(res_seq)
         if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
             if idx == 0:
                 ctg_idx += val
@@ -47,9 +51,13 @@ def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
             ctg_idx += val
             ref_idx += val
         elif key in [S.BAM_CREF_SKIP]:
-            print('ref_idx', ref_idx)
             ref_seq = ref_fa.fetch(seqname, ref_idx, ref_idx + val)
             res_seq += ref_seq
+        elif key in [S.BAM_CDEL]:
+            ref_idx += val
+        elif key in [S.BAM_CINS]:
+            res_seq += ctg_seq[ctg_idx: ctg_idx + val]
+            ctg_idx += val
         else:
             err = ("cigar '{0}' hasn't been delta properly "
                    "for '{1}' strand, please report".format(key, strand))
@@ -60,7 +68,7 @@ def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
     return res_seq
 
 
-def extract_seq(contig, strand, ref_clv, ref_fa, window=50, ctg_clv=0):
+def extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv=0, window=50):
     """remove clipped ends before searching for hexamer, the clipped ends would
     affect calculation of genomics coordinates of the found PAS hexamer
 
@@ -78,7 +86,7 @@ def extract_seq(contig, strand, ref_clv, ref_fa, window=50, ctg_clv=0):
         func = extract_seq_for_plus_strand
     elif strand == '-':
         init_ctg_idx = 0
-        init_ref_idx = ref_clv - (len(ctg_seq) - ctg_clv)
+        init_ref_idx = ref_clv - ctg_clv
         func = extract_seq_for_minus_strand
     else:
         raise ValueError('unknown strand: "{0}"'.format(strand))
