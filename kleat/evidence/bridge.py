@@ -197,8 +197,7 @@ def analyze_bridge(contig, read, ref_fa, dd_bridge):
 
 def gen_clv_record(contig, clv_key_tuple,
                    num_bridge_reads, max_bridge_tail_len,
-                   ctg_hex_tuple,
-                   ref_fa=None):
+                   ctg_hex_tuple, ref_fa):
     """
     :param contig: bridge contig
     :clv_key_tuple: a tuple of (seqname, strand, cleavage_site_position)

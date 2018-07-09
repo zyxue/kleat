@@ -34,8 +34,8 @@ def get_args():
         help='input read-to-contig alignment BAM file'
     )
     parser.add_argument(
-        '-f', '--reference-genome', type=str, default=None,
-        help=('(optional) reference genome FASTA file, if provided, '
+        '-f', '--reference-genome', type=str, required=True,
+        help=('reference genome FASTA file, if provided, '
               'KLEAT will search polyadenylation signal (PAS) hexamer in '
               'both contig and reference genome, which is useful for '
               'checking mutations that may affect PAS hexmaer.  '
