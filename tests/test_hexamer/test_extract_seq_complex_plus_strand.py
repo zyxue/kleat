@@ -24,7 +24,9 @@ def test_extract_seq_with_skipped_region_for_plus_strand_clv():
 
     ref_fa = MagicMock()
     ref_fa.fetch = MagicMock(return_value='TT')
-    assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=5) == 'ACGGTTGC'
+    kw = dict(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=5)
+    assert extract_seq(**kw) == 'ACGGTTGC'
+    assert extract_seq(**kw, window=3) == 'TGC'
     ref_fa.fetch.assert_called_with('chr1', 11, 13)
 
 
@@ -52,7 +54,9 @@ def test_extract_seq_with_1_base_insertion_for_plus_strand_clv():
     )
 
     ref_fa = MagicMock()
-    assert extract_seq(contig=ctg, strand='+', ref_clv=12, ref_fa=ref_fa, ctg_clv=6) == 'ACGGTGC'
+    kw = dict(contig=ctg, strand='+', ref_clv=12, ref_fa=ref_fa, ctg_clv=6)
+    assert extract_seq(**kw) == 'ACGGTGC'
+    assert extract_seq(**kw, window=4) == 'GTGC'
 
 
 def test_extract_seq_with_5_base_inserted_region_for_plus_strand_clv():
@@ -79,8 +83,9 @@ def test_extract_seq_with_5_base_inserted_region_for_plus_strand_clv():
     )
 
     ref_fa = MagicMock()
-    assert extract_seq(contig=ctg, strand='+', ref_clv=13, ref_fa=ref_fa, ctg_clv=10) == 'ACGGAATCCGCG'
-
+    kw = dict(contig=ctg, strand='+', ref_clv=13, ref_fa=ref_fa, ctg_clv=10)
+    assert extract_seq(**kw) == 'ACGGAATCCGCG'
+    assert extract_seq(**kw, window=5) == 'CCGCG'
 
 
 def test_extract_seq_with_deleted_region_for_plus_strand_clv():
@@ -101,7 +106,9 @@ def test_extract_seq_with_deleted_region_for_plus_strand_clv():
     ctg.cigartuples = ((S.BAM_CMATCH, 4), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 2), (S.BAM_CSOFT_CLIP, 3))
 
     ref_fa = MagicMock()
-    assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=5) == 'ACGGGC'
+    kw = dict(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=5)
+    assert extract_seq(**kw) == 'ACGGGC'
+    assert extract_seq(**kw, window=3) == 'GGC'
 
 
 def test_extract_seq_with_two_skipped_region_for_plus_strand_clv():
@@ -130,41 +137,17 @@ def test_extract_seq_with_two_skipped_region_for_plus_strand_clv():
 
     ref_fa = MagicMock()
     ref_fa.fetch.side_effect = ['AA', 'C']
-    assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=4) == 'ACTTAAGC'
+    kw = dict(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=4)
+    assert extract_seq(**kw) == 'ACTTAAGC'
     assert ref_fa.fetch.call_count == 2
     ref_fa.fetch.assert_has_calls([call('chr3', 11, 13), call('chr3', 8, 9)])
 
-
-
-def test_extract_seq_with_two_skipped_region_for_plus_strand_clv():
-    """
-               AAA             <-tail of suffix contig
-       A-TT--GC┘||             <-suffix contig with skip
-       0 12  345678            <-contig coord
-              |
-       ctg_clv^  ^init_ctg_idx <-contig coord
-    ...ACTTAAGCGGT...          <-genome
-       789012345678            <-genome coord
-          1   |  |
-       ref_clv^  ^init_ref_idx
-    """
-    ctg = MagicMock()
-    ctg.reference_name = 'chr3'
-    ctg.query_sequence = 'ATTGCAAA'
-    ctg.cigartuples = (
-        (S.BAM_CMATCH, 1),
-        (S.BAM_CREF_SKIP, 1),
-        (S.BAM_CMATCH, 2),
-        (S.BAM_CREF_SKIP, 2),
-        (S.BAM_CMATCH, 2),
-        (S.BAM_CSOFT_CLIP, 3),
-    )
-
+    # use a new mock, couldn't make ref_fa.reset_mock() work
     ref_fa = MagicMock()
-    ref_fa.fetch.side_effect = ['AA', 'C']
-    assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=4) == 'ACTTAAGC'
-    assert ref_fa.fetch.call_count == 2
-    ref_fa.fetch.assert_has_calls([call('chr3', 11, 13), call('chr3', 8, 9)])
+    ref_fa.fetch.return_value = 'AA'
+    kw.update(ref_fa=ref_fa)
+    assert extract_seq(**kw, window=3) == 'AGC'
+    assert ref_fa.fetch.call_count == 1
 
 
 def test_extract_seq_with_skipped_region_and_insertions_mismatches_for_plus_strand_clv():
@@ -194,9 +177,10 @@ def test_extract_seq_with_skipped_region_and_insertions_mismatches_for_plus_stra
 
     ref_fa = MagicMock()
     ref_fa.fetch.return_value = 'CC'
-    assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=6) == 'AGTACCGCG'
+    kw = dict(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=6)
+    assert extract_seq(**kw) == 'AGTACCGCG'
     ref_fa.fetch.assert_called_once_with('chr3', 10, 12)
-
+    assert extract_seq(**kw, window=8) == 'GTACCGCG'
 
 
 def test_extract_seq_with_skipped_and_deleted_regions_for_plus_strand_clv():
@@ -225,8 +209,10 @@ def test_extract_seq_with_skipped_and_deleted_regions_for_plus_strand_clv():
 
     ref_fa = MagicMock()
     ref_fa.fetch.return_value = 'AA'
-    assert extract_seq(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=4) == 'ATTAAGC'
+    kw = dict(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=4)
+    assert extract_seq(**kw) == 'ATTAAGC'
     ref_fa.fetch.assert_called_once_with('chr3', 11, 13)
+    assert extract_seq(**kw, window=5) == 'TAAGC'
 
 
 def test_extract_seq_with_three_skipped_region_and_mismatches_for_plus_strand_clv():
@@ -257,13 +243,19 @@ def test_extract_seq_with_three_skipped_region_and_mismatches_for_plus_strand_cl
 
     ref_fa = MagicMock()
     ref_fa.fetch.side_effect = ['TT', 'A', 'CTG']
-    assert extract_seq(contig=ctg, strand='+', ref_clv=20, ref_fa=ref_fa, ctg_clv=7) == 'ACTGCCAGTATTGC'
+    kw = dict(contig=ctg, strand='+', ref_clv=20, ref_fa=ref_fa, ctg_clv=7)
+    assert extract_seq(**kw) == 'ACTGCCAGTATTGC'
     assert ref_fa.fetch.call_count == 3
     ref_fa.fetch.assert_has_calls([call('chr3', 17, 19), call('chr3', 13, 14), call('chr3', 8, 11)])
 
+    ref_fa = MagicMock()
+    ref_fa.fetch.side_effect = ['TT', 'A']
+    kw.update(ref_fa=ref_fa)
+    assert extract_seq(**kw, window=9) == 'CAGTATTGC'
+    assert ref_fa.fetch.call_count == 2
 
 
-def test_extract_seq_with_indel_and_skipped_regionS_and_mismatches_for_plus_strand_clv():
+def test_extract_seq_with_indel_and_skipped_regions_and_mismatches_for_plus_strand_clv():
     """
              TC
              ┬       AA             <-tail of suffix contig
@@ -292,5 +284,8 @@ def test_extract_seq_with_indel_and_skipped_regionS_and_mismatches_for_plus_stra
 
     ref_fa = MagicMock()
     ref_fa.fetch.return_value = 'CTG'
-    assert extract_seq(contig=ctg, strand='+', ref_clv=19, ref_fa=ref_fa, ctg_clv=9) == 'ACTGCCTCGTAGC'
+    kw = dict(contig=ctg, strand='+', ref_clv=19, ref_fa=ref_fa, ctg_clv=9)
+    assert extract_seq(**kw) == 'ACTGCCTCGTAGC'
     ref_fa.fetch.assert_called_once_with('chr3', 8, 11)
+
+    assert extract_seq(**kw, window=10) == 'GCCTCGTAGC'
