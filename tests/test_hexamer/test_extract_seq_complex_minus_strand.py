@@ -33,7 +33,8 @@ def test_extract_seq_with_skipped_region():
     kw = dict(contig=ctg, strand='-', ref_clv=8, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'GTTGC'
     ref_fa.fetch.assert_called_with('chr2', 10, 12)
-    assert extract_seq(**kw, window=3) == 'GTT'
+    # **kw needs go after window for py34 syntax
+    assert extract_seq(window=3, **kw) == 'GTT'
 
 
 def test_extract_seq_with_two_skipped_regions_and_a_mismatch():
@@ -92,7 +93,7 @@ def test_extract_seq_with_2_base_insertion():
     ref_fa = MagicMock()
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'ACGATCG'
-    assert extract_seq(**kw, window=3) == 'ACG'
+    assert extract_seq(window=3, **kw) == 'ACG'
 
 
 def test_extract_seq_with_skipped_region_and_insertion_and_mismatches():
@@ -124,8 +125,8 @@ def test_extract_seq_with_skipped_region_and_insertion_and_mismatches():
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'AGCGATAG'
     ref_fa.fetch.assert_called_with('chr1', 8, 9)
-    assert extract_seq(**kw, window=1) == 'A'
-    assert extract_seq(**kw, window=5) == 'AGCGA'
+    assert extract_seq(window=1, **kw) == 'A'
+    assert extract_seq(window=5, **kw) == 'AGCGA'
 
 
 def test_extract_seq_with_skipped_region_and_indels_and_mismatches():
@@ -159,7 +160,7 @@ def test_extract_seq_with_skipped_region_and_indels_and_mismatches():
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'AGCGATAGGT'
     ref_fa.fetch.assert_called_with('chr1', 8, 9)
-    assert extract_seq(**kw, window=9) == 'AGCGATAGG'
+    assert extract_seq(window=9, **kw) == 'AGCGATAGG'
 
 
 def test_extract_seq_for_bridge():
