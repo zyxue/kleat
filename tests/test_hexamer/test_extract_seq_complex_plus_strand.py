@@ -47,7 +47,7 @@ def test_extract_seq_with_1_base_insertion_for_plus_strand_clv():
     ctg.reference_name = 'chr1'
     ctg.query_sequence = 'ACGGTGCAAA'
     ctg.cigartuples = (
-        (S.BAM_CMATCH, 4), 
+        (S.BAM_CMATCH, 4),
         (S.BAM_CINS, 5),
         (S.BAM_CMATCH, 2),
         (S.BAM_CSOFT_CLIP, 3),
@@ -76,14 +76,14 @@ def test_extract_seq_with_5_base_inserted_region_for_plus_strand_clv():
     ctg.reference_name = 'chr1'
     ctg.query_sequence = 'ACGGAATCCGCGAA'
     ctg.cigartuples = (
-        (S.BAM_CMATCH, 4), 
+        (S.BAM_CMATCH, 4),
         (S.BAM_CINS, 5),
         (S.BAM_CMATCH, 3),
         (S.BAM_CSOFT_CLIP, 2),
     )
 
     ref_fa = MagicMock()
-    kw = dict(contig=ctg, strand='+', ref_clv=13, ref_fa=ref_fa, ctg_clv=10)
+    kw = dict(contig=ctg, strand='+', ref_clv=13, ref_fa=ref_fa, ctg_clv=11)
     assert extract_seq(**kw) == 'ACGGAATCCGCG'
     assert extract_seq(window=5, **kw) == 'CCGCG'
 
