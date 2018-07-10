@@ -6,28 +6,55 @@ from kleat.misc.apautils import calc_genome_offset
 
 
 def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
-                                ctg_idx, ref_idx, ref_fa, window):
+                                ctg_clv, ref_clv, ref_fa, window):
+    """scan from Right to Left, init ctg_end and ref_end first"""
+    ctg_e = len(ctg_seq)
+    # take advantage of calc_genome_offset to calculate the offset from right
+    ref_e = ref_clv + calc_genome_offset(
+        reversed(cigartuples), len(ctg_seq) - ctg_clv, 'left')
+    print(ref_e)
+
     res_seq = ''
     for idx, (key, val) in enumerate(reversed(cigartuples)):
+        print(res_seq)
         if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
             if idx == 0:
                 # meaning it's the upstream clip, downstream clip should
                 # just be ignored
-                ctg_idx -= val
-                ref_idx -= val
+                ctg_e -= val
         elif key in [S.BAM_CMATCH]:
-            res_seq = ctg_seq[ctg_idx - val + 1: ctg_idx + 1] + res_seq
-            ctg_idx -= val
-            ref_idx -= val
+            ctg_b = ctg_e - val
+            if ctg_e >= ctg_clv:
+                if ctg_b < ctg_clv:
+                    _seq = ctg_seq[ctg_b: ctg_clv + 1]
+                else:
+                    _seq = ''
+            else:
+                _seq = ctg_seq[ctg_b: ctg_e]
+
+            res_seq = _seq + res_seq
+
+            ctg_e = ctg_b
+            ref_e -= val
         elif key in [S.BAM_CREF_SKIP]:
-            ref_seq = ref_fa.fetch(seqname, ref_idx - val + 1, ref_idx + 1)
-            res_seq = ref_seq + res_seq
-            ref_idx -= val
+            ref_b = ref_e - val
+            if ref_e >= ref_clv:
+                if ref_b < ref_clv:
+                    _seq = ref_fa.fetch(seqname, ref_b, ref_clv + 1)
+                else:
+                    _seq = ''
+            else:
+                _seq = ref_fa.fetch(seqname, ref_b, ref_e)
+            res_seq = _seq + res_seq
+
+            ref_e -= val
         elif key in [S.BAM_CDEL]:
-            ref_idx -= val
+            ref_e -= val
         elif key in [S.BAM_CINS]:
-            res_seq = ctg_seq[ctg_idx - val + 1: ctg_idx + 1] + res_seq
-            ctg_idx -= val
+            ctg_b = ctg_e - val
+            _seq = ctg_seq[ctg_b: ctg_e]
+            res_seq = _seq + res_seq
+            ctg_e -= val
         else:
             err = ("cigar '{0}' hasn't been delta properly "
                    "for '{1}' strand, please report".format(key, strand))
@@ -38,12 +65,19 @@ def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
     return res_seq
 
 
+def calc_ref_beg(ref_clv, strand, cigartuples, ctg_clv):
+    """calculate the beginning index in ref cooridnate"""
+    tail_dir = 'left' if strand == '-' else 'right'
+    ref_offset = calc_genome_offset(cigartuples, ctg_clv, tail_dir)
+    ref_beg = ref_clv - ref_offset
+    return ref_beg
+
+
 def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
                                  ctg_clv, ref_clv, ref_fa, window):
+    """scan from Left => Right"""
     ctg_b = 0
-    tail_direction = 'left' if strand == '-' else 'right'
-    ref_offset = calc_genome_offset(cigartuples, ctg_clv, tail_direction)
-    ref_b = ref_clv - ref_offset
+    ref_b = calc_ref_beg(ref_clv, strand, cigartuples, ctg_clv)
 
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
@@ -99,11 +133,10 @@ def extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv=0, window=50):
     cigartuples = contig.cigartuples
 
     if strand == '+':
-        init_ctg_idx = len(ctg_seq) - 1
-        init_ref_idx = ref_clv + (len(ctg_seq) - ctg_clv - 1)
-        func = extract_seq_for_plus_strand
-        return func(cigartuples, ctg_seq, seqname, strand,
-                    init_ctg_idx, init_ref_idx, ref_fa, window)
+        return extract_seq_for_plus_strand(
+            cigartuples, ctg_seq, seqname, strand,
+            ctg_clv, ref_clv, ref_fa, window
+        )
     elif strand == '-':
         return extract_seq_for_minus_strand(
             cigartuples, ctg_seq, seqname, strand,
