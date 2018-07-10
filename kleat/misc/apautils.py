@@ -15,16 +15,19 @@ def gen_clv_key_str(seqname, strand, clv):
 
 
 def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
-    """
-    Calculate the offset needed for inferring the clv in genomic coordinate
+    """Calculate the offset needed for inferring the clv in genomic coordinate
 
     Offset needs taking into oconsideration the skipped region caused by intron
     or deletion
 
     :param ctg_offset: the offset calculated based on clv in contig coordinate.
-    ctg_offset is always forward. If the contig is reversed, its value is still
-    based based forward coordinates of this contig. See the following test
-    cases for details in test_bridge.py
+    ctg_offset is always forward.
+
+    If the contig is forward, ctg_offset is equal to ctg_clv, i.e. clv in ctg
+    coordinate.
+
+    If the contig is reversed, its value is still based on forward coordinates
+    of this contig. See the following test cases for details in test_bridge.py
 
     test_do_forwad_contig_left_tail_brdige_read()
     test_do_forwad_contig_right_tail_brdige_read()
