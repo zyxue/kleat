@@ -40,7 +40,7 @@ def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
 def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
                                  ctg_clv, ref_clv, ref_fa, window):
     ctg_b = 0
-    ref_e = ref_clv - ctg_clv
+    ref_b = ref_clv - ctg_clv
 
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
@@ -48,21 +48,30 @@ def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
         if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
             if idx == 0:
                 ctg_b += val
-                ref_e += val
+                ref_b += val
         elif key in [S.BAM_CMATCH]:
             ctg_e = ctg_b + val
             if ctg_b <= ctg_clv:
                 if ctg_e > ctg_clv:
                     res_seq += ctg_seq[ctg_clv: ctg_e]
+                else:
+                    pass
             else:
                 res_seq += ctg_seq[ctg_b: ctg_e]
             ctg_b = ctg_e
-            ref_e += val
+            ref_b += val
         elif key in [S.BAM_CREF_SKIP]:
-            ref_seq = ref_fa.fetch(seqname, ref_e, ref_e + val)
-            res_seq += ref_seq
+            ref_e = ref_b + val
+            if ref_b <= ref_clv:
+                if ref_e > ref_clv:
+                    res_seq += ref_fa.fetch(seqname, ref_clv, ref_e)
+                else:           # still before clv
+                    pass
+            else:
+                res_seq += ref_fa.fetch(seqname, ref_b, ref_e)
+            ref_b = ref_e
         elif key in [S.BAM_CDEL]:
-            ref_e += val
+            ref_b += val
         elif key in [S.BAM_CINS]:
             res_seq += ctg_seq[ctg_b: ctg_b + val]
             ctg_b += val

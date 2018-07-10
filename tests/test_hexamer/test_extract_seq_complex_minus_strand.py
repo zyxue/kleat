@@ -17,6 +17,7 @@ def test_extract_seq_with_skipped_region():
                 ||└GT--C        <-suffix contig with skip
                 01234  56      <-contig coord
     init_ctg_clv^  ^ctg_clv     <-contig coord
+                     | |
              ...XXXGTTGC...    <-genome
                 5678901234      <-genome coord
                 |  | 1
@@ -33,6 +34,31 @@ def test_extract_seq_with_skipped_region():
     assert extract_seq(**kw) == 'GTTGC'
     ref_fa.fetch.assert_called_with('chr2', 10, 12)
     assert extract_seq(**kw, window=3) == 'GTT'
+
+
+# def test_extract_seq_with_two_skipped_regions():
+#     """
+#                 TTT             <-tail of suffix contig
+#                 ||└GT--C        <-suffix contig with skip
+#                 01234  56      <-contig coord
+#     init_ctg_clv^  ^ctg_clv     <-contig coord
+#              ...XXXGTTGC...    <-genome
+#                 5678901234      <-genome coord
+#                 |  | 1
+#     init_ref_idx^  ^ref_clv
+#     """
+#     ctg = MagicMock()
+#     ctg.reference_name = 'chr2'
+#     ctg.query_sequence = 'TTTGTC'
+#     ctg.cigartuples = ((S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 2), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 1))
+
+#     ref_fa = MagicMock()
+#     ref_fa.fetch = MagicMock(return_value='TG')
+#     kw = dict(contig=ctg, strand='-', ref_clv=8, ref_fa=ref_fa, ctg_clv=3)
+#     assert extract_seq(**kw) == 'GTTGC'
+#     ref_fa.fetch.assert_called_with('chr2', 10, 12)
+#     assert extract_seq(**kw, window=3) == 'GTT'
+
 
 
 def test_extract_seq_with_2_base_insertion():
@@ -130,7 +156,7 @@ def test_extract_seq_with_skipped_region_and_indels_and_mismatches():
     assert extract_seq(**kw, window=9) == 'AGCGATAGG'
 
 
-def test_extract_seq_for_bridge_read():
+def test_extract_seq_for_bridge():
     """
         T
         └GT         <-bread read
@@ -152,15 +178,15 @@ def test_extract_seq_for_bridge_read():
     assert extract_seq(**kw) == 'CGGTTGC'
 
 
-def test_extract_seq_for_bridge_read_with_skips():
+def test_extract_seq_for_bridge_with_skip():
     """
         T
         └GT         <-bread read
        GACGGT-GC    <-bridge contig
-       0123456789   <-contig coord
+       012345 678   <-contig coord
     ici^ ^ctg_clv   <-contig coord
     ...GACGGTAGC... <-genome
-       567890123    <-genome coord
+       5678901234   <-genome coord
        | |  1
     iri^ ^ref_clv
     """
@@ -175,6 +201,51 @@ def test_extract_seq_for_bridge_read_with_skips():
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
     assert extract_seq(**kw) == 'CGGTAGC'
     ref_fa.fetch.assert_called_with('chr2', 11, 12)
+
+
+def test_extract_seq_for_bridge_with_skip_before_clv():
+    """
+             T
+             └AG         <-bread read
+       GA--GGTAGC    <-bridge contig
+       01  2345678   <-contig coord
+    ici^ | |  ^ctg_clv   <-contig coord
+    ...GACTGGTAGC... <-genome
+       5678901234   <-genome coord
+       |    1 |
+    iri^      ^ref_clv
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr2'
+    ctg.query_sequence = 'GAGGTAGC'
+    ctg.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 6))
+
+    ref_fa = MagicMock()
+    kw = dict(contig=ctg, strand='-', ref_clv=12, ref_fa=ref_fa, ctg_clv=5)
+    assert extract_seq(**kw) == 'AGC'
+
+
+def test_extract_seq_for_bridge_with_deletion():
+    """
+        T
+        └GT         <-bread read
+       GACGGT_CGC    <-bridge contig
+       012345 678   <-contig coord
+    ici^ ^cc | x 1   <-contig coord
+    ...GACGGTCCTC... <-genome
+       56789012345    <-genome coord
+       | |  1
+    iri^ ^ref_clv
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr2'
+    ctg.query_sequence = 'GACGGTCGC'
+    ctg.cigartuples = ((S.BAM_CMATCH, 6), (S.BAM_CDEL, 1), (S.BAM_CMATCH, 3))
+
+    ref_fa = MagicMock()
+
+    kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
+    assert extract_seq(**kw) == 'CGGTCGC'
 
 
 def test_extract_seq_with_hardclipped_region():
