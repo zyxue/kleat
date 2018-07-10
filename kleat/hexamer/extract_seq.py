@@ -1,4 +1,5 @@
 import kleat.misc.settings as S
+from kleat.misc.apautils import calc_genome_offset
 
 
 """Extract relevatn sequence, in which PAS hexamer is searched"""
@@ -41,7 +42,6 @@ def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
                                  ctg_clv, ref_clv, ref_fa, window):
     ctg_b = 0
     tail_direction = 'left' if strand == '-' else 'right'
-    from kleat.evidence.bridge import calc_genome_offset
     ref_offset = calc_genome_offset(cigartuples, ctg_clv, tail_direction)
     ref_b = ref_clv - ref_offset
 
