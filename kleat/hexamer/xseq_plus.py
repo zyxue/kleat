@@ -47,26 +47,25 @@ def do_skip(ref_e, cigar_val, ref_fa, seqname, ref_clv):
     return next_ref_e, seq_to_add
 
 
-def init_ref_end(ref_clv, cigartuples, ctg_seq, ctg_clv):
+def init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq):
     """
-    Taking advantage of `calc_genome_offset`, initialize the reference end
-    index by calculating the genome offset from right
+    Initialize the end index in genome coordinate by calculating the offset
+    from right, using `calc_genome_offset`
+
+    comparing to the minus corresponding function, there is one additional
+    argument neeed, i.e. `ctg_seq`
     """
-    rev_cigartuples = reversed(cigartuples)
-    ctg_clv_from_the_right = len(ctg_seq) - ctg_clv
-    tail_side = 'left'           # reverse complement the + strand
+    cigartuples = reversed(cigartuples)
+    ctg_clv = len(ctg_seq) - ctg_clv     # from_the_right
 
-    ref_end = ref_clv + calc_genome_offset(
-        rev_cigartuples,
-        ctg_clv_from_the_right,
-        tail_side
-    )
-    return ref_end
+    # TODO: left may not matter in such case
+    offset = calc_genome_offset(cigartuples, ctg_clv, 'left')
+    return ref_clv + offset
 
 
-def xseq(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window):
+def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window):
     """
-    Scan from Right to Left,
+    scan from Right to Left,
 
     compared to minus strand, initialize contig end (ce) and reference end (fe)
     instead of cb and fb
@@ -75,11 +74,11 @@ def xseq(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window
     """
 
     ce = len(ctg_seq)
-    fe = init_ref_end(ref_clv, cigartuples, ctg_seq, ctg_clv)
+    fe = init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq)
 
     res_seq = ''
     for idx, (key, val) in enumerate(reversed(cigartuples)):
-        if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
+        if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
             if idx == 0:        # meaning its the upstream clip
                 ce -= val
             # else, downstream clip should just be ignored
@@ -108,4 +107,5 @@ def xseq(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window
         if len(res_seq) >= window:
             res_seq = res_seq[-window:]
             break
+
     return res_seq
