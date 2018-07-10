@@ -82,19 +82,24 @@ def xseq(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window
         if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
             if idx == 0:        # meaning its the upstream clip
                 ce -= val
-            # downstream clip should just be ignored
+            # else, downstream clip should just be ignored
+
         elif key == S.BAM_CMATCH:
             ce, fe, seq = do_match(ce, fe, val, ctg_seq, ctg_clv)
             res_seq = seq + res_seq
+
         elif key == S.BAM_CREF_SKIP:
             fe, seq = do_skip(fe, val, ref_fa, seqname, ref_clv)
             res_seq = seq + res_seq
+
         elif key == S.BAM_CDEL:
             fe -= val
+
         elif key == S.BAM_CINS:
             cb = ce - val
             res_seq = ctg_seq[cb: ce] + res_seq
             ce = cb
+
         else:
             err = ("cigar '{0}' hasn't been delta properly "
                    "for '{1}' strand, please report".format(key, strand))
