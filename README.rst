@@ -96,7 +96,26 @@ Zero-based index
 
 Every index is 0-based, including ascii visualization such as
 
--- code-block::
+.. code-block::
+
+   Symbols:
+   --: ref_skip
+   //: hardclip at right
+   \\: hardclip at left
+   __: deletion
+   ┬ : insertion
+    └: softclip at left
+    ┘: softclip at right
+
+   Abbreviation:
+    cc: ctg_clv, clv in contig coordinate
+    rc: ref_clv, clv in reference coordinate
+
+   icb: init_clv_beg, initialized beginning index in contig coordinate (for - strand clv)
+   irb: init_ref_beg, initialized beginning index in reference coordinate (for - strand clv)
+
+   ice: init_clv_end, initialized end index in contig coordinate (for + strand clv)
+   ire: init_ref_end, initialized end index in reference coordinate (for + strand clv)
 
     TTT
       └AT
