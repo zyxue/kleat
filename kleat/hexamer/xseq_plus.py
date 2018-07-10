@@ -47,6 +47,23 @@ def do_skip(ref_e, cigar_val, ref_fa, seqname, ref_clv):
     return next_ref_e, seq_to_add
 
 
+def init_ref_end(ref_clv, cigartuples, ctg_seq, ctg_clv):
+    """
+    Taking advantage of `calc_genome_offset`, initialize the reference end
+    index by calculating the genome offset from right
+    """
+    rev_cigartuples = reversed(cigartuples)
+    ctg_clv_from_the_right = len(ctg_seq) - ctg_clv
+    tail_side = 'left'           # reverse complement the + strand
+
+    ref_end = ref_clv + calc_genome_offset(
+        rev_cigartuples,
+        ctg_clv_from_the_right,
+        tail_side
+    )
+    return ref_end
+
+
 def xseq(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window):
     """
     Scan from Right to Left,
@@ -58,10 +75,7 @@ def xseq(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window
     """
 
     ce = len(ctg_seq)
-
-    # take advantage of calc_genome_offset to calculate the offset from right
-    fe = ref_clv + calc_genome_offset(
-        reversed(cigartuples), len(ctg_seq) - ctg_clv, 'left')
+    fe = init_ref_end(ref_clv, cigartuples, ctg_seq, ctg_clv)
 
     res_seq = ''
     for idx, (key, val) in enumerate(reversed(cigartuples)):
