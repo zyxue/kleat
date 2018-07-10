@@ -20,8 +20,8 @@ def test_extract_seq_with_skipped_region():
                      | |
              ...XXXGTTGC...    <-genome
                 5678901234      <-genome coord
-                |  | 1
-    init_ref_idx^  ^ref_clv
+                   | 1
+                   ^ref_clv/iri
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
@@ -44,8 +44,8 @@ def test_extract_seq_with_two_skipped_regions_and_a_mismatch():
     init_ctg_clv^  ^cc  x        <-contig coord
              ...XXXGTTGCGGCAC... <-genome
                 56789012345678   <-genome coord
-                |  | 1
-    init_ref_idx^  ^ref_clv
+                   | 1
+                   ^ref_clv/iri
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
@@ -76,8 +76,8 @@ def test_extract_seq_with_2_base_insertion():
       ici^  ^ctg_clv
          XXXXX XXX    <-genome
          456789012... <-genome coord
-         |  |  1
-      iri^  ^ref_clv
+            |  1
+            ^ref_clv/iri
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr1'
@@ -104,8 +104,8 @@ def test_extract_seq_with_skipped_region_and_insertion_and_mismatches():
       ici^  ^ctc x
          XXXXGX XTX... <-genome
          456789 0123   <-genome coord
-         |  |   1
-      iri^  ^ref_clv
+            |   1
+            ^ref_clv/iri
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr1'
@@ -137,8 +137,8 @@ def test_extract_seq_with_skipped_region_and_indels_and_mismatches():
       ici^  ^ctc x 1
          XXXXGX XTXTAXX... <-genome
          456789 01234567   <-genome coord
-         |  |   1
-      iri^  ^ref_clv
+            |   1
+            ^ref_clv/iri
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr1'
@@ -212,12 +212,12 @@ def test_extract_seq_for_bridge_with_skip():
 def test_extract_seq_for_bridge_with_skip_before_clv():
     """
              T
-             └AG         <-bread read
-       GA--GGTAGC    <-bridge contig
-       01  2345678   <-contig coord
-    ici^ | |  ^ctg_clv   <-contig coord
-    ...GACTGGTAGC... <-genome
-       5678901234   <-genome coord
+             └AG       <-bridge read
+       GA--GGTAGC      <-bridge contig
+       01  2345678     <-contig coord
+    ici^ | |  ^ctg_clv <-contig coord
+    ...GACTGGTAGC...   <-genome
+       5678901234      <-genome coord
        |    1 |
     iri^      ^ref_clv
     """
@@ -228,6 +228,34 @@ def test_extract_seq_for_bridge_with_skip_before_clv():
 
     ref_fa = MagicMock()
     kw = dict(contig=ctg, strand='-', ref_clv=12, ref_fa=ref_fa, ctg_clv=5)
+    assert extract_seq(**kw) == 'AGC'
+
+
+def test_extract_seq_for_bridge_with_multiple_skips_before_clv():
+    """
+             T
+             └AG       <-bridge read
+       G-C--GTAGC      <-bridge contig
+       0 1  234567     <-contig coord
+    ici^||| | ^ctg_clv <-contig coord
+    ...GACTGGTAGC...   <-genome
+       5678901234      <-genome coord
+       |    1 |
+    iri^      ^ref_clv
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr2'
+    ctg.query_sequence = 'GCGTAGC'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 1),
+        (S.BAM_CREF_SKIP, 1),
+        (S.BAM_CMATCH, 1),
+        (S.BAM_CREF_SKIP, 2),
+        (S.BAM_CMATCH, 5)
+    )
+
+    ref_fa = MagicMock()
+    kw = dict(contig=ctg, strand='-', ref_clv=12, ref_fa=ref_fa, ctg_clv=4)
     assert extract_seq(**kw) == 'AGC'
 
 

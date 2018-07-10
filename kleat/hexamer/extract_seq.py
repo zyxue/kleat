@@ -1,7 +1,7 @@
 import kleat.misc.settings as S
 
-"""Extract relevatn sequence, in which PAS hexamer is searched"""
 
+"""Extract relevatn sequence, in which PAS hexamer is searched"""
 
 
 def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
@@ -40,14 +40,16 @@ def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
 def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
                                  ctg_clv, ref_clv, ref_fa, window):
     ctg_b = 0
-    ref_b = ref_clv - ctg_clv
+    tail_direction = 'left' if strand == '-' else 'right'
+    from kleat.evidence.bridge import calc_genome_offset
+    ref_offset = calc_genome_offset(cigartuples, ctg_clv, tail_direction)
+    ref_b = ref_clv - ref_offset
 
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
         if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
             if idx == 0:
                 ctg_b += val
-                ref_b += val
         elif key in [S.BAM_CMATCH]:
             ctg_e = ctg_b + val
             if ctg_b <= ctg_clv:
