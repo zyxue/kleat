@@ -130,6 +130,33 @@ def test_extract_seq_for_bridge_with_deletion():
     assert extract_seq(**kw) == 'CGGTCGC'
 
 
+def test_extract_seq_for_bridge_with_insertion():
+    """
+        T    AG      <-inserted bases
+        └CG  ┬       <-bread read
+       GACGGT CTC    <-bridge contig
+       012345 8901   <-contig coord
+    ici^ ^cc   x1    <-contig coord
+    ...GACGGT CGC... <-genome
+       567890 1234    <-genome coord
+       | |  1
+    iri^ ^ref_clv
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr2'
+    ctg.query_sequence = 'GACGGTAGCTC'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 6),
+        (S.BAM_CINS, 2),
+        (S.BAM_CMATCH, 3)
+    )
+
+    ref_fa = MagicMock()
+
+    kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
+    assert extract_seq(**kw) == 'CGGTAGCTC'
+
+
 def test_extract_seq_with_hardclipped_region():
     """
              TT

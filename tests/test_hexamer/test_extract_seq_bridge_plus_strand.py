@@ -200,6 +200,33 @@ def test_extract_seq_for_bridge_with_deletion():
     assert extract_seq(**kw) == 'GACTCG'
 
 
+def test_extract_seq_for_bridge_with_insertion():
+    """
+         AG   AA      <-inserted bases
+         ┬  GT┘       <-bread read
+       GA CGGTCGC     <-bridge contig
+       01 45678901    <-contig coord
+        x   1|   |
+        x  cc^   ^ice
+    ...GT CGGTCGC...  <-genome
+       56 78901234    <-genome coord
+             |   |
+           rc^   ^ire
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr2'
+    ctg.query_sequence = 'GAAGCGGTCGC'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CINS, 2),
+        (S.BAM_CMATCH, 7)
+    )
+
+    ref_fa = MagicMock()
+    kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=7)
+    assert extract_seq(**kw) == 'GAAGCGGT'
+
+
 def test_extract_seq_with_hardclipped_region():
     """
            AA
