@@ -1,7 +1,7 @@
 import pytest
 
-from kleat.evidence import bridge
 import kleat.misc.settings as S
+from kleat.misc.apautils import calc_genome_offset
 
 
 """in addition to bridge.py, test cases here validates the calculation of clv
@@ -49,7 +49,7 @@ def test_calc_genome_offset_for_contig_with_three_base_insertion_with_varying_ta
     0123 45 <-genome offset
     """
     ctg_cigartuples = ((S.BAM_CMATCH, 3), (S.BAM_CINS, 3), (S.BAM_CMATCH, 2))
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, tail_direction) == expected_gnm_offset
+    assert calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, tail_direction) == expected_gnm_offset
 
 
 
@@ -88,4 +88,4 @@ def test_calc_genome_offset_for_contig_with_one_base_insertion_with_varying_tail
     0123 45 <-genome offset
     """
     ctg_cigartuples = ((S.BAM_CMATCH, 3), (S.BAM_CINS, 1), (S.BAM_CMATCH, 2))
-    assert bridge.calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, tail_direction) == expected_gnm_offset
+    assert calc_genome_offset(ctg_cigartuples, ctg_offset_cutoff, tail_direction) == expected_gnm_offset
