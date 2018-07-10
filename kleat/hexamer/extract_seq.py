@@ -1,68 +1,10 @@
 import kleat.misc.settings as S
+
 from kleat.misc.apautils import calc_genome_offset
+from kleat.hexamer import xseq_plus
 
 
 """Extract relevatn sequence, in which PAS hexamer is searched"""
-
-
-def extract_seq_for_plus_strand(cigartuples, ctg_seq, seqname, strand,
-                                ctg_clv, ref_clv, ref_fa, window):
-    """scan from Right to Left, init ctg_end and ref_end first"""
-    ctg_e = len(ctg_seq)
-    # take advantage of calc_genome_offset to calculate the offset from right
-    ref_e = ref_clv + calc_genome_offset(
-        reversed(cigartuples), len(ctg_seq) - ctg_clv, 'left')
-    print(ref_e)
-
-    res_seq = ''
-    for idx, (key, val) in enumerate(reversed(cigartuples)):
-        print(res_seq)
-        if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
-            if idx == 0:
-                # meaning it's the upstream clip, downstream clip should
-                # just be ignored
-                ctg_e -= val
-        elif key in [S.BAM_CMATCH]:
-            ctg_b = ctg_e - val
-            if ctg_e >= ctg_clv:
-                if ctg_b < ctg_clv:
-                    _seq = ctg_seq[ctg_b: ctg_clv + 1]
-                else:
-                    _seq = ''
-            else:
-                _seq = ctg_seq[ctg_b: ctg_e]
-
-            res_seq = _seq + res_seq
-
-            ctg_e = ctg_b
-            ref_e -= val
-        elif key in [S.BAM_CREF_SKIP]:
-            ref_b = ref_e - val
-            if ref_e >= ref_clv:
-                if ref_b < ref_clv:
-                    _seq = ref_fa.fetch(seqname, ref_b, ref_clv + 1)
-                else:
-                    _seq = ''
-            else:
-                _seq = ref_fa.fetch(seqname, ref_b, ref_e)
-            res_seq = _seq + res_seq
-
-            ref_e -= val
-        elif key in [S.BAM_CDEL]:
-            ref_e -= val
-        elif key in [S.BAM_CINS]:
-            ctg_b = ctg_e - val
-            _seq = ctg_seq[ctg_b: ctg_e]
-            res_seq = _seq + res_seq
-            ctg_e -= val
-        else:
-            err = ("cigar '{0}' hasn't been delta properly "
-                   "for '{1}' strand, please report".format(key, strand))
-            raise NotImplementedError(err)
-        if len(res_seq) >= window:
-            res_seq = res_seq[-window:]
-            break
-    return res_seq
 
 
 def calc_ref_beg(ref_clv, strand, cigartuples, ctg_clv):
@@ -81,6 +23,7 @@ def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
 
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
+        print(res_seq)
         if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
             if idx == 0:
                 ctg_b += val
@@ -132,16 +75,10 @@ def extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv=0, window=50):
     ctg_seq = contig.query_sequence
     cigartuples = contig.cigartuples
 
+    args = cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window
     if strand == '+':
-        return extract_seq_for_plus_strand(
-            cigartuples, ctg_seq, seqname, strand,
-            ctg_clv, ref_clv, ref_fa, window
-        )
+        return xseq_plus.xseq(*args)
     elif strand == '-':
-        return extract_seq_for_minus_strand(
-            cigartuples, ctg_seq, seqname, strand,
-            ctg_clv, ref_clv, ref_fa, window
-        )
+        return extract_seq_for_minus_strand(*args)
     else:
         raise ValueError('unknown strand: "{0}"'.format(strand))
-
