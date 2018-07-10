@@ -36,29 +36,35 @@ def test_extract_seq_with_skipped_region():
     assert extract_seq(**kw, window=3) == 'GTT'
 
 
-# def test_extract_seq_with_two_skipped_regions():
-#     """
-#                 TTT             <-tail of suffix contig
-#                 ||└GT--C        <-suffix contig with skip
-#                 01234  56      <-contig coord
-#     init_ctg_clv^  ^ctg_clv     <-contig coord
-#              ...XXXGTTGC...    <-genome
-#                 5678901234      <-genome coord
-#                 |  | 1
-#     init_ref_idx^  ^ref_clv
-#     """
-#     ctg = MagicMock()
-#     ctg.reference_name = 'chr2'
-#     ctg.query_sequence = 'TTTGTC'
-#     ctg.cigartuples = ((S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 2), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 1))
+def test_extract_seq_with_two_skipped_regions_and_a_mismatch():
+    """
+                TTT              <-tail of suffix contig
+                ||└GT--CAG-AC    <-suffix contig with skip
+                01234  567 890   <-contig coord
+    init_ctg_clv^  ^cc  x        <-contig coord
+             ...XXXGTTGCGGCAC... <-genome
+                56789012345678   <-genome coord
+                |  | 1
+    init_ref_idx^  ^ref_clv
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr2'
+    ctg.query_sequence = 'TTTGTCAGAC'
+    ctg.cigartuples = (
+        (S.BAM_CSOFT_CLIP, 3),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CREF_SKIP, 2),
+        (S.BAM_CMATCH, 3),
+        (S.BAM_CREF_SKIP, 1),
+        (S.BAM_CMATCH, 2),
+    )
 
-#     ref_fa = MagicMock()
-#     ref_fa.fetch = MagicMock(return_value='TG')
-#     kw = dict(contig=ctg, strand='-', ref_clv=8, ref_fa=ref_fa, ctg_clv=3)
-#     assert extract_seq(**kw) == 'GTTGC'
-#     ref_fa.fetch.assert_called_with('chr2', 10, 12)
-#     assert extract_seq(**kw, window=3) == 'GTT'
-
+    ref_fa = MagicMock()
+    ref_fa.fetch.side_effect = ['TG', 'C']
+    kw = dict(contig=ctg, strand='-', ref_clv=8, ref_fa=ref_fa, ctg_clv=3)
+    assert extract_seq(**kw) == 'GTTGCAGCAC'
+    assert ref_fa.fetch.call_count == 2
+    ref_fa.fetch.assert_has_calls([call('chr2', 10, 12), call('chr2', 15, 16)])
 
 
 def test_extract_seq_with_2_base_insertion():

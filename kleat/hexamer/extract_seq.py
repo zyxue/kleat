@@ -44,7 +44,6 @@ def extract_seq_for_minus_strand(cigartuples, ctg_seq, seqname, strand,
 
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
-        print(res_seq)
         if key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
             if idx == 0:
                 ctg_b += val
