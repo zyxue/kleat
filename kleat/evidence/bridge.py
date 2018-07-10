@@ -56,59 +56,6 @@ def init_evidence_holder():
     }
 
 
-def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
-    """
-    Calculate the offset needed for inferring the clv in genomic coordinate
-
-    Offset needs taking into oconsideration the skipped region caused by intron
-    or deletion
-
-    :param ctg_offset: the offset calculated based on clv in contig coordinate.
-    ctg_offset is always forward. If the contig is reversed, its value is still
-    based based forward coordinates of this contig. See the following test
-    cases for details in test_bridge.py
-
-    test_do_forwad_contig_left_tail_brdige_read()
-    test_do_forwad_contig_right_tail_brdige_read()
-    test_do_reverse_contig_left_tail_brdige_read()
-    test_do_reverse_contig_right_tail_brdige_read()
-    """
-    cur_ctg_ofs = 0             # curent offset in contig coordinate
-    cur_gnm_ofs = 0             # current offset in genome coordinate
-    for key, val in ctg_cigartuples:
-        if key in [S.BAM_CMATCH, S.BAM_CEQUAL, S.BAM_CDIFF]:
-            cur_ctg_ofs += val
-            if cur_ctg_ofs >= ctg_offset:
-                delta = val - (cur_ctg_ofs - ctg_offset)
-                cur_gnm_ofs += delta
-                break
-            cur_gnm_ofs += val
-        elif key in [S.BAM_CREF_SKIP, S.BAM_CDEL]:
-            cur_gnm_ofs += val
-        elif key in [S.BAM_CINS, S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
-            # these don't consume reference coordinates, but consumes contig
-            # coordinates, so needs subtraction
-            ctg_offset -= val
-            if cur_ctg_ofs >= ctg_offset:
-                # this means that the clv happens to be in the middle of the
-                # inserted sequence
-                if tail_direction == 'left':
-                    break
-                elif tail_direction == 'right':
-                    # jump to the next position in genome coordinate
-                    cur_gnm_ofs += 1
-                    break
-                else:
-                    err_msg = ('tail_direction must be "left" or "right", '
-                               'but received {0}'.format(tail_direction))
-                    raise ValueError(err_msg)
-        else:
-            pass
-            # Not sure about S.BAM_CPAD & BAM_CBACK,
-            # please let me know if you do
-    return cur_gnm_ofs
-
-
 def do_fwd_ctg_lt_bdg(read):
     """fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge"""
     return '-', read.reference_start, read.cigartuples[0][1]
@@ -184,7 +131,8 @@ def analyze_bridge(contig, read, ref_fa, dd_bridge):
 
     strand, ctg_offset, tail_len, tail_direction = do_bridge(contig, read)
 
-    offset = calc_genome_offset(contig.cigartuples, ctg_offset, tail_direction)
+    offset = apautils.calc_genome_offset(
+        contig.cigartuples, ctg_offset, tail_direction)
 
     ref_clv = contig.reference_start + offset
 
