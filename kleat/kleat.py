@@ -46,6 +46,11 @@ def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter):
             process_blank(contig, ref_fa, csvwriter, ascs)
 
 
+def gen_tmp_output(output):
+    return os.path.join(
+        os.path.dirname(output), 'tmp_{0}'.format(os.path.basename(output)))
+
+
 def main():
     args = get_args()
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
@@ -53,10 +58,10 @@ def main():
     ref_fa = pysam.FastaFile(args.reference_genome)
     clv_sc_mapping = args.clv_sc_mapping
     output = args.output
-    tmp_output = os.path.join(os.path.dirname(output),
-                              'tmp_{0}'.format(os.path.basename(output)))
-    if os.path.exists(output):
-        U.backup_file(output)
+    tmp_output = gen_tmp_output(output)
+    for o in [output, tmp_output]:
+        if os.path.exists(o):
+            U.backup_file(o)
 
     with open(tmp_output, 'wt') as opf:
         csvwriter = csv.writer(opf, delimiter='\t')
