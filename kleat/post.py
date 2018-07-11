@@ -5,6 +5,8 @@ individually and collected polyA evidence from them
 - aggregate polyA evidence per clv (identified by (seqname, strand, clv) tuple)
 - calculate the closest annotated clv for each clv
 """
+
+import os
 import logging
 import multiprocessing
 
@@ -58,7 +60,7 @@ def agg_polya_evidence_per(grp):
                       str_cols, hex_cols, one_cols])
 
 
-def calc_abs_dist_to_annot_clv(grp, annot_clvs):
+def calc_dist_to_aclv(grp, annot_clvs):
     aclvs = annot_clvs.loc[grp.name]  # grp.name holds the group key
     bcast = np.broadcast_to(grp.clv.values, (aclvs.shape[0], grp.shape[0])).T
 
@@ -74,36 +76,60 @@ def calc_abs_dist_to_annot_clv(grp, annot_clvs):
     return grp
 
 
-def add_abs_dist_to_annot_clv(df_clv, df_mapping):
+def adjust_seqnames(df_annot, use_ucsc_seqnames):
     """
-    add absolute distance to the closest annotated clv as an addition column
-
-    :param df_mapping: clv-stop codon mapping in dataframe
+    make the version of seqnames (ucsc or ensembl) in df_annot consistent with
+    that used in df_clv
     """
-    # do some checking about which version of seqnames are used, use whatever
-    # is used by df_clv as the reference
-    mapping_seqname_is_ucsc = df_mapping.seqname.values[0] in S.UCSC_SEQNAMES
-    cleavge_seqname_is_ucsc = df_clv.seqname.values[0] in S.UCSC_SEQNAMES
+    annot_seqname_is_ucsc = df_annot.seqname.values[0] in S.UCSC_SEQNAMES
 
-    if mapping_seqname_is_ucsc != cleavge_seqname_is_ucsc:
-        if mapping_seqname_is_ucsc:
-            df_mapping.seqname = df_mapping.seqname.replace(S.UCSC_TO_ENSEMBL_SEQNAME)
+    if annot_seqname_is_ucsc != use_ucsc_seqnames:
+        if annot_seqname_is_ucsc:
+            df_annot['seqname'] = df_annot.seqname.replace(S.UCSC_TO_ENSEMBL_SEQNAME)
         else:
-            df_mapping.seqname = df_mapping.seqname.replace(S.ENSEMBL_TO_UCSC_SEQNAME)
+            df_annot['seqname'] = df_annot.seqname.replace(S.ENSEMBL_TO_UCSC_SEQNAME)
 
-    annot_clvs = df_mapping.groupby(['seqname', 'strand']).apply(
-        lambda g: g.clv.sort_values().values)
 
+def clean_by_seqname(df_clv, use_ucsc_seqnames):
     # remove patch chromosomes
-    if cleavge_seqname_is_ucsc:
+    if use_ucsc_seqnames:
         ndf_clv = df_clv.query('seqname in {0}'.format(S.UCSC_SEQNAMES))
     else:
         ndf_clv = df_clv.query('seqname in {0}'.format(S.ENSEMBL_SEQNAMES))
+    return ndf_clv
+
+
+def add_annot_info(df_clv, karbor_annot_clv):
+    """
+    add four columns of annotation information:
+       1. closest annotated clv (aclv)
+       2. its associated gene_name(s), could correspond to multiple genes
+       3. its associated gene_id(s), could correspond to multiple genes
+       3. distance between clv and aclv
+
+    :param karbor_clv_annotation: the clv annotation formatted for karbor
+    """
+    logger.info('Reading {0}'.format(os.path.abspath(karbor_annot_clv)))
+    df_annot = pd.read_pickle(karbor_annot_clv)
+    logger.info('df.shape: {0}'.format(df_annot.shape))
+
+    use_ucsc_seqnames = df_clv.seqname.values[0] in S.UCSC_SEQNAMES
+    adjust_seqnames(df_annot, use_ucsc_seqnames)
+    annot_clvs = df_annot.groupby(['seqname', 'strand']).apply(
+        lambda g: g.clv.sort_values().values)
+
+    ndf_clv = clean_by_seqname(df_clv, use_ucsc_seqnames)
 
     logger.info('calculating absolute distances to annotated cleavage sites')
-    timed = U.timeit(
+    timed_apply = U.timeit(
         lambda _df: _df.groupby(['seqname', 'strand'])
-        .apply(calc_abs_dist_to_annot_clv, annot_clvs=annot_clvs)
+        .apply(calc_dist_to_aclv, annot_clvs=annot_clvs)
     )
-    out = timed(ndf_clv)
-    return out
+    odf = timed_apply(ndf_clv)
+
+    # add gene_name and gene_id column for later convenience
+    pdf = odf.merge(
+        df_annot.rename(columns={'clv': 'aclv'}),  # prepare for merge
+        on=['seqname', 'strand', 'aclv']
+    )
+    return pdf

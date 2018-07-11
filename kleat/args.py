@@ -22,9 +22,10 @@ def get_args():
               'used for generating the read-to-contig BAM alignments')
     )
     parser.add_argument(
-        '-m', '--clv-sc-mapping', type=str, required=True,
-        help=('the mapping pickle (TODO: support CSV) file of clv-to-stop '
-              'codon extracted from annotation')
+        '-a', '--karbor-clv-annotation', type=str, required=True,
+        help=('the annotated clv pickle formatted for karbor with '
+              '(seqname, strand, clv, gene_ids, gene_names) columns '
+              'this file is processed from GTF annotation file')
     )
     parser.add_argument(
         '-o', '--output', type=str, default='./output.tsv',

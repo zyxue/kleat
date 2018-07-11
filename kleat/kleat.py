@@ -11,7 +11,7 @@ import pandas as pd
 from kleat.misc import apautils
 from kleat.args import get_args
 from kleat.proc import process_suffix, process_bridge_and_link, process_blank
-from kleat.post import aggregate_polya_evidence, add_abs_dist_to_annot_clv
+from kleat.post import aggregate_polya_evidence, add_annot_info
 from kleat.misc import utils as U
 from kleat.misc import settings as S
 
@@ -56,8 +56,7 @@ def main():
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
     r2c_bam = pysam.AlignmentFile(args.read_to_contig)
     ref_fa = pysam.FastaFile(args.reference_genome)
-    clv_sc_mapping = args.clv_sc_mapping
-    output = args.output
+    output = os.path.abspath(args.output)
     tmp_output = gen_tmp_output(output)
     for o in [output, tmp_output]:
         if os.path.exists(o):
@@ -76,12 +75,8 @@ def main():
     logger.info('Aggregating polya evidence for each (seqname, strand, clv)...')
     df_agg = aggregate_polya_evidence(df_clv, args.num_cpus)
 
-    logger.info('Reading {0}'.format(clv_sc_mapping))
-    df_mapping = pd.read_pickle(clv_sc_mapping)
-    logger.info('df.shape: {0}'.format(df_mapping.shape))
-
     logger.info('Calculating closest annotated clv...')
-    df_clv_with_adist = add_abs_dist_to_annot_clv(df_agg, df_mapping)
+    df_clv_with_adist = add_annot_info(df_agg, args.karbor_clv_annotation)
 
     logger.info('Writing to {0}...'.format(output))
     df_clv_with_adist.to_csv(output, sep='\t', index=False)
