@@ -130,6 +130,7 @@ def add_annot_info(df_clv, karbor_annot_clv):
     # add gene_name and gene_id column for later convenience
     pdf = odf.merge(
         df_annot.rename(columns={'clv': 'aclv'}),  # prepare for merge
-        on=['seqname', 'strand', 'aclv']
+        on=['seqname', 'strand', 'aclv'],
+        how='left',
     )
     return pdf
