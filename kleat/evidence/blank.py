@@ -15,7 +15,7 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
     seqname = contig.reference_name
     strands = ['+', '-']
     ref_clv_candidates = [
-        contig.reference_end + 1,
+        contig.reference_end - 1,
         contig.reference_start
     ]
 
