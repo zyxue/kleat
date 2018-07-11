@@ -62,14 +62,17 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
 
         num_suffix_reads,
         tail_len,
+        1,                      # num_suffix_contigs
 
         # other types of evidence are left empty
-        0,    # num_bridge_reads
-        0,    # max_bridge_read_tail_len
+        0,                      # num_bridge_reads
+        0,                      # max_bridge_read_tail_len
+        0,                      # num_bridge_contigs
 
-        0,    # num_link_reads
+        0,                      # num_link_reads
+        0,                      # num_link_contigs
 
-        0,    # num_blank_contigs
+        0,                      # num_blank_contigs
 
         ctg_hex, ctg_hex_id, ctg_hex_pos,
         ref_hex, ref_hex_id, ref_hex_pos

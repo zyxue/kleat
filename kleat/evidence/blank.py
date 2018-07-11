@@ -47,10 +47,15 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
 
             0,                   # num_tail_reads
             0,                   # tail_length
+            0,                   # num_suffix_contigs
+
             0,                   # num_bridge_reads
             0,                   # max_bridge_tail_len
+            0,                   # num_bridge_contigs
 
             0,                   # num_link_reads
+            0,                   # num_link_contigs
+
             1,                   # num_blank_contigs
 
             ctg_hex, ctg_hex_id, ctg_hex_pos,

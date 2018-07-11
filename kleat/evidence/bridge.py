@@ -170,11 +170,14 @@ def gen_clv_record(contig, clv_key_tuple,
 
         0,                      # num_tail_reads
         0,                      # tail_length
+        0,                      # num_suffix_contigs
 
         num_bridge_reads,
         max_bridge_tail_len,
+        1,                      # num_bridge_contigs
 
         0,                      # num_link_reads,
+        0,                      # num_link_contigs
 
         0,                      # num_blank_contigs
 

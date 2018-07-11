@@ -19,10 +19,17 @@ HEADER = [
 
     'evidence_type', 'contig_id', 'contig_len', 'contig_mapq', 'contig_is_hardclipped',
 
-    'num_suffix_reads', 'suffix_contig_tail_len',    # suffix
-    'num_bridge_reads', 'max_bridge_read_tail_len',  # bridge
-    'num_link_reads',                                # link
-    'num_blank_contigs',                             # blank
+    # suffix
+    'num_suffix_reads', 'max_suffix_contig_tail_len', 'num_suffix_contigs',
+
+    # bridge
+    'num_bridge_reads', 'max_bridge_read_tail_len', 'num_bridge_contigs',
+
+    # link
+    'num_link_reads', 'num_link_contigs',
+
+    # blank
+    'num_blank_contigs',
 
     'ctg_hex', 'ctg_hex_id', 'ctg_hex_pos',
     'ref_hex', 'ref_hex_id', 'ref_hex_pos'
@@ -88,13 +95,17 @@ COLS_TO_SUM = [
     'num_suffix_reads',
     'num_bridge_reads',
     'num_link_reads',
+
+    'num_suffix_contigs',
+    'num_bridge_contigs',
+    'num_link_contigs',
     'num_blank_contigs'
 ]
 
 COLS_TO_MAX = [
     'contig_len',
     'contig_mapq',
-    'suffix_contig_tail_len',
+    'max_suffix_contig_tail_len',
     'max_bridge_read_tail_len'
 ]
 
