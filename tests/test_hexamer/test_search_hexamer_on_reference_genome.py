@@ -6,7 +6,7 @@ import pysam
 from kleat.hexamer.search import (
     fetch_seq,
     gen_coords,
-    search_reference_genome,
+    search_ref_genome,
 )
 
 
@@ -88,7 +88,7 @@ if os.path.exists(REF_FA):
                 'aataaa'
             )
             self.assertEqual(
-                search_reference_genome(self.refseq, chrom, clv, '+', 50),
+                search_ref_genome(self.refseq, chrom, clv, '+', 50),
                 ('AATAAA', 16, 102316872)
             )
 
@@ -101,7 +101,7 @@ if os.path.exists(REF_FA):
                 'TTTATT'
             )
             self.assertEqual(
-                search_reference_genome(self.refseq, chrom, clv, '-', 50),
+                search_ref_genome(self.refseq, chrom, clv, '-', 50),
                 ('AATAAA', 16, 40737011)
             )
 

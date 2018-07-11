@@ -93,7 +93,7 @@ def fetch_seq(refseq, chrom, beg, end):
     return refseq.fetch(chrom, beg, end)
 
 
-def search_reference_genome(refseq, chrom, clv, strand, window=50):
+def search_ref_genome(refseq, chrom, clv, strand, window=50):
     """
     Different from search, this function search hexamer on reference genome
 
@@ -133,8 +133,7 @@ def gen_contig_hexamer_tuple(contig, strand, ref_clv, ref_fa, ctg_clv):
 def gen_reference_hexamer_tuple(ref_fa, chrom_name, strand, ref_clv):
     """search PAS hexamer in reference genome"""
     na_tuple = 'NA', -1, -1     # ref_hex, ref_hex_id, ref_hex_pos
-    ref_hex_tuple = search_reference_genome(
-        ref_fa, chrom_name, ref_clv, strand)
+    ref_hex_tuple = search_ref_genome(ref_fa, chrom_name, ref_clv, strand)
 
     if ref_hex_tuple is None:
         return na_tuple
