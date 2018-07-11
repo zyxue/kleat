@@ -6,15 +6,55 @@ individually and collected polyA evidence from them
 - calculate the closest annotated clv for each clv
 """
 import logging
+import multiprocessing
 
 import pandas as pd
 import numpy as np
+from tqdm import tqdm
 
 from kleat.misc import utils as U
 from kleat.misc import settings as S
 
 
 logger = logging.getLogger(__name__)
+
+
+def set_sort_join_strs(vals):
+    return '|'.join(sorted(set(vals)))
+
+
+def prepare_grps_for_agg(df_clv):
+    clv_id_cols = ['seqname', 'strand', 'clv']
+    clv_id_tuples, grps = [], []
+    logger.info('preparing arguments for aggregating polya evidence in parallel...')
+    iters = tqdm(df_clv.groupby(clv_id_cols),
+                 desc='collected', unit=" cleavage sites")
+    for clv_id_tuple, grp in iters:
+        clv_id_tuples.append(clv_id_tuple)
+        grps.append(grp)
+    df_clv_ids = pd.DataFrame(clv_id_tuples, columns=clv_id_cols)
+    return df_clv_ids, grps
+
+
+def aggregate_polya_evidence(df_clv, num_cpus):
+    df_clv_ids, grps = prepare_grps_for_agg(df_clv)
+    with multiprocessing.Pool(num_cpus) as p:
+        res = U.timeit(p.map)(agg_polya_evidence_per, grps)
+    df_res = pd.concat(res, axis=1).T
+    ndf_res = pd.concat([df_clv_ids, df_res], axis=1)
+    return ndf_res
+
+
+def agg_polya_evidence_per(grp):
+    sum_cols = grp[S.COLS_TO_SUM].sum()
+    max_cols = grp[S.COLS_TO_MAX].max()
+    any_cols = grp[S.COLS_TO_ANY].any()
+    str_cols = grp[S.COLS_TO_JOIN].apply(set_sort_join_strs)
+    # pick the strongest PAS hexamer
+    hex_cols = grp[S.COLS_CONTIG_HEXAMERS].loc[grp.ctg_hex_id.idxmax()]
+    one_cols = grp[S.COLS_PICK_ONE].iloc[0]
+    return pd.concat([sum_cols, max_cols, any_cols,
+                      str_cols, hex_cols, one_cols])
 
 
 def calc_abs_dist_to_annot_clv(grp, annot_clvs):
@@ -66,19 +106,3 @@ def add_abs_dist_to_annot_clv(df_clv, df_mapping):
     )
     out = timed(ndf_clv)
     return out
-
-
-def set_sort_join_strs(vals):
-    return '|'.join(sorted(set(vals)))
-
-
-def agg_polya_evidence(grp):
-    sum_cols = grp[S.COLS_TO_SUM].sum()
-    max_cols = grp[S.COLS_TO_MAX].max()
-    any_cols = grp[S.COLS_TO_ANY].any()
-    str_cols = grp[S.COLS_TO_JOIN].apply(set_sort_join_strs)
-    # pick the strongest PAS hexamer
-    hex_cols = grp[S.COLS_CONTIG_HEXAMERS].loc[grp.ctg_hex_id.idxmax()]
-    one_cols = grp[S.COLS_PICK_ONE].iloc[0]
-    return pd.concat([sum_cols, max_cols, any_cols,
-                      str_cols, hex_cols, one_cols])

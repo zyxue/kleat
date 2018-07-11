@@ -11,7 +11,7 @@ import pandas as pd
 from kleat.misc import apautils
 from kleat.args import get_args
 from kleat.proc import process_suffix, process_bridge_and_link, process_blank
-from kleat.post import agg_polya_evidence, add_abs_dist_to_annot_clv
+from kleat.post import aggregate_polya_evidence, add_abs_dist_to_annot_clv
 from kleat.misc import utils as U
 from kleat.misc import settings as S
 
@@ -68,17 +68,15 @@ def main():
     logger.info('df.shape: {0}'.format(df_clv.shape))
 
     # TODO: slow step, maybe parallize it
-    logger.info('Aggregating evidence for the same (seqname, strand, clv)...')
-    grped = df_clv.groupby(['seqname', 'strand', 'clv'])
-    pre_df_clv_agg = U.timeit(grped.apply)(agg_polya_evidence)
-    df_clv_agg = pre_df_clv_agg.reset_index()[S.HEADER]
+    logger.info('Aggregating polya evidence for each (seqname, strand, clv)...')
+    df_agg = aggregate_polya_evidence(df_clv, args.num_cpus)
 
     logger.info('Reading {0}'.format(clv_sc_mapping))
     df_mapping = pd.read_pickle(clv_sc_mapping)
     logger.info('df.shape: {0}'.format(df_mapping.shape))
 
     logger.info('Calculating closest annotated clv...')
-    df_clv_with_adist = add_abs_dist_to_annot_clv(df_clv_agg, df_mapping)
+    df_clv_with_adist = add_abs_dist_to_annot_clv(df_agg, df_mapping)
 
     logger.info('Writing to {0}...'.format(output))
     df_clv_with_adist.to_csv(output, sep='\t', index=False)

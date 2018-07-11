@@ -30,4 +30,9 @@ def get_args():
         '-o', '--output', type=str, default='./output.tsv',
         help='output tsv file'
     )
+    parser.add_argument(
+        '-p', '--num-cpus', type=int, default=1,
+        help=('parallize the step of aggregating polya evidence for each '
+              '(seqname, strand, clv)')
+    )
     return parser.parse_args()
