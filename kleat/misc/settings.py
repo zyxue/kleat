@@ -16,7 +16,8 @@ BAM_CBACK = 9                   # B
 
 HEADER = [
     'seqname', 'strand', 'clv',
-    'evidence_type', 'contig_id', 'contig_len', 'contig_mapq',
+
+    'evidence_type', 'contig_id', 'contig_len', 'contig_mapq', 'contig_is_hardclipped',
 
     'num_suffix_reads', 'suffix_contig_tail_len',    # suffix
     'num_bridge_reads', 'max_bridge_read_tail_len',  # bridge

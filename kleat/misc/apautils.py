@@ -14,6 +14,13 @@ def gen_clv_key_str(seqname, strand, clv):
     return '{seqname}|{strand}|{clv}'.format(**locals())
 
 
+def is_hardclipped(contig):
+    for (key, val) in contig.cigartuples:
+        if key == S.BAM_CHARD_CLIP:
+            return True
+    return False
+
+
 def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
     """Calculate the offset needed for inferring the clv in genomic coordinate
 

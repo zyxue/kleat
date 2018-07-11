@@ -10,8 +10,6 @@ from kleat.hexamer.search import (
 )
 
 
-
-
 def calc_num_suffix_reads(r2c_bam, suffix_contig, ref_clv):
     """
     calculate the number of reads aligned to the cleavage site
@@ -38,6 +36,7 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
     ref_clv = apautils.calc_ref_clv(contig, tail_side)
     tail_len = apautils.calc_tail_length(contig, tail_side)
 
+
     num_suffix_reads = calc_num_suffix_reads(r2c_bam, contig, ref_clv)
 
     if strand == '-':
@@ -59,6 +58,7 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
         contig.query_name,
         contig.query_length,
         contig.mapq,
+        apautils.is_hardclipped(contig),
 
         num_suffix_reads,
         tail_len,

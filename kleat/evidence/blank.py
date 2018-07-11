@@ -1,4 +1,4 @@
-from kleat.misc.apautils import gen_clv_key_tuple
+from kleat.misc import apautils
 from kleat.misc.settings import ClvRecord
 
 from kleat.hexamer.search import (
@@ -18,9 +18,10 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
         contig.reference_end - 1,
         contig.reference_start
     ]
+    is_hardclipped = apautils.is_hardclipped(contig)
 
     for strand, ref_clv in zip(strands, ref_clv_candidates):
-        clv_key = gen_clv_key_tuple(seqname, strand, ref_clv)
+        clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
         if clv_key in already_supported_clv_keys:
             continue
 
@@ -42,6 +43,7 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
             contig.query_name,
             contig.query_length,
             contig.mapq,
+            is_hardclipped,
 
             0,                   # num_tail_reads
             0,                   # tail_length
