@@ -39,6 +39,7 @@ def prepare_grps_for_agg(df_clv):
 def aggregate_polya_evidence(df_clv, num_cpus):
     df_clv_ids, grps = prepare_grps_for_agg(df_clv)
     with multiprocessing.Pool(num_cpus) as p:
+        logger.info('aggregating (map operation) using {0} CPUs...'.format(num_cpus))
         res = U.timeit(p.map)(agg_polya_evidence_per, grps)
     df_res = pd.concat(res, axis=1).T
     ndf_res = pd.concat([df_clv_ids, df_res], axis=1)
