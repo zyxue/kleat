@@ -98,6 +98,10 @@ COLS_TO_MAX = [
     'max_bridge_read_tail_len'
 ]
 
+COLS_TO_ANY = [                 # any(), if any is True, then True
+    'contig_is_hardclipped',
+]
+
 COLS_TO_JOIN = [
     'evidence_type', 'contig_id'
 ]
@@ -107,6 +111,6 @@ COLS_CONTIG_HEXAMERS = [
     'ctg_hex', 'ctg_hex_id', 'ctg_hex_pos',
 ]
 
-COLS_PICK_ANY_ONE = [        # since they are all the same
+COLS_PICK_ONE = [        # since they are all the same
     'ref_hex', 'ref_hex_id', 'ref_hex_pos',
 ]
