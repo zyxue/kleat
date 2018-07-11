@@ -22,6 +22,30 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
+def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter):
+    """loop through each contig and collect polyA evidence"""
+    gen_key = apautils.gen_clv_key_tuple_from_clv_record
+    iters = tqdm(enumerate(c2g_bam), desc='processed', unit=' contigs')
+    for k, contig in iters:
+        if contig.is_unmapped:
+            continue
+
+        ascs = []           # already supported clvs
+        rec = process_suffix(
+            contig, r2c_bam, ref_fa, csvwriter)
+        if rec is not None:
+            ascs.append(gen_key(rec))
+
+        for rec in process_bridge_and_link(contig, r2c_bam,
+                                           ref_fa, csvwriter):
+            # TODO: with either bridge or link, they probably won't support
+            # clv of the other strand
+            ascs.append(gen_key(rec))
+
+        if not apautils.has_tail(contig):
+            process_blank(contig, ref_fa, csvwriter, ascs)
+
+
 def main():
     args = get_args()
     c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
@@ -37,27 +61,7 @@ def main():
     with open(tmp_output, 'wt') as opf:
         csvwriter = csv.writer(opf, delimiter='\t')
         csvwriter.writerow(S.HEADER)
-
-        gen_key = apautils.gen_clv_key_tuple_from_clv_record
-        iters = tqdm(enumerate(c2g_bam), desc='processed', unit=' contigs')
-        for k, contig in iters:
-            if contig.is_unmapped:
-                continue
-
-            ascs = []           # already supported clvs
-            rec = process_suffix(
-                contig, r2c_bam, ref_fa, csvwriter)
-            if rec is not None:
-                ascs.append(gen_key(rec))
-
-            for rec in process_bridge_and_link(contig, r2c_bam,
-                                               ref_fa, csvwriter):
-                # TODO: with either bridge or link, they probably won't support
-                # clv of the other strand
-                ascs.append(gen_key(rec))
-
-            if not apautils.has_tail(contig):
-                process_blank(contig, ref_fa, csvwriter, ascs)
+        collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter)
 
     logger.info('Reading {0} into a pandas.DataFrame...'.format(tmp_output))
     df_clv = U.timeit(pd.read_csv)(tmp_output, keep_default_na=False, sep='\t')
