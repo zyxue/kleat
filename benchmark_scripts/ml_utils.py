@@ -6,10 +6,16 @@ KARBOR_FEATURE_COLS = [
     'contig_len',
     'contig_mapq',
     'num_suffix_reads',
-    'suffix_contig_tail_len',
+    'max_suffix_contig_tail_len',
+    'num_suffix_contigs',
+
     'num_bridge_reads',
     'max_bridge_read_tail_len',
+    'max_bridge_read_tail_len',
+
     'num_link_reads',
+    'num_link_contigs',
+
     'num_blank_contigs',
 
     'abs_dist_to_aclv',
