@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pandas as pd
 
@@ -80,7 +82,12 @@ def load_polya_seq_df_114genes(sample_id):
         'HBRC4': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C4/polyA-Seq/polyA-Seq-truth-114-genes.csv',
         'HBRC6': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C6/polyA-Seq/polyA-Seq-truth-114-genes.csv'
     }
-    return pd.read_csv(dd[sample_id])
+    infile = dd[sample_id]
+
+    logging.info(f'reading {infile} ...')
+    df = pd.read_csv(infile)
+    logging.info('reading done'.format(infile))
+    return df
 
 
 def load_bed(input_bed):
@@ -97,4 +104,8 @@ def load_polya_seq_df(sample_id):
         'HBRC4': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain1.bed',
         'HBRC6': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain2.bed'
     }
-    return load_bed(dd[sample_id])
+    infile = dd[sample_id]
+
+    logging.info(f'reading {infile} ...')
+    df = load_bed(infile)
+    return df
