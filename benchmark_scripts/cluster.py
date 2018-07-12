@@ -1,4 +1,5 @@
 import numpy as np
+
 from scipy.cluster.hierarchy import fclusterdata
 
 
@@ -14,15 +15,17 @@ def gen_cluster_index(x, window):
 
 def cluster(x, window):
     x = np.sort(x)
-    cluster_idx = gen_cluster_index(x, window)
-    return dict(zip(x, cluster_idx))
+    # used cluster index as id
+    cluster_id = gen_cluster_index(x, window)
+    return dict(zip(x, cluster_id))
 
 
 def select_rep(df):
     """select a representative clv per cluster"""
-    md = df.clv.mode()
-    if md.shape[0] > 0:
-        return md.median()
+    mode_clv = df.clv.mode()
+    if mode_clv.shape[0] > 0:
+        # if one or multiple modes are found, return median
+        return mode_clv.median()
     else:
         # if no mode is found, then return median
         return df.clv.median()
@@ -30,17 +33,17 @@ def select_rep(df):
 
 def cluster_clv_sites(df, window):
     df = df.copy()
-    uniq = df.clv.unique()
-    if uniq.shape[0] > 1:       # other exception would be raised
-        clustered = cluster(uniq, window=window)
+    uniq_clvs = df.clv.unique()
+    if uniq_clvs.shape[0] > 1:       # other exception would be raised
+        cluster_clv2id_dd = cluster(uniq_clvs, window=window)
 
-        # reassigned clv
-        df['cluster_idx'] = df.clv.replace(clustered)
-        _dd = df.groupby('cluster_idx').apply(select_rep).to_dict()
-        df['mclv'] = df.cluster_idx.replace(_dd).astype(np.int64)
+        df['cluster_id'] = df.clv.replace(cluster_clv2id_dd)
+        # select a representative clv for each cluster in a new column
+        cluster_id2rep_dd = df.groupby('cluster_id').apply(select_rep).to_dict()
+        df['mode_clv'] = df['cluster_id'].replace(cluster_id2rep_dd).astype(np.int64)
     else:
-        df['cluster_idx'] = 1 # as its own cluster
-        df['mclv'] = uniq[0]
+        df['cluster_id'] = 1   # as its own cluster
+        df['mode_clv'] = uniq_clvs[0]
     return df
 
 

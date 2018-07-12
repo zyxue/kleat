@@ -62,10 +62,17 @@ def predict(df_te_mapped, clf):
 
 
 def cluster_clv(df, cutoff=20):
+    """
+    return clustered clv in new dataframe with three columns:
+
+    - seqname
+    - strand
+    - clv, i.e. the representative mode clv for each cluster
+    """
     grped = df.groupby(['seqname', 'strand'])
     applied = grped.apply(cluster_clv_sites, cutoff)
-    dedupped = applied[['seqname', 'strand', 'mclv']].drop_duplicates()
-    out = dedupped.rename(columns={'mclv': 'clv'}).reset_index(drop=True)
+    dedupped = applied[['seqname', 'strand', 'mode_clv']].drop_duplicates()
+    out = dedupped.rename(columns={'mode_clv': 'clv'}).reset_index(drop=True)
     return out
 
 
