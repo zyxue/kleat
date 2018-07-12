@@ -28,6 +28,7 @@ def test_extract_seq_for_bridge():
     ctg.cigartuples = ((S.BAM_CMATCH, 9),)
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
     assert extract_seq(**kw) == 'CGGTTGC'
 
@@ -50,6 +51,7 @@ def test_extract_seq_for_bridge_with_skip():
     ctg.cigartuples = ((S.BAM_CMATCH, 6), (S.BAM_CREF_SKIP, 1), (S.BAM_CMATCH, 2))
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     ref_fa.fetch.return_value = 'A'
 
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
@@ -75,6 +77,7 @@ def test_extract_seq_for_bridge_with_skip_before_clv():
     ctg.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 6))
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=12, ref_fa=ref_fa, ctg_clv=5)
     assert extract_seq(**kw) == 'AGC'
 
@@ -103,6 +106,7 @@ def test_extract_seq_for_bridge_with_multiple_skips_before_clv():
     )
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=12, ref_fa=ref_fa, ctg_clv=4)
     assert extract_seq(**kw) == 'AGC'
 
@@ -125,6 +129,7 @@ def test_extract_seq_for_bridge_with_deletion():
     ctg.cigartuples = ((S.BAM_CMATCH, 6), (S.BAM_CDEL, 1), (S.BAM_CMATCH, 3))
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
 
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
     assert extract_seq(**kw) == 'CGGTCGC'
@@ -152,6 +157,7 @@ def test_extract_seq_for_bridge_with_insertion():
     )
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
 
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
     assert extract_seq(**kw) == 'CGGTAGCTC'
@@ -175,5 +181,6 @@ def test_extract_seq_with_hardclipped_region():
     ctg.cigartuples = ((S.BAM_CMATCH, 5), (S.BAM_CHARD_CLIP, 3))
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=9, ref_fa=ref_fa, ctg_clv=4)
     assert extract_seq(**kw) == 'G'

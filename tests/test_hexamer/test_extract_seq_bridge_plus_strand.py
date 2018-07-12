@@ -28,6 +28,7 @@ def test_extract_seq():
     ctg.cigartuples = ((S.BAM_CMATCH, 9),)
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=5)
     assert extract_seq(**kw) == 'GACGGT'
 
@@ -50,6 +51,7 @@ def test_extract_seq_with_skip_after_ctg_clv():
     ctg.cigartuples = ((S.BAM_CMATCH, 6), (S.BAM_CREF_SKIP, 1), (S.BAM_CMATCH, 2))
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     ref_fa.fetch.return_value = 'T'
     kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=5)
     assert extract_seq(**kw) == 'GACGGT'
@@ -74,6 +76,7 @@ def test_extract_seq_with_skip_before_ctg_clv():
     ctg.cigartuples = ((S.BAM_CMATCH, 1), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 6))
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     ref_fa.fetch.return_value = 'AC'
     kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'GACAGT'
@@ -104,6 +107,7 @@ def test_extract_seq_with_skip_before_and_after_ctg_clv():
     )
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     ref_fa.fetch.return_value = 'AC'
     kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'GACAGT'
@@ -138,6 +142,7 @@ def test_extract_seq_with_skip_before_and_after_ctg_clv_and_a_mismatch():
     )
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     ref_fa.fetch.return_value = 'AC'
     kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'GACAGT'
@@ -168,6 +173,7 @@ def test_extract_seq_for_bridge_with_multiple_skips_before_clv():
     )
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     ref_fa.fetch.side_effect = list(reversed(['A', 'TG']))  # from Right => Left
     kw = dict(contig=ctg, strand='+', ref_clv=12, ref_fa=ref_fa, ctg_clv=4)
     assert extract_seq(**kw) == 'GACTGCTA'
@@ -196,6 +202,7 @@ def test_extract_seq_for_bridge_with_deletion():
     )
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=15, ref_fa=ref_fa, ctg_clv=5)
     assert extract_seq(**kw) == 'GACTCG'
 
@@ -223,6 +230,7 @@ def test_extract_seq_for_bridge_with_insertion():
     )
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=7)
     assert extract_seq(**kw) == 'GAAGCGGT'
 
@@ -245,5 +253,6 @@ def test_extract_seq_with_hardclipped_region():
     ctg.cigartuples = ((S.BAM_CHARD_CLIP, 3), (S.BAM_CMATCH, 6))
 
     ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=8, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'ATTC'
