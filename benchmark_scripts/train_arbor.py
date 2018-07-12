@@ -104,7 +104,8 @@ if __name__ == "__main__":
     train_args = prepare_args(df_tr_mapped, max_depth_list)
 
     with multiprocessing.Pool(NUM_CPUS) as p:
-        logging.info('start training in parallel ...')
+        logging.info('start training in parallel '
+                     'with {0} CPUs ...'.format(NUM_CPUS))
         clf_list = p.map(train_it_wrapper, train_args)
 
     outfile = './out.csv'
