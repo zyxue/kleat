@@ -24,20 +24,27 @@ if os.path.exists(REF_FA):
             self.refseq = pysam.FastaFile(REF_FA)
 
         def test_fetch_seq_bound_negative_coordinate_by_0(self):
-            chrm = 'MT'
+            chrm = 'GL000192.1'
             clv = 3
             beg, end = gen_coords(clv, '+', window=6)
             calc_beg = -2            # clv - 6 + 1
             calc_end = 4             # clv + 1
             self.assertEqual((beg, end), (calc_beg, calc_end))
-            expected = 'GATC'         # the first 4 bases of hg19 in chr MT
+            expected = 'GAAT'   # the first 4 bases of GL000192.1
             self.assertEqual(fetch_seq(self.refseq, chrm, beg, end), expected)
+
             # assert beginning is bound by 0
             self.assertEqual(fetch_seq(self.refseq, chrm, 0,   end), expected)
 
-        def test_fetch_seq_bound_over_large_coordinate_by_chr_length(self):
-            # better have another test case for max chr length
-            pass
+        def test_fetch_seq_bound_larger_than_chr_length_coordinate_by_chr_length(self):
+            chrm = 'GL000192.1'  # len: 547496
+            clv = 547493
+            beg, end = gen_coords(clv, '-', window=6)
+            calc_beg = 547493
+            calc_end = 547499
+            self.assertEqual((beg, end), (calc_beg, calc_end))
+            expected = 'ttc'   # the last 3 bases of GL000192.1
+
 
         def test_fetch_seq_based_on_KLEAT_clv_plus_strand_chr12_DRAM1(self):
             """based on hg19"""
