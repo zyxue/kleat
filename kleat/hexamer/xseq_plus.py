@@ -1,5 +1,8 @@
 import kleat.misc.settings as S
-from kleat.misc.apautils import calc_genome_offset
+from kleat.misc.apautils import (
+    calc_genome_offset,
+    fetch_seq                   # deal with circular DNA, too, e.g. chrM
+)
 
 """xseq: extract_seq"""
 
@@ -37,11 +40,11 @@ def do_skip(ref_e, cigar_val, ref_fa, seqname, ref_clv):
 
     if ref_e >= ref_clv:
         if ref_b < ref_clv:
-            seq_to_add = ref_fa.fetch(seqname, ref_b, ref_clv + 1)
+            seq_to_add = fetch_seq(ref_fa, seqname, ref_b, ref_clv + 1)
         else:
             seq_to_add = ''
     else:
-        seq_to_add = ref_fa.fetch(seqname, ref_b, ref_e)
+        seq_to_add = fetch_seq(ref_fa, seqname, ref_b, ref_e)
 
     next_ref_e = ref_b
     return next_ref_e, seq_to_add
