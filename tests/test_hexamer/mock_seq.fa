@@ -2,3 +2,5 @@
 AATTCCGG
 >chr_mock2
 TTCCGGAA
+>chrM # test for circular DNA
+AATTCCGG

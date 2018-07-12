@@ -14,6 +14,41 @@ def gen_clv_key_str(seqname, strand, clv):
     return '{seqname}|{strand}|{clv}'.format(**locals())
 
 
+def fetch_seq(pysam_fa, seqname, beg, end):
+    """
+    In addition to pysam_fa.fetch, this wrapper handles fetching seq from circular
+    DNA (e.g. chrM), too.
+
+    :param pysam_fa: a pysam.libcalignmentfile.AlignmentFile instance
+    """
+    seq_len = pysam_fa.get_reference_length(seqname)
+
+    circular_contigs = {'chrM', 'MT'}
+    if beg >= 0:
+        if end <= seq_len:
+            res = pysam_fa.fetch(seqname, beg, end)
+        else:
+            if seqname in circular_contigs:
+                res = (pysam_fa.fetch(seqname, beg, seq_len) +
+                       pysam_fa.fetch(seqname, 0, end - seq_len))
+            else:
+                res = pysam_fa.fetch(seqname, beg, seq_len)
+    else:
+        if end <= seq_len:
+            if seqname in circular_contigs:
+                res = (pysam_fa.fetch(seqname, seq_len + beg, seq_len) +
+                       pysam_fa.fetch(seqname, 0, end))
+            else:
+                res = pysam_fa.fetch(seqname, 0, end)
+        else:
+            raise NotImplementedError('How is this possible? Please report'
+                                      'seqname: {0}, '
+                                      'seq_length: {1}, '
+                                      'beg: {2}, '
+                                      'end: {3}')
+    return res
+
+
 def is_hardclipped(contig):
     for (key, val) in contig.cigartuples:
         if key == S.BAM_CHARD_CLIP:
