@@ -36,4 +36,10 @@ def get_args():
         help=('parallize the step of aggregating polya evidence for each '
               '(seqname, strand, clv)')
     )
+    parser.add_argument(
+        '--keep-pre-aggregation-tmp-file', action='store_true',
+        help=('specify this if you would like to keep the tmp file before '
+              'aggregating polyA evidence per cleavage site, mostly for '
+              'debugging purpose')
+    )
     return parser.parse_args()

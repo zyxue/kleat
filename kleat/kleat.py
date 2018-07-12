@@ -48,7 +48,7 @@ def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter):
 
 def gen_tmp_output(output):
     return os.path.join(
-        os.path.dirname(output), 'tmp_{0}'.format(os.path.basename(output)))
+        os.path.dirname(output), '__tmp_{0}'.format(os.path.basename(output)))
 
 
 def main():
@@ -81,7 +81,8 @@ def main():
     logger.info('Writing to {0}...'.format(output))
     df_clv_with_adist.to_csv(output, sep='\t', index=False)
 
-    # TODO: remove tmp_output
+    if not args.keep_pre_aggregation_tmp_file:
+        os.remove(tmp_output)
 
 
 if __name__ == "__main__":
