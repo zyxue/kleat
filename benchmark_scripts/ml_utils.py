@@ -18,7 +18,8 @@ KARBOR_FEATURE_COLS = [
 
     'num_blank_contigs',
 
-    'abs_dist_to_aclv',
+    'signed_dist_to_aclv',
+    # 'abs_dist_to_aclv',
 
     # PAS hexamer shown on contig
     'ctg_AATAAA', 'ctg_ATTAAA', 'ctg_AGTAAA', 'ctg_TATAAA',
