@@ -26,6 +26,21 @@ Cleavage site prediction via de novo assembly.
   cleavage site analysis of transcriptomes. Pac Symp Biocomput. World
   Scientific. 2015;:347–58.
 
+KLEAT works by
+
+1. Collect polyA evidences (suffix, bridge, link, and blank) and their
+   supporting clvs per contig
+2. Aggregate polyA evidence per clv identified by (seqname, strand, clv)
+3. Find the closest annotated clv per predicted clv and calculate the distance in between.
+
+Suffix was named tail in the original paper, but tail collides with tail of a
+bridge contig, which could be confused, so it is renamed to suffix in the code
+base.
+
+Blank indicates the contig without any indication of polyA, but could still
+support predicting cleavage site since if a transcript is expressed, then a
+cleavage site likely exists nearby.
+
 ..
    memo: adding hyperlink to a sentence is really awkward in rst!
 
