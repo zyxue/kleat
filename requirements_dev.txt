@@ -13,3 +13,6 @@ pytest-runner==2.11.1
 pytest-xdist==1.22.2
 
 pysam==0.14.1
+
+pytest-cov==2.5.1
+python-coveralls==2.9.1
