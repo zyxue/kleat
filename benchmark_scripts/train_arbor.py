@@ -89,6 +89,7 @@ def run_test_wrapper(args):
 
 
 def run_test_in_parallel(clf_list, test_sample_ids, map_cutoff, num_cpus):
+    all_results = []
     for test_sample_id in test_sample_ids:
         df_te = load_df(test_sample_id)
         df_te_mapped = map_df(df_te, test_sample_id)
@@ -103,7 +104,8 @@ def run_test_in_parallel(clf_list, test_sample_ids, map_cutoff, num_cpus):
         with multiprocessing.Pool(num_cpus) as p:
             logging.info(f'start parallel testing with {num_cpus} CPUs ...')
             results = p.map(run_test_wrapper, args_list_for_test)
-    return results
+            all_results.extend(results)
+    return all_results
 
 
 def gen_clf_outputs(output, depth):
