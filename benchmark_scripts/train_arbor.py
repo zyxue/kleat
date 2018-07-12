@@ -151,20 +151,24 @@ def get_args():
         '-o', '--output', type=str, default='./out.csv',
         help='output for recording testing results in csv'
     )
+    parser.add_argument(
+        '--no-testing', action='store_true',
+        help='if specified, only training is conducted, no testing would be run'
+    )
 
     # arguments below are often good in default
     parser.add_argument(
-        '-c', '--map-cutoff', type=int, default=50,
+        '--map-cutoff', type=int, default=50,
         help=('the cutoff below which the predicted clv and the reference clv '
               '(e.g. polyA-Seq) are considered the same')
     )
     parser.add_argument(
-        '-c', '--vis-tree-max-depth', type=int, default=3,
+        '--vis-tree-max-depth', type=int, default=3,
         help=('specified max_depth when visualizing the tree, '
               'a high value would result in a big tree')
     )
     parser.add_argument(
-        '-t', '--num-cpus', type=int,
+        '--num-cpus', type=int,
         default=min(multiprocessing.cpu_count(), 16),
         help='the number of CPUs to use for parallel training and testing'
     )
@@ -172,7 +176,6 @@ def get_args():
 
 
 def main():
-
     args = get_args()
     train_sample_id = args.train_sample_id
     test_sample_ids = args.test_sample_ids
@@ -205,19 +208,22 @@ def main():
                 logging.warning(err)
                 logging.warning(f'tree visualization ({clf_png}) cannot be generated')
 
-    logging.info('prepare for TESTing ...')
-    backup_file(args.output)
-    with open(args.output, 'wt') as opf:
-        csvwriter = csv.writer(opf)
-        csvwriter.writerow(
-            ['sample_id', 'precision', 'recall', 'f1', 'tree_max_depth']
-        )
+    if args.no_testing:
+        logging.info('--no-testing is specified, no testing will be run.')
+    else:
+        logging.info('prepare for TESTing ...')
+        backup_file(args.output)
+        with open(args.output, 'wt') as opf:
+            csvwriter = csv.writer(opf)
+            csvwriter.writerow(
+                ['sample_id', 'precision', 'recall', 'f1', 'tree_max_depth']
+            )
 
-        test_results = run_test_in_parallel(
-            clf_list, test_sample_ids, args.map_cutoff, args.num_cpus)
+            test_results = run_test_in_parallel(
+                clf_list, test_sample_ids, args.map_cutoff, args.num_cpus)
 
-        for row in test_results:
-            csvwriter.writerow(row)
+            for row in test_results:
+                csvwriter.writerow(row)
 
 
 if __name__ == "__main__":
