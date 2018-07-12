@@ -53,8 +53,8 @@ def gen_tmp_output(output):
 
 def main():
     args = get_args()
-    c2g_bam = pysam.AlignmentFile(args.contig_to_genome)
-    r2c_bam = pysam.AlignmentFile(args.read_to_contig)
+    c2g_bam = pysam.AlignmentFile(args.contigs_to_genome)
+    r2c_bam = pysam.AlignmentFile(args.reads_to_contigs)
     ref_fa = pysam.FastaFile(args.reference_genome)
     output = os.path.abspath(args.output)
     tmp_output = gen_tmp_output(output)
