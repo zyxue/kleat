@@ -58,9 +58,13 @@ def map_clvs(df_pred, df_ref):
     return df_mapped
 
 
-def compare(df_pred, df_ref, dist_cutoff=50):
+def compare(df_pred, df_ref, map_cutoff):
+    """
+    :param dist_cutoff: below which the predicted clv and the annotated clv are
+    considered the same
+    """
     df_mapped = map_clvs(df_pred, df_ref)
-    df_mapped['is_tp'] = df_mapped.abs_dist < dist_cutoff
+    df_mapped['is_tp'] = df_mapped.abs_dist < map_cutoff
 
     sensitivity = df_mapped.query('is_tp').shape[0] / df_ref.shape[0]
     precision = df_mapped.query('is_tp').shape[0] / df_mapped.shape[0]
