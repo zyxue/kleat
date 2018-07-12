@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     logging.info('reading {0}'.format(infile))
     adf = pd.read_csv(infile, keep_default_na=False, sep='\t')
-    adf['abs_dist_to_aclv'] = adf['signed_dist_to_aclv']
+    adf['abs_dist_to_aclv'] = adf['signed_dist_to_aclv'].abs()
 
     used_hexamers = [_[0] for _ in S.CANDIDATE_HEXAMERS] + ['NA']
     ctg_dum_hxm = pd.get_dummies(adf.ctg_hex, columns=used_hexamers)
