@@ -9,6 +9,9 @@ KLEAT
 .. image:: https://img.shields.io/travis/zyxue/kleat.svg
         :target: https://travis-ci.org/zyxue/kleat
 
+.. image:: https://coveralls.io/repos/github/zyxue/kleat/badge.svg
+        :target: https://coveralls.io/github/zyxue/kleat
+
 .. image:: https://readthedocs.org/projects/kleat/badge/?version=latest
         :target: https://kleat.readthedocs.io/en/latest/?badge=latest
         :alt: Documentation Status
