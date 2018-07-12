@@ -26,12 +26,10 @@ def load_df(sample_id):
     return df
 
 
-def map_df(df, sample_id, mapping_cutoff=50):
-    df_ref = load_polya_seq_df(sample_id)
-
+def map_df(df, df_ref, map_cutoff):
     logging.info('mapping predicted clv to ground truth ...')
     df = map_clvs(df, df_ref)
-    df['is_tp'] = df.abs_dist < mapping_cutoff
+    df['is_tp'] = df.abs_dist < map_cutoff
     return df
 
 
@@ -92,8 +90,8 @@ def run_test_in_parallel(clf_list, test_sample_ids, map_cutoff, num_cpus):
     all_results = []
     for test_sample_id in test_sample_ids:
         df_te = load_df(test_sample_id)
-        df_te_mapped = map_df(df_te, test_sample_id)
         df_ref = load_polya_seq_df(test_sample_id)
+        df_te_mapped = map_df(df_te, df_ref, map_cutoff)
 
         args_list_for_test = []
         for clf in clf_list:
