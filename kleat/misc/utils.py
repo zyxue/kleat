@@ -29,7 +29,7 @@ def timeit(f):
     return new_f
 
 
-def backup_file(f):
+def backup_one_file(f):
     """
     Back up a file, old_file will be renamed to #old_file.n#, where n is a
     number incremented each time a backup takes place
@@ -49,3 +49,13 @@ def backup_file(f):
         return rn_to
     else:
         logger.warning('{0} doesn\'t exist'.format(f))
+
+
+def backup_file(*files):
+    """
+    Back up every file in files if it exists, old_file will be renamed to
+    #old_file.n#, where n is a number incremented each time a backup takes
+    place
+    """
+    for f in files:
+        backup_one_file(f)
