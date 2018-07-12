@@ -10,6 +10,7 @@ from Bio import Seq
 
 import kleat.misc.settings as S
 from kleat.hexamer.extract_seq import extract_seq
+from kleat.misc.apautils import fetch_seq
 
 
 def reverse_complement(seq):
@@ -84,13 +85,6 @@ def search(strand, clv, seq, window=50):
     # -1 as it's 0-based
     res = search_hexamer(seq, strand, beg, end - 1)
     return res
-
-
-def fetch_seq(refseq, chrom, beg, end):
-    """.fetch seems to be (beg, end]"""
-    beg = max(beg, 0)
-    end = min(end, refseq.get_reference_length(chrom))
-    return refseq.fetch(chrom, beg, end)
 
 
 def search_ref_genome(refseq, chrom, clv, strand, window=50):
