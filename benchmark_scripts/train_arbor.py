@@ -26,7 +26,7 @@ def load_df(sample_id):
     return df
 
 
-def map_df(df, df_ref, map_cutoff):
+def map_to_ref(df, df_ref, map_cutoff):
     logging.info('mapping predicted clv to ground truth ...')
     df = map_clvs(df, df_ref)
     df['is_tp'] = df.abs_dist < map_cutoff
@@ -91,7 +91,7 @@ def run_test_in_parallel(clf_list, test_sample_ids, map_cutoff, num_cpus):
     for test_sample_id in test_sample_ids:
         df_te = load_df(test_sample_id)
         df_ref = load_polya_seq_df(test_sample_id)
-        df_te_mapped = map_df(df_te, df_ref, map_cutoff)
+        df_te_mapped = map_to_ref(df_te, df_ref, map_cutoff)
 
         args_list_for_test = []
         for clf in clf_list:
@@ -181,7 +181,7 @@ def main():
     test_sample_ids = args.test_sample_ids
 
     df_tr = load_df(train_sample_id)
-    df_tr_mapped = map_df(df_tr, train_sample_id)
+    df_tr_mapped = map_to_ref(df_tr, train_sample_id)
 
     beg, end, step = args.max_depths
     max_depth_list = range(beg, end, step)
