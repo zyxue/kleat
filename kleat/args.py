@@ -5,11 +5,11 @@ def get_args():
     parser = argparse.ArgumentParser(
         description='KLEAT: cleavage site detection via de novo assembly')
     parser.add_argument(
-        '-c', '--contig-to-genome', type=str, required=True,
+        '-c', '--contigs-to-genome', type=str, required=True,
         help='input contig-to-genome alignment BAM file'
     )
     parser.add_argument(
-        '-r', '--read-to-contig', type=str, required=True,
+        '-r', '--reads-to-contigs', type=str, required=True,
         help='input read-to-contig alignment BAM file'
     )
     parser.add_argument(
