@@ -159,6 +159,11 @@ def get_args():
               '(e.g. polyA-Seq) are considered the same')
     )
     parser.add_argument(
+        '-c', '--vis-tree-max-depth', type=int, default=3,
+        help=('specified max_depth when visualizing the tree, '
+              'a high value would result in a big tree')
+    )
+    parser.add_argument(
         '-t', '--num-cpus', type=int,
         default=min(multiprocessing.cpu_count(), 16),
         help='the number of CPUs to use for parallel training and testing'
@@ -188,20 +193,17 @@ def main():
     clf_dd = dict(zip(max_depth_list, clf_list))
     for depth in clf_dd:
         if depth in args.pickle_depths:
-            out_pkl, out_dot, out_png = gen_clf_outputs(args.output, depth)
-            backup_file(out_pkl, out_dot, out_png)
+            clf_pkl, clf_dot, clf_png = gen_clf_outputs(args.output, depth)
+            backup_file(clf_pkl, clf_dot, clf_png)
 
-            pickle_clf(clf_dd[depth], out_pkl)
-            export_graphviz(
-                clf_dd[depth], max_depth=3,
-                feature_names=KARBOR_FEATURE_COLS,
-                out_file=out_dot
-            )
+            pickle_clf(clf_dd[depth], clf_pkl)
+            export_graphviz(clf_dd[depth], clf_dot, args.vis_tree_max_depth,
+                            feature_names=KARBOR_FEATURE_COLS)
             try:
-                subprocess.call(f'dot -Tpng {out_dot} -o {out_png}'.split())
+                subprocess.call(f'dot -Tpng {clf_dot} -o {clf_png}'.split())
             except FileNotFoundError as err:
                 logging.warning(err)
-                logging.warning(f'tree visualization ({out_png}) cannot be generated')
+                logging.warning(f'tree visualization ({clf_png}) cannot be generated')
 
     logging.info('prepare for TESTing ...')
     backup_file(args.output)
