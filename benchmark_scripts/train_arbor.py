@@ -120,8 +120,6 @@ def gen_clf_outputs(output, depth):
 
 
 def pickle_clf(clf, out_pkl):
-    if os.path.exists(out_pkl):
-        backup_file(out_pkl)
     with open(out_pkl, 'wb') as opf:
         pickle.dump(clf, opf)
 
@@ -191,6 +189,8 @@ def main():
     for depth in clf_dd:
         if depth in args.pickle_depths:
             out_pkl, out_dot, out_png = gen_clf_outputs(args.output, depth)
+            backup_file(out_pkl, out_dot, out_png)
+
             pickle_clf(clf_dd[depth], out_pkl)
             export_graphviz(
                 clf_dd[depth], max_depth=3,
