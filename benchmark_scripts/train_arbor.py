@@ -4,9 +4,10 @@ import csv
 import pickle
 import logging
 import multiprocessing
+import subprocess
 
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.tree import DecisionTreeClassifier, export_graphviz
 
 from ml_utils import load_polya_seq_df, map_clvs, compare, KARBOR_FEATURE_COLS
 from cluster import cluster_clv_sites
@@ -105,7 +106,7 @@ def run_test_in_parallel(clf_list, test_sample_ids, map_cutoff, num_cpus):
     return results
 
 
-def gen_clf_out_pkl(output, depth):
+def gen_clf_outputs(output, depth):
     """
     generate path to output clf pickl based on output_csv and depth of the tree
     """
@@ -113,7 +114,9 @@ def gen_clf_out_pkl(output, depth):
         os.path.dirname(output),
         os.path.basename(output).replace('.csv', f'.tree_max_depth_{depth}.pkl')
     )
-    return out_pkl
+    out_dot = out_pkl[:-3] + 'dot'
+    out_png = out_pkl[:-3] + 'png'
+    return out_pkl, out_dot, out_png
 
 
 def pickle_clf(clf, out_pkl):
@@ -187,8 +190,18 @@ def main():
     clf_dd = dict(zip(max_depth_list, clf_list))
     for depth in clf_dd:
         if depth in args.pickle_depths:
-            out_pkl = gen_clf_out_pkl(args.output, depth)
+            out_pkl, out_dot, out_png = gen_clf_outputs(args.output, depth)
             pickle_clf(clf_dd[depth], out_pkl)
+            export_graphviz(
+                clf_dd[depth], max_depth=3,
+                feature_names=KARBOR_FEATURE_COLS,
+                out_file=out_dot
+            )
+            try:
+                subprocess.call(f'dot -Tpng {out_dot} -o {out_png}'.split())
+            except FileNotFoundError as err:
+                logging.warning(err)
+                logging.warning(f'tree visualization ({out_png}) cannot be generated')
 
     logging.info('prepare for TESTing ...')
     backup_file(args.output)
