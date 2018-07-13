@@ -1,18 +1,9 @@
 from collections import defaultdict
 from unittest.mock import MagicMock
 
-import pytest
-
 from kleat.evidence import bridge
-from kleat.misc.settings import (
-    BAM_CMATCH, BAM_CDEL, BAM_CREF_SKIP,
-    BAM_CINS, BAM_CSOFT_CLIP, BAM_CHARD_CLIP)
-from kleat.misc.apautils import calc_genome_offset
-
-
-"""When calculating offset, reversed contig should have already been flipped to
-match the strand of the genome as illustrated in the ascii drawings in the test
-cases here"""
+from kleat.misc.apautils import gen_clv_key_tuple
+import kleat.misc.settings as S
 
 
 def test_bridge_init_evidence_holder():
@@ -23,163 +14,167 @@ def test_bridge_init_evidence_holder():
     }
 
 
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
-    [((BAM_CMATCH, 4),), 1, 1],  # with ascii drawing below
+def get_mock_read(ref_beg, ref_end, cigartuples):
+    r = MagicMock()
+    r.reference_start = ref_beg
+    r.reference_end = ref_end
+    r.cigartuples = cigartuples
+    return r
 
-    [((BAM_CMATCH, 10),), 2, 2],
-    [((BAM_CMATCH, 20),), 5, 5],
-])
-def test_calc_genome_offset_for_nonskipped_contig(
-        ctg_cigartuples, ctg_offset, gnm_offset):
+
+def test_do_forwad_contig_left_tail_bridge_read():
+    """e.g. TTTACG, reference_start at pos 2 (0-based) with the first three Ts
+    soft-clipped
+
+    compared to igv visualization, which is 1-based, the contig coord are
+    shifted to the right by one-base, a quick comparison is available at
+    http://zyxue.github.io/2018/06/21/coordinates-in-bioinformatics.html
+
+    TTT
+     |└ACG   <-left-tail read
+     XXACGXX  <-contig
+     0123456 <-contig coord
+       ^ctg_offset
     """
-     TT
-      └AC  <-bridge read
-      AACG <-bridge contig
-      0123 <-contig coord
-      0123 <-genome offset
-       ^ctf/gnm_offset
+    mock_read = get_mock_read(
+        ref_beg=2, ref_end=5, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
+    # basically the clv wst. to the contig coordinate when in forward contig
+    ctg_offset = 2
+    tail_len = 3
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', ctg_offset, tail_len)
+
+
+def test_do_forwad_contig_left_tail_bridge_read_2():
     """
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
-
-
-
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
-    [((BAM_CMATCH, 6), (BAM_CREF_SKIP, 2), (BAM_CMATCH, 4)), 2, 2],  # with ascii drawing below
-    [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 2, 2],
-])
-def test_calc_genome_offset_for_skipped_contig_when_ctg_offset_is_before_skipping_happens(
-        ctg_cigartuples, ctg_offset, gnm_offset):
+    TT
+    |└AATTCCGG   <-left-tail read
+    XXAATTCCGGXX <-contig
+    890123456789 <-contig coord
+      1
+      ^ctg_offset
     """
-      TT
-      |└AC  <-bridge read
-      AACGTA--ATCG <-bridge contig
-      012345  6789 <-contig coord
-      012345678901 <-genome offset
-        ^ctf/gnm_offset
+    mock_read = get_mock_read(
+        ref_beg=10, ref_end=18, cigartuples=[(S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 8)])
+    ctg_offset = 10
+    tail_len = 2
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', ctg_offset, tail_len)
+
+
+def test_do_forwad_contig_right_tail_bridge_read():
     """
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
-
-
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
-    [((BAM_CMATCH, 2), (BAM_CREF_SKIP, 2), (BAM_CMATCH, 6)), 4, 6],  # with ascii drawing below
-
-    [((BAM_CMATCH, 10), (BAM_CREF_SKIP, 5), (BAM_CMATCH, 10)), 12, 17],
-])
-def test_calc_genome_offset_for_skipped_contig_when_ctg_offset_is_after_skipping_happens(
-        ctg_cigartuples, ctg_offset, gnm_offset):
+        AA
+     CCG┘| <-right-tail read
+    XXCCGXX <-contig
+    0123456 <-contig coord
+       ^ctg_offset
     """
-          TT
-          |└AC  <-bridge read
-      CG--ATCGAT <-bridge contig
-      01  234567 <-contig coord
-      0123456789 <-genome offset
-            ^ctf/gnm_offset
+    mock_read = get_mock_read(
+        ref_beg=1, ref_end=4, cigartuples=[(S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 2)])
+    ctg_offset = 3
+    tail_len = 2
+    assert bridge.do_fwd_ctg_rt_bdg(mock_read) == ('+', ctg_offset, tail_len)
+
+
+def test_do_reverse_contig_left_tail_bridge_read():
     """
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
-
-
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
-    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 5, 5],
-    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 31, 31],
-    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 32, 34],
-    [((BAM_CMATCH, 31), (BAM_CDEL, 2), (BAM_CMATCH, 44)), 33, 35],
-])
-def test_calc_genome_offset_for_contig_with_deletion(ctg_cigartuples, ctg_offset, gnm_offset):
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
-
-
-@pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
-    # before the insertion, see example in the docstring
-    [2, 2],
-    [3, 3],
-
-    # inside the insertion, here only left-tail case is tested, see
-    # ./test_bridge_clv_inside_insertion.py for more comprehensive test cases
-    [4, 3],
-    [5, 3],
-    [6, 3],
-
-    # after the insertion
-    [7, 4],
-    [8, 5],
-])
-def test_calc_genome_offset_for_contig_with_three_base_insertion(ctg_offset, expected_gnm_offset):
+           TTT
+            |└ACG   <-left-tail read
+            XXXACGX <-contig
+            0123456 <-contig coord
+            6543210 <-reversed contig coord, i.e. gnm offset from right to left
+    ctg_offset^
     """
-       AGC  <-inserted sequence
-       456  <-contig coord for inserted sequence
-        ┬
-    XXXX XX <-contig
-    0123 78 <-contig coord
-    0123 45 <-genome offset
+    mock_read = get_mock_read(
+        ref_beg=2, ref_end=5, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
+    # in genome coordinates, it's reversed, the the clv points to the position
+    # of A, while position 0 point to the position after G.
+    contig_len = 7
+    ctg_offset = 4
+    tail_len = 3
+    assert bridge.do_rev_ctg_lt_bdg(mock_read, contig_len) == ('+', ctg_offset, tail_len)
 
-    see parameters in the decorator for various ctg_offset
+
+def test_do_reverse_contig_right_tail_bridge_read():
     """
-    ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 3), (BAM_CMATCH, 2))
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
-
-
-@pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
-    # before the insertion, see example in the docstring
-    [2, 2],
-    [3, 3],
-
-    # in the insertion
-    [4, 3],
-
-    # after the insertion
-    [5, 4],
-    [6, 5],
-])
-def test_calc_genome_offset_for_contig_with_one_base_insertion(ctg_offset, expected_gnm_offset):
-    # thought one-base case might be more suitable for testing edgecases
+               AA
+            CCG┘|  <-right-tail read
+           XXCCGXX <-contig
+           0123456 <-contig coord
+           6543210 <-reversed contig coord
+    ctg_offset^
     """
-        G   <-inserted sequence
-        4   <-contig coord for inserted sequence
-        ┬
-    XXXX XX <-contig
-    0123 56 <-contig coord
-    0123 45 <-genome offset
-
-    see parameters in the decorator for various ctg_offset
-    """
-    ctg_cigartuples = ((BAM_CMATCH, 3), (BAM_CINS, 1), (BAM_CMATCH, 2))
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
+    mock_read = get_mock_read(
+        ref_beg=1, ref_end=4, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 2)])
+    # in genome coordinates, it's reversed, the the clv points to the position
+    # of A, while position 0 point to the position after G.
+    contig_len = 7
+    ctg_offset = 3
+    tail_len = 2
+    assert bridge.do_rev_ctg_rt_bdg(mock_read, contig_len) == ('-', ctg_offset, tail_len)
 
 
-
-
-@pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
-    [3, 0],                   # overlap with clv extracted from suffix evidence
-    [4, 1],                   # bridge tail is a bit after the contig tail
-])
-def test_calc_genome_offset_for_contig_with_softclip(ctg_offset, expected_gnm_offset):
+def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():
     """
     TTT
-    012    <-contig coord for tail
-      └XXX <-contig
-       345 <-contig coord
-       012 <-genome offset
-
-    see parameters in the decorator for various ctg_offset
+     |└ACG   <-left-tail read
+     XXACGXX <-contig
+     0123456 <-contig coord
+       ^ctg_offset
     """
-    ctg_cigartuples = ((BAM_CSOFT_CLIP, 3), (BAM_CMATCH, 3))
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
+    r = MagicMock()
+    r.reference_start = 2
+    r.reference_end = 5
+    r.cigartuples = ((S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3))
+    r.query_sequence = 'TTTACG'
+
+    c = MagicMock()
+    c.reference_name = 'chr1'
+    c.is_reverse = False
+    c.reference_start = 0
+    c.reference_end = 7
+    c.cigartuples = ((S.BAM_CMATCH, 7),)
+
+    ref_clv = 2                 # =ctg_offset because c.reference_end = 0
+    tail_len = 3
+
+    # just for the sake of fullfilling API requirement
+    mock_dd_bridge = bridge.init_evidence_holder()
+    clv_key = gen_clv_key_tuple('chr1', '-', ref_clv)
+    mock_dd_bridge['hexamer_tuple'][clv_key] = ('NA', -1, -1)
+
+    ref_fa = MagicMock()
+    assert bridge.analyze_bridge(c, r, ref_fa, mock_dd_bridge) == ('chr1', '-', ref_clv, tail_len, None)
 
 
-@pytest.mark.parametrize("ctg_offset, expected_gnm_offset", [
-    [2, 0],                   # overlap with clv extracted from suffix evidence
-    [3, 1],                   # bridge tail is a bit after the contig tail
-])
-def test_calc_genome_offset_for_contig_with_hardclip(ctg_offset, expected_gnm_offset):
+def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
     """
-    The calculation with soft-clipped contig is the same except the CIGAR
-
-     TT
-     01    <-contig coord for tail
-      └XXX <-contig
-       234 <-contig coord
-       012 <-genome offset
-
+         AA
+      CCG┘|   <-right-tail read
+     XXCCGXX  <-contig
+     0123456  <-contig coord
+        ^ctg_offset
     """
-    ctg_cigartuples = ((BAM_CHARD_CLIP, 2), (BAM_CMATCH, 3))
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == expected_gnm_offset
+    r = MagicMock()
+    r.reference_start = 1
+    r.reference_end = 4
+    r.cigartuples = ((S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 2))
+    r.query_sequence = 'CCGAA'
+
+    c = MagicMock()
+    c.reference_name = 'chr1'
+    c.is_reverse = False
+    c.reference_start = 0
+    c.reference_end = 7
+    c.cigartuples = ((S.BAM_CMATCH, 7),)
+
+    ref_clv = 3                 # =ctg_offset because c.reference_end = 0
+    tail_len = 2
+
+    # just for the sake of fullfilling API requirement
+    mock_dd_bridge = bridge.init_evidence_holder()
+    clv_key = gen_clv_key_tuple('chr1', '+', ref_clv)
+    mock_dd_bridge['hexamer_tuple'][clv_key] = ('NA', -1, -1)
+
+    ref_fa = MagicMock()
+
+    assert bridge.analyze_bridge(c, r, ref_fa, mock_dd_bridge) == ('chr1', '+', ref_clv, tail_len, None)
