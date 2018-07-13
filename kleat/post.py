@@ -134,3 +134,23 @@ def add_annot_info(df_clv, karbor_annot_clv):
         how='left',
     )
     return pdf
+
+
+def add_hex_dist(df):
+    """
+    calculate distance between contig/reference PAS hexamer and clv in new
+    columns
+    """
+    df1 = df.query('ctg_hex_pos == -1').copy()
+    df1['ctg_hex_dist'] = -1
+    df2 = df.query('ctg_hex_pos != -1').copy()
+    df2['ctg_hex_dist'] = (df.ctg_hex_pos - df.clv).abs()
+    df = pd.concat([df1, df2])
+
+    df1 = df.query('ref_hex_pos == -1').copy()
+    df1['ref_hex_dist'] = -1
+    df2 = df.query('ref_hex_pos != -1').copy()
+    df2['ref_hex_dist'] = (df.ref_hex_pos - df.clv).abs()
+
+    df = pd.concat([df1, df2])
+    return df

@@ -11,7 +11,7 @@ import pandas as pd
 from kleat.misc import apautils
 from kleat.args import get_args
 from kleat.proc import process_suffix, process_bridge_and_link, process_blank
-from kleat.post import aggregate_polya_evidence, add_annot_info
+from kleat.post import aggregate_polya_evidence, add_annot_info, add_hex_dist
 from kleat.misc import utils as U
 from kleat.misc import settings as S
 
@@ -76,10 +76,13 @@ def main():
     df_agg = aggregate_polya_evidence(df_clv, args.num_cpus)
 
     logger.info('Calculating closest annotated clv...')
-    df_clv_with_adist = add_annot_info(df_agg, args.karbor_clv_annotation)
+    df_ant_dist = add_annot_info(df_agg, args.karbor_clv_annotation)
+
+    logger.info('calculating distance between PAS hexamers and clvs ...')
+    df_hex_dist = add_hex_dist(df_ant_dist)
 
     logger.info('Writing to {0}...'.format(output))
-    df_clv_with_adist.to_csv(output, sep='\t', index=False)
+    df_hex_dist.to_csv(output, sep='\t', index=False)
 
     if not args.keep_pre_aggregation_tmp_file:
         os.remove(tmp_output)
