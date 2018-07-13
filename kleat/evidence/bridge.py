@@ -60,6 +60,7 @@ def do_fwd_ctg_lt_bdg(read, contig):
     """
     fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge
     """
+    ctg_len_with_hc = contig.infer_query_length(always=True)
     cts = contig.cigartuples
     cts_len = len(cts)
 
@@ -71,21 +72,21 @@ def do_fwd_ctg_lt_bdg(read, contig):
             elif k == cts_len - 1:
                 right_hc += val
 
-    ctg_len_with_hc = contig.infer_query_length(always=True)
-
-    if read.reference_start < left_hc:
+    pre_ctg_offset = read.reference_start
+    if pre_ctg_offset < left_hc:
         # meaning clv is within left hardclip
         return
-    elif read.reference_start >= ctg_len_with_hc - right_hc:
+    elif pre_ctg_offset >= ctg_len_with_hc - right_hc:
         # meaning clv is within right hardclip
         return
     else:
-        ctg_offset = read.reference_start - left_hc
+        ctg_offset = pre_ctg_offset - left_hc
         return '-', ctg_offset, read.cigartuples[0][1]
 
 
 def do_fwd_ctg_rt_bdg(read, contig):
     """rt: right-tailed"""
+    ctg_len_with_hc = contig.infer_query_length(always=True)
     cts = contig.cigartuples
     cts_len = len(cts)
 
@@ -97,23 +98,42 @@ def do_fwd_ctg_rt_bdg(read, contig):
             elif k == cts_len - 1:
                 right_hc += val
 
-    ctg_len_with_hc = contig.infer_query_length(always=True)
-
-    if read.reference_end - 1 < left_hc:
+    pre_ctg_offset = read.reference_end - 1
+    if pre_ctg_offset < left_hc:
         # meaning clv is within left hardclip
         return
-    elif read.reference_end - 1 >= ctg_len_with_hc - right_hc:
+    elif pre_ctg_offset >= ctg_len_with_hc - right_hc:
         # meaning clv is within right hardclip
         return
     else:
-        ctg_offset = read.reference_end - 1 - left_hc
+        ctg_offset = pre_ctg_offset - left_hc
         return '+', ctg_offset, read.cigartuples[-1][1]
 
 
 def do_rev_ctg_lt_bdg(read, contig):
-    ctg_len = contig.infer_query_length(always=True)
-    # rev (reverse), opposite of fwd (forward)
-    return '+', ctg_len - read.reference_start - 1, read.cigartuples[0][1]
+    ctg_len_with_hc = contig.infer_query_length(always=True)
+    cts = contig.cigartuples
+    cts_len = len(cts)
+
+    # left/right wst. contig
+    left_hc, right_hc = 0, 0
+    for k, (key, val) in enumerate(reversed(cts)):
+        if key == S.BAM_CHARD_CLIP:
+            if k == 0:
+                left_hc += val
+            elif k == cts_len - 1:
+                right_hc += val
+
+    pre_ctg_offset = read.reference_start
+    if pre_ctg_offset < left_hc:
+        # meaning clv is within left hardclip
+        return
+    elif pre_ctg_offset >= ctg_len_with_hc - right_hc:
+        # meaning clv is within right hardclip
+        return
+    else:
+        ctg_offset = ctg_len_with_hc - pre_ctg_offset - 1 - right_hc
+        return '+', ctg_offset, read.cigartuples[0][1]
 
 
 def do_rev_ctg_rt_bdg(read, contig):
