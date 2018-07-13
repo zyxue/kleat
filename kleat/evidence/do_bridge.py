@@ -106,9 +106,13 @@ def do_reverse_contig(contig, read):
     if apautils.left_tail(read, 'T'):
         # it's right because it should be reversed again to match the forward
         # direction
-        return do_rev_ctg_lt_bdg(read, contig) + ('right',)
+        res = do_rev_ctg_lt_bdg(read, contig)
+        if res is not None:
+            return res + ('right',)
     elif apautils.right_tail(read, 'A'):
-        return do_rev_ctg_rt_bdg(read, contig) + ('left',)
+        res = do_rev_ctg_rt_bdg(read, contig)
+        if res is not None:
+            return res + ('left',)
     else:
         raise ValueError('no tail found for read {0}'.format(read))
 
