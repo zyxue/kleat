@@ -166,7 +166,31 @@ def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_passing_ctg_clv():
     assert bridge.do_fwd_ctg_lt_bdg(read, contig) is None
 
 
-def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_till_ctg_clv_edgecase():
+def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_right_on_ctg_clv_edgecase():
+    """
+       TT
+        └AC        <-left-tail read
+       XX///       <-contig
+       012345       <-contig coord
+         ^ctg_offset
+    ...XX..        <-reference genome
+       34           <-genome coord
+       |  ^ref_clv
+       ^starting the contig2genome alignment
+    """
+    read = MagicMock()
+    read.reference_start = 2
+    read.reference_end = 4
+    read.cigartuples = ((S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 2))
+
+    contig = MagicMock()
+    contig.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CHARD_CLIP, 3))
+    contig.infer_query_length.return_value = 5  # including hardclip
+
+    assert bridge.do_fwd_ctg_lt_bdg(read, contig) is None
+
+
+def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_right_after_ctg_clv_edgecase():
     """
        TT
         └AC        <-left-tail read
@@ -190,33 +214,6 @@ def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_till_ctg_clv_edgecase():
     ctg_offset = 3
     tail_len = 2
     assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
-
-
-def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_right_after_ctg_clv_edgecase():
-    """
-       TT
-        └AC        <-left-tail read
-      XXXAC/       <-contig
-      012345       <-contig coord
-         ^ctg_offset
-    ..XX...        <-reference genome
-      34           <-genome coord
-      |  ^ref_clv
-      ^starting the contig2genome alignment
-    """
-    read = MagicMock()
-    read.reference_start = 3
-    read.reference_end = 5
-    read.cigartuples = ((S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 2))
-
-    contig = MagicMock()
-    contig.cigartuples = ((S.BAM_CMATCH, 5), (S.BAM_CHARD_CLIP, 1))
-    contig.infer_query_length.return_value = 6  # including hardclip
-
-    ctg_offset = 3
-    tail_len = 2
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
-
 
 
 ###################################################
