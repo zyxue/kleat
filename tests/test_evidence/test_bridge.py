@@ -31,13 +31,17 @@ def test_do_forwad_contig_left_tail_bridge_read():
     http://zyxue.github.io/2018/06/21/coordinates-in-bioinformatics.html
 
     TTT
-     |└ACG   <-left-tail read
+      └ACG    <-left-tail read
      XXACGXX  <-contig
-     0123456 <-contig coord
+     0123456  <-contig coord
        ^ctg_offset
     """
     mock_read = get_mock_read(
-        ref_beg=2, ref_end=5, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
+        ref_beg=2, ref_end=5,
+        cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)]
+    )
+    mock_contig = MagicMock()
+    mock_contig.cigartuples = ((S.BAM_CMATCH, 7),)
     # basically the clv wst. to the contig coordinate when in forward contig
     ctg_offset = 2
     tail_len = 3

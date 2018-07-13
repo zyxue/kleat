@@ -57,8 +57,15 @@ def init_evidence_holder():
 
 
 def do_fwd_ctg_lt_bdg(read, contig):
-    """fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge"""
-    return '-', read.reference_start, read.cigartuples[0][1]
+    """
+    fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge
+    """
+    hc = 0
+    for k, (key, val) in enumerate(contig.cigartuples):
+        if k == 0:
+            if key == S.BAM_CHARD_CLIP:
+                hc += val
+    return '-', read.reference_start - hc, read.cigartuples[0][1]
 
 
 def do_fwd_ctg_rt_bdg(read, contig):
