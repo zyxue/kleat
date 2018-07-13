@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from kleat.evidence import bridge
+from kleat.evidence.do_bridge import do_fwd_ctg_lt_bdg, do_fwd_ctg_rt_bdg
 import kleat.misc.settings as S
 
 
@@ -31,7 +31,7 @@ def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping():
 
     ctg_offset = 2              # 4 -2
     tail_len = 3
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+    assert do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping_right_after_ctg_clv():
@@ -57,7 +57,7 @@ def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping_right_after_ctg_clv():
     contig.cigartuples = ((S.BAM_CHARD_CLIP, 5), (S.BAM_CMATCH, 3))
     contig.infer_query_length.return_value = 8  # including hardclip
 
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) is None
+    assert do_fwd_ctg_lt_bdg(read, contig) is None
 
 
 def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping_right_before_ctg_clv():
@@ -82,7 +82,7 @@ def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping_right_before_ctg_clv():
 
     ctg_offset = 0              # due to hardclipping
     tail_len = 3
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+    assert do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping_1bp_before_ctg_clv():
@@ -107,7 +107,7 @@ def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping_1bp_before_ctg_clv():
 
     ctg_offset = 1              # due to hardclipping
     tail_len = 3
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+    assert do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping():
@@ -135,7 +135,7 @@ def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping():
 
     ctg_offset = 3
     tail_len = 2
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+    assert do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_passing_ctg_clv():
@@ -161,7 +161,7 @@ def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_passing_ctg_clv():
     contig.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CHARD_CLIP, 4))
     contig.infer_query_length.return_value = 6  # including hardclip
 
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) is None
+    assert do_fwd_ctg_lt_bdg(read, contig) is None
 
 
 def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_right_on_ctg_clv_edgecase():
@@ -185,7 +185,7 @@ def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_right_on_ctg_clv_edgecase():
     contig.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CHARD_CLIP, 3))
     contig.infer_query_length.return_value = 5  # including hardclip
 
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) is None
+    assert do_fwd_ctg_lt_bdg(read, contig) is None
 
 
 def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_right_after_ctg_clv_edgecase():
@@ -211,7 +211,7 @@ def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_right_after_ctg_clv_edgecase
 
     ctg_offset = 3
     tail_len = 2
-    assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+    assert do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
 ###################################################
@@ -242,7 +242,7 @@ def test_do_fwd_ctg_rt_bdg_with_left_hardclipping():
 
     ctg_offset = 3
     tail_len = 2
-    assert bridge.do_fwd_ctg_rt_bdg(read, contig) == ('+', ctg_offset, tail_len)
+    assert do_fwd_ctg_rt_bdg(read, contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_rt_bdg_with_left_hardclipping_passing_ctg_clv():
@@ -267,7 +267,7 @@ def test_do_fwd_ctg_rt_bdg_with_left_hardclipping_passing_ctg_clv():
     contig.cigartuples = ((S.BAM_CHARD_CLIP, 5), (S.BAM_CMATCH, 1))
     contig.infer_query_length.return_value = 6
 
-    assert bridge.do_fwd_ctg_rt_bdg(read, contig) is None
+    assert do_fwd_ctg_rt_bdg(read, contig) is None
 
 
 def test_do_fwd_ctg_rt_bdg_with_left_hardclipping_right_on_ctg_clv():
@@ -292,7 +292,7 @@ def test_do_fwd_ctg_rt_bdg_with_left_hardclipping_right_on_ctg_clv():
     contig.cigartuples = ((S.BAM_CHARD_CLIP, 4), (S.BAM_CMATCH, 2))
     contig.infer_query_length.return_value = 6
 
-    assert bridge.do_fwd_ctg_rt_bdg(read, contig) is None
+    assert do_fwd_ctg_rt_bdg(read, contig) is None
 
 
 def test_do_fwd_ctg_rt_bdg_with_right_hardclipping():
@@ -322,7 +322,7 @@ def test_do_fwd_ctg_rt_bdg_with_right_hardclipping():
 
     ctg_offset = 3
     tail_len = 5
-    assert bridge.do_fwd_ctg_rt_bdg(read, contig) == ('+', ctg_offset, tail_len)
+    assert do_fwd_ctg_rt_bdg(read, contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_rt_bdg_with_right_hardclipping_right_before_ctg_clv():
@@ -353,7 +353,7 @@ def test_do_fwd_ctg_rt_bdg_with_right_hardclipping_right_before_ctg_clv():
 
     ctg_offset = 3
     tail_len = 5
-    assert bridge.do_fwd_ctg_rt_bdg(read, contig) == ('+', ctg_offset, tail_len)
+    assert do_fwd_ctg_rt_bdg(read, contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_rt_bdg_with_right_hardclipping_passing_ctg_clv():
@@ -380,7 +380,7 @@ def test_do_fwd_ctg_rt_bdg_with_right_hardclipping_passing_ctg_clv():
         (S.BAM_CHARD_CLIP, 3),
     )
 
-    assert bridge.do_fwd_ctg_rt_bdg(read, contig) is None
+    assert do_fwd_ctg_rt_bdg(read, contig) is None
 
 
 def test_do_fwd_ctg_rt_bdg_with_right_hardclipping_right_on_ctg_clv():
@@ -407,4 +407,4 @@ def test_do_fwd_ctg_rt_bdg_with_right_hardclipping_right_on_ctg_clv():
         (S.BAM_CHARD_CLIP, 3),
     )
 
-    assert bridge.do_fwd_ctg_rt_bdg(read, contig) is None
+    assert do_fwd_ctg_rt_bdg(read, contig) is None

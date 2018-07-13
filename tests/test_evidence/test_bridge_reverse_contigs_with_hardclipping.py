@@ -1,8 +1,6 @@
-from collections import defaultdict
 from unittest.mock import MagicMock
 
-from kleat.evidence import bridge
-from kleat.misc.apautils import gen_clv_key_tuple
+from kleat.evidence.do_bridge import do_rev_ctg_lt_bdg, do_rev_ctg_rt_bdg
 import kleat.misc.settings as S
 
 
@@ -39,7 +37,7 @@ def test_do_rev_ctg_lt_bdg_with_left_hard_clipping():
 
     ctg_offset = 4
     tail_len = 2
-    assert bridge.do_rev_ctg_lt_bdg(read, contig) == ('+', ctg_offset, tail_len)
+    assert do_rev_ctg_lt_bdg(read, contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_rev_ctg_lt_bdg_with_left_hard_clipping_passing_ctg_clv():
@@ -67,7 +65,7 @@ def test_do_rev_ctg_lt_bdg_with_left_hard_clipping_passing_ctg_clv():
         (S.BAM_CHARD_CLIP, 2),
     )
 
-    assert bridge.do_rev_ctg_lt_bdg(read, contig) is None
+    assert do_rev_ctg_lt_bdg(read, contig) is None
 
 
 def test_do_rev_ctg_lt_bdg_with_left_hard_clipping_right_on_ctg_clv():
@@ -97,7 +95,7 @@ def test_do_rev_ctg_lt_bdg_with_left_hard_clipping_right_on_ctg_clv():
 
     ctg_offset = 3
     tail_len = 3
-    assert bridge.do_rev_ctg_lt_bdg(read, contig) == ('+', ctg_offset, tail_len)
+    assert do_rev_ctg_lt_bdg(read, contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_rev_ctg_lt_bdg_with_right_hard_clipping_passing_ctg_clv():
@@ -125,7 +123,7 @@ def test_do_rev_ctg_lt_bdg_with_right_hard_clipping_passing_ctg_clv():
         (S.BAM_CMATCH, 2),
     )
     assert sum(_[1] for _ in contig.cigartuples) == contig.infer_query_length()
-    assert bridge.do_rev_ctg_lt_bdg(read, contig) is None
+    assert do_rev_ctg_lt_bdg(read, contig) is None
 
 
 def test_do_rev_ctg_lt_bdg_with_right_hard_clipping_right_on_ctg_clv():
@@ -155,7 +153,7 @@ def test_do_rev_ctg_lt_bdg_with_right_hard_clipping_right_on_ctg_clv():
 
     ctg_offset = 0
     tail_len = 3
-    assert bridge.do_rev_ctg_lt_bdg(read, contig) == ('+', ctg_offset, tail_len)
+    assert do_rev_ctg_lt_bdg(read, contig) == ('+', ctg_offset, tail_len)
 
 
 ###################################################
@@ -193,7 +191,7 @@ def test_do_rev_ctg_rt_bdg_with_left_hardclipping():
 
     ctg_offset = 2
     tail_len = 4
-    assert bridge.do_rev_ctg_rt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+    assert do_rev_ctg_rt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_rev_ctg_rt_bdg_with_left_hardclipping_passing_ctg_clv():
@@ -223,7 +221,7 @@ def test_do_rev_ctg_rt_bdg_with_left_hardclipping_passing_ctg_clv():
         (S.BAM_CHARD_CLIP, 5),
     )
 
-    assert bridge.do_rev_ctg_rt_bdg(read, contig) is None
+    assert do_rev_ctg_rt_bdg(read, contig) is None
 
 
 def test_do_rev_ctg_rt_bdg_with_right_hardclipping():
@@ -255,7 +253,7 @@ def test_do_rev_ctg_rt_bdg_with_right_hardclipping():
 
     ctg_offset = 2
     tail_len = 5
-    assert bridge.do_rev_ctg_rt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+    assert do_rev_ctg_rt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_rev_ctg_rt_bdg_with_right_hardclipping_right_on_ctg_clv():
@@ -283,4 +281,4 @@ def test_do_rev_ctg_rt_bdg_with_right_hardclipping_right_on_ctg_clv():
         (S.BAM_CMATCH, 4),
     )
 
-    assert bridge.do_rev_ctg_rt_bdg(read, contig) is None
+    assert do_rev_ctg_rt_bdg(read, contig) is None

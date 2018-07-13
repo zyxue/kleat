@@ -2,6 +2,10 @@ from collections import defaultdict
 from unittest.mock import MagicMock
 
 from kleat.evidence import bridge
+from kleat.evidence.do_bridge import (
+    do_fwd_ctg_lt_bdg, do_fwd_ctg_rt_bdg,
+    do_rev_ctg_lt_bdg, do_rev_ctg_rt_bdg
+)
 from kleat.misc.apautils import gen_clv_key_tuple
 import kleat.misc.settings as S
 
@@ -46,7 +50,7 @@ def test_do_fwd_ctg_lt_bdg():
     # basically the clv wst. to the contig coordinate when in forward contig
     ctg_offset = 2
     tail_len = 3
-    assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=mock_contig) == ('-', ctg_offset, tail_len)
+    assert do_fwd_ctg_lt_bdg(mock_read, contig=mock_contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_lt_bdg_2():
@@ -67,7 +71,7 @@ def test_do_fwd_ctg_lt_bdg_2():
 
     ctg_offset = 10
     tail_len = 2
-    assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=mock_contig) == ('-', ctg_offset, tail_len)
+    assert do_fwd_ctg_lt_bdg(mock_read, contig=mock_contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_rt_bdg():
@@ -87,7 +91,7 @@ def test_do_fwd_ctg_rt_bdg():
 
     ctg_offset = 3
     tail_len = 2
-    assert bridge.do_fwd_ctg_rt_bdg(mock_read, contig=mock_contig) == ('+', ctg_offset, tail_len)
+    assert do_fwd_ctg_rt_bdg(mock_read, contig=mock_contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_rev_ctg_lt_bdg():
@@ -108,7 +112,7 @@ def test_do_rev_ctg_lt_bdg():
 
     ctg_offset = 4
     tail_len = 3
-    assert bridge.do_rev_ctg_lt_bdg(mock_read, contig=contig) == ('+', ctg_offset, tail_len)
+    assert do_rev_ctg_lt_bdg(mock_read, contig=contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_rev_ctg_rt_bdg():
@@ -128,7 +132,7 @@ def test_do_rev_ctg_rt_bdg():
     contig.infer_query_length.return_value = 7
     ctg_offset = 3
     tail_len = 2
-    assert bridge.do_rev_ctg_rt_bdg(mock_read, contig=contig) == ('-', ctg_offset, tail_len)
+    assert do_rev_ctg_rt_bdg(mock_read, contig=contig) == ('-', ctg_offset, tail_len)
 
 
 def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():
