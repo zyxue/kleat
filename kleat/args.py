@@ -28,9 +28,17 @@ def get_args():
               'this file is processed from GTF annotation file')
     )
     parser.add_argument(
-        '-o', '--output', type=str, default='./output.csv',
-        help='output tsv file'
+        '-o', '--output', type=str, default=None,
+        help=('output tsv file, if not specified, it will use prefix output, '
+              'and the extension depends on the value of --output-format. '
+              'e.g. output.csv, output.pickle, etc.')
     )
+
+    parser.add_argument(
+        '-m', '--output-format', type=str, default='csv',
+        help='also support tsv, pickle (python)'
+    )
+
     parser.add_argument(
         '-p', '--num-cpus', type=int, default=1,
         help=('parallize the step of aggregating polya evidence for each '

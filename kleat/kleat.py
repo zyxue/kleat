@@ -53,12 +53,35 @@ def gen_tmp_output(output):
         os.path.dirname(output), '__tmp_{0}'.format(os.path.basename(output)))
 
 
+def gen_output(args_output, output_format):
+    format2extension_dd = {
+        'csv': 'csv',
+        'tsv': 'tsv',
+        'pickle': 'pkl',
+        'pkl': 'pkl',
+    }
+    if args_output is None:
+        args_output = './output.{0}'.format(format2extension_dd[output_format])
+    return os.path.abspath(args_output)
+
+
+def dump_output_df(out_df, output, output_format):
+    if output_format == 'csv':
+        out_df.to_csv(output, index=False)
+    elif output_format == 'tsv':
+        out_df.to_csv(output, sep='\t', index=False)
+    elif output_format in ['pkl', 'pickle']:
+        out_df.to_pickle(output)
+    else:
+        raise ValueError('unknown output format: {0}'.format(output_format))
+
+
 def main():
     args = get_args()
     c2g_bam = pysam.AlignmentFile(args.contigs_to_genome)
     r2c_bam = pysam.AlignmentFile(args.reads_to_contigs)
     ref_fa = pysam.FastaFile(args.reference_genome)
-    output = os.path.abspath(args.output)
+    output = gen_output(args.output, args.output_format)
     tmp_output = gen_tmp_output(output)
     for o in [output, tmp_output]:
         if os.path.exists(o):
@@ -87,7 +110,7 @@ def main():
     out_df = df_hex_dist.rename(columns=S.FORMAT_OUTPUT_HEADER_DD)
     add_extra(out_df)
     out_df = out_df[S.OUTPUT_HEADER]
-    out_df.to_csv(output, index=False)
+    dump_output_df(out_df, output, args.output_format)
 
     if not args.keep_pre_aggregation_tmp_file:
         os.remove(tmp_output)
