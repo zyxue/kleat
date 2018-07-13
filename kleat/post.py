@@ -30,7 +30,7 @@ def prepare_grps_for_agg(df_clv):
     clv_id_tuples, grps = [], []
     logger.info('preparing arguments for aggregating polya evidence in parallel...')
     iters = tqdm(df_clv.groupby(clv_id_cols),
-                 desc='collected', unit=" cleavage sites")
+                 desc='grouped', unit=" cleavage sites")
     for clv_id_tuple, grp in iters:
         clv_id_tuples.append(clv_id_tuple)
         grps.append(grp)
