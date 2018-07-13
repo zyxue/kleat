@@ -67,9 +67,9 @@ def test_do_fwd_ctg_lt_bdg_2():
 def test_do_fwd_ctg_rt_bdg():
     """
         AA
-     CCG┘| <-right-tail read
-    XXCCGXX <-contig
-    0123456 <-contig coord
+     CCG┘      <-right-tail read
+    XXCCGXX    <-contig
+    0123456    <-contig coord
        ^ctg_offset
     """
     mock_read = get_mock_read(

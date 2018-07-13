@@ -70,7 +70,12 @@ def do_fwd_ctg_lt_bdg(read, contig):
 
 def do_fwd_ctg_rt_bdg(read, contig):
     """rt: right-tailed"""
-    return '+', read.reference_end - 1, read.cigartuples[-1][1]
+    hc = 0
+    for k, (key, val) in enumerate(contig.cigartuples):
+        if k == 0:
+            if key == S.BAM_CHARD_CLIP:
+                hc += val
+    return '+', read.reference_end - hc - 1, read.cigartuples[-1][1]
 
 
 def do_rev_ctg_lt_bdg(read, contig):
