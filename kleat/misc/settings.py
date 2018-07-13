@@ -64,19 +64,16 @@ OUTPUT_HEADER = [
     'any_contig_is_hardclipped',
 
     'num_suffix_contigs',
+    'num_bridge_contigs',
+    'num_link_contigs',
+    'num_blank_contigs',
+    'num_total_contigs',
+
     'num_suffix_reads',
     'max_suffix_contig_tail_len',
-
-    'num_bridge_contigs',
     'num_bridge_reads',
     'max_bridge_read_tail_len',
-
-    'num_link_contigs',
     'num_link_reads',
-
-    'num_blank_contigs',
-
-    'num_total_contigs',
 
     'ctg_hex',
     'ctg_hex_id',
