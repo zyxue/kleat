@@ -6,7 +6,11 @@ from kleat.misc.apautils import gen_clv_key_tuple
 import kleat.misc.settings as S
 
 
-def test_do_do_fwd_ctg_lt_bdg_with_left_hard_clipping():
+###################################################
+# test different situations for do_fwd_ctg_lt_bdg #
+###################################################
+
+def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping():
     """
       TTT
         └ACG      <-left-tail read
@@ -25,13 +29,14 @@ def test_do_do_fwd_ctg_lt_bdg_with_left_hard_clipping():
 
     contig = MagicMock()
     contig.cigartuples = ((S.BAM_CHARD_CLIP, 2), (S.BAM_CMATCH, 6))
+    contig.infer_query_length.return_value = 8  # including hardclip
 
     ctg_offset = 2              # 4 -2
     tail_len = 3
     assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
-def test_do_do_fwd_ctg_lt_bdg_with_left_hard_clipping_passing_the_ctg_clv():
+def test_do_fwd_ctg_lt_bdg_with_left_hard_clipping_passing_the_ctg_clv():
     """
       TTT
         └ACG      <-left-tail read
@@ -52,13 +57,14 @@ def test_do_do_fwd_ctg_lt_bdg_with_left_hard_clipping_passing_the_ctg_clv():
 
     contig = MagicMock()
     contig.cigartuples = ((S.BAM_CHARD_CLIP, 5), (S.BAM_CMATCH, 3))
+    contig.infer_query_length.return_value = 8  # including hardclip
 
     assert bridge.do_fwd_ctg_lt_bdg(read, contig) is None
 
 
 def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping():
     """
-    right hardclipping won't have an effect in such case
+    such right hardclipping (not passing the ctg_clv) won't have an effect in such case
 
        TT
         └AC        <-left-tail read
@@ -77,10 +83,42 @@ def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping():
 
     contig = MagicMock()
     contig.cigartuples = ((S.BAM_CMATCH, 8), (S.BAM_CHARD_CLIP, 2))
+    contig.infer_query_length.return_value = 10  # including hardclip
 
     ctg_offset = 3
     tail_len = 2
     assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+
+
+def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping_passing_the_ctg_clv():
+    """
+       TT
+        └AC        <-left-tail read
+      XX////       <-contig
+      012345       <-contig coord
+         ^ctg_offset
+    ..XX...        <-reference genome
+      34           <-genome coord
+      |  ^ref_clv
+      ^starting the contig2genome alignment
+
+    ctg_offset would be 3 (ctg_clv) - 5 (hardclip) = -1 < 0, so this read
+    """
+    read = MagicMock()
+    read.reference_start = 3
+    read.reference_end = 5
+    read.cigartuples = ((S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 2))
+
+    contig = MagicMock()
+    contig.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CHARD_CLIP, 4))
+    contig.infer_query_length.return_value = 6  # including hardclip
+
+    assert bridge.do_fwd_ctg_lt_bdg(read, contig) is None
+
+
+###################################################
+# test different situations for do_fwd_ctg_rt_bdg #
+###################################################
 
 
 def test_do_fwd_ctg_rt_bdg_with_left_hardclipping():

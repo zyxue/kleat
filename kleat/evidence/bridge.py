@@ -60,14 +60,28 @@ def do_fwd_ctg_lt_bdg(read, contig):
     """
     fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge
     """
-    hc = 0
-    for k, (key, val) in enumerate(contig.cigartuples):
-        if k == 0:
-            if key == S.BAM_CHARD_CLIP:
-                hc += val
-    ctg_offset = read.reference_start - hc
-    if ctg_offset >= 0:
-        return '-', read.reference_start - hc, read.cigartuples[0][1]
+    cts = contig.cigartuples
+    cts_len = len(cts)
+
+    left_hc, right_hc = 0, 0    # hc: hardclip
+    for k, (key, val) in enumerate(cts):
+        if key == S.BAM_CHARD_CLIP:
+            if k == 0:
+                left_hc += val
+            elif k == cts_len - 1:
+                right_hc += val
+
+    ctg_len_with_hc = contig.infer_query_length(always=True)
+
+    if read.reference_start < left_hc:
+        # meaning clv is within left hardclip
+        return
+    elif read.reference_start > ctg_len_with_hc - right_hc:
+        # meaning clv is within right hardclip
+        return
+    else:
+        ctg_offset = read.reference_start - left_hc
+        return '-', ctg_offset, read.cigartuples[0][1]
 
 
 def do_fwd_ctg_rt_bdg(read, contig):
