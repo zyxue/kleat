@@ -22,7 +22,7 @@ def get_mock_read(ref_beg, ref_end, cigartuples):
     return r
 
 
-def test_do_forwad_contig_left_tail_bridge_read():
+def test_do_fwd_ctg_lt_bdg():
     """e.g. TTTACG, reference_start at pos 2 (0-based) with the first three Ts
     soft-clipped
 
@@ -48,7 +48,7 @@ def test_do_forwad_contig_left_tail_bridge_read():
     assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=MagicMock()) == ('-', ctg_offset, tail_len)
 
 
-def test_do_forwad_contig_left_tail_bridge_read_2():
+def test_do_fwd_ctg_lt_bdg_2():
     """
     TT
     |└AATTCCGG   <-left-tail read
@@ -64,7 +64,7 @@ def test_do_forwad_contig_left_tail_bridge_read_2():
     assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=MagicMock()) == ('-', ctg_offset, tail_len)
 
 
-def test_do_forwad_contig_right_tail_bridge_read():
+def test_do_fwd_ctg_rt_bdg():
     """
         AA
      CCG┘| <-right-tail read
@@ -79,7 +79,7 @@ def test_do_forwad_contig_right_tail_bridge_read():
     assert bridge.do_fwd_ctg_rt_bdg(mock_read, contig=MagicMock()) == ('+', ctg_offset, tail_len)
 
 
-def test_do_reverse_contig_left_tail_bridge_read():
+def test_do_rev_ctg_lt_bdg():
     """
            TTT
             |└ACG   <-left-tail read
@@ -99,7 +99,7 @@ def test_do_reverse_contig_left_tail_bridge_read():
     assert bridge.do_rev_ctg_lt_bdg(mock_read, contig=contig) == ('+', ctg_offset, tail_len)
 
 
-def test_do_reverse_contig_right_tail_bridge_read():
+def test_do_rev_ctg_rt_bdg():
     """
                AA
             CCG┘|  <-right-tail read

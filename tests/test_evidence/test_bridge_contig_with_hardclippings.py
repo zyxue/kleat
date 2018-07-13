@@ -6,7 +6,7 @@ from kleat.misc.apautils import gen_clv_key_tuple
 import kleat.misc.settings as S
 
 
-def test_do_forwad_contig_left_tail_bridge_read_with_left_hard_clipping():
+def test_do_do_fwd_ctg_lt_bdg_with_left_hard_clipping():
     """
       TTT
         └ACG      <-left-tail read
@@ -31,7 +31,7 @@ def test_do_forwad_contig_left_tail_bridge_read_with_left_hard_clipping():
     assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
-def test_do_forwad_contig_left_tail_bridge_read_with_right_hard_clipping():
+def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping():
     """
     right hardclipping doesn't matter in such case
 
