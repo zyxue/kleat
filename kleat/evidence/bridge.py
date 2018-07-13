@@ -5,9 +5,9 @@ import kleat.misc.settings as S
 from kleat.hexamer.search import (
     search,  # do PAS hexamer search in a more customized way instead of using
              # gen_contig_hexamer_tuple
+    extract_seq,
     gen_reference_hexamer_tuple
 )
-from kleat.hexamer.extract_seq import extract_seq
 
 
 def write_evidence(dd_bridge, contig, ref_fa, csvwriter):

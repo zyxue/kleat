@@ -9,8 +9,8 @@ of a reference genome
 from Bio import Seq
 
 import kleat.misc.settings as S
-from kleat.hexamer.extract_seq import extract_seq
 from kleat.misc.apautils import fetch_seq
+from kleat.hexamer import xseq_plus, xseq_minus
 
 
 def reverse_complement(seq):
@@ -105,6 +105,28 @@ def search_ref_genome(refseq, chrom, clv, strand, window=50):
     # -1 as it's 0-based
     res = search_hexamer(seq, strand, beg, end - 1)
     return res
+
+
+# TODO: remove default value for window
+def extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv, window=50):
+    """
+    extract the upstream sequence for PAS hexamer search
+
+    :param ref_clv: would be necessary needs to combine sequence from both
+                    contig and reference genome
+    :param ctg_clv: the position of clv in contig coordinate.
+    """
+    seqname = contig.reference_name
+    ctg_seq = contig.query_sequence
+    cigartuples = contig.cigartuples
+
+    args = cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window
+    if strand == '+':
+        return xseq_plus.extract(*args)
+    elif strand == '-':
+        return xseq_minus.extract(*args)
+    else:
+        raise ValueError('unknown strand: "{0}"'.format(strand))
 
 
 def gen_contig_hexamer_tuple(contig, strand, ref_clv, ref_fa, ctg_clv):
