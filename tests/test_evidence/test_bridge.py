@@ -41,11 +41,12 @@ def test_do_fwd_ctg_lt_bdg():
         cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)]
     )
     mock_contig = MagicMock()
+    mock_contig.infer_query_length.return_value = 7
     mock_contig.cigartuples = ((S.BAM_CMATCH, 7),)
     # basically the clv wst. to the contig coordinate when in forward contig
     ctg_offset = 2
     tail_len = 3
-    assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=MagicMock()) == ('-', ctg_offset, tail_len)
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=mock_contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_lt_bdg_2():
@@ -59,9 +60,14 @@ def test_do_fwd_ctg_lt_bdg_2():
     """
     mock_read = get_mock_read(
         ref_beg=10, ref_end=18, cigartuples=[(S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 8)])
+
+    mock_contig = MagicMock()
+    mock_contig.infer_query_length.return_value = 12
+    mock_contig.cigartuples = ((S.BAM_CMATCH, 12),)
+
     ctg_offset = 10
     tail_len = 2
-    assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=MagicMock()) == ('-', ctg_offset, tail_len)
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=mock_contig) == ('-', ctg_offset, tail_len)
 
 
 def test_do_fwd_ctg_rt_bdg():
@@ -74,9 +80,14 @@ def test_do_fwd_ctg_rt_bdg():
     """
     mock_read = get_mock_read(
         ref_beg=1, ref_end=4, cigartuples=[(S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 2)])
+
+    mock_contig = MagicMock()
+    mock_contig.infer_query_length.return_value = 7
+    mock_contig.cigartuples = ((S.BAM_CMATCH, 7),)
+
     ctg_offset = 3
     tail_len = 2
-    assert bridge.do_fwd_ctg_rt_bdg(mock_read, contig=MagicMock()) == ('+', ctg_offset, tail_len)
+    assert bridge.do_fwd_ctg_rt_bdg(mock_read, contig=mock_contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_rev_ctg_lt_bdg():
@@ -94,6 +105,7 @@ def test_do_rev_ctg_lt_bdg():
     # of A, while position 0 point to the position after G.
     contig = MagicMock()
     contig.infer_query_length.return_value = 7
+
     ctg_offset = 4
     tail_len = 3
     assert bridge.do_rev_ctg_lt_bdg(mock_read, contig=contig) == ('+', ctg_offset, tail_len)
@@ -138,6 +150,7 @@ def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():
     c.is_reverse = False
     c.reference_start = 0
     c.reference_end = 7
+    c.infer_query_length.return_value = 7
     c.cigartuples = ((S.BAM_CMATCH, 7),)
 
     ref_clv = 2                 # =ctg_offset because c.reference_end = 0
@@ -171,6 +184,7 @@ def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
     c.is_reverse = False
     c.reference_start = 0
     c.reference_end = 7
+    c.infer_query_length.return_value = 7
     c.cigartuples = ((S.BAM_CMATCH, 7),)
 
     ref_clv = 3                 # =ctg_offset because c.reference_end = 0
