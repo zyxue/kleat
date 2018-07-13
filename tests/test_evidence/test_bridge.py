@@ -41,7 +41,7 @@ def test_do_forwad_contig_left_tail_bridge_read():
     # basically the clv wst. to the contig coordinate when in forward contig
     ctg_offset = 2
     tail_len = 3
-    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', ctg_offset, tail_len)
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=MagicMock()) == ('-', ctg_offset, tail_len)
 
 
 def test_do_forwad_contig_left_tail_bridge_read_2():
@@ -57,7 +57,7 @@ def test_do_forwad_contig_left_tail_bridge_read_2():
         ref_beg=10, ref_end=18, cigartuples=[(S.BAM_CSOFT_CLIP, 2), (S.BAM_CMATCH, 8)])
     ctg_offset = 10
     tail_len = 2
-    assert bridge.do_fwd_ctg_lt_bdg(mock_read) == ('-', ctg_offset, tail_len)
+    assert bridge.do_fwd_ctg_lt_bdg(mock_read, contig=MagicMock()) == ('-', ctg_offset, tail_len)
 
 
 def test_do_forwad_contig_right_tail_bridge_read():
@@ -72,7 +72,7 @@ def test_do_forwad_contig_right_tail_bridge_read():
         ref_beg=1, ref_end=4, cigartuples=[(S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 2)])
     ctg_offset = 3
     tail_len = 2
-    assert bridge.do_fwd_ctg_rt_bdg(mock_read) == ('+', ctg_offset, tail_len)
+    assert bridge.do_fwd_ctg_rt_bdg(mock_read, contig=MagicMock()) == ('+', ctg_offset, tail_len)
 
 
 def test_do_reverse_contig_left_tail_bridge_read():
@@ -88,10 +88,11 @@ def test_do_reverse_contig_left_tail_bridge_read():
         ref_beg=2, ref_end=5, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3)])
     # in genome coordinates, it's reversed, the the clv points to the position
     # of A, while position 0 point to the position after G.
-    contig_len = 7
+    contig = MagicMock()
+    contig.infer_query_length.return_value = 7
     ctg_offset = 4
     tail_len = 3
-    assert bridge.do_rev_ctg_lt_bdg(mock_read, contig_len) == ('+', ctg_offset, tail_len)
+    assert bridge.do_rev_ctg_lt_bdg(mock_read, contig=contig) == ('+', ctg_offset, tail_len)
 
 
 def test_do_reverse_contig_right_tail_bridge_read():
@@ -107,10 +108,11 @@ def test_do_reverse_contig_right_tail_bridge_read():
         ref_beg=1, ref_end=4, cigartuples=[(S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 2)])
     # in genome coordinates, it's reversed, the the clv points to the position
     # of A, while position 0 point to the position after G.
-    contig_len = 7
+    contig = MagicMock()
+    contig.infer_query_length.return_value = 7
     ctg_offset = 3
     tail_len = 2
-    assert bridge.do_rev_ctg_rt_bdg(mock_read, contig_len) == ('-', ctg_offset, tail_len)
+    assert bridge.do_rev_ctg_rt_bdg(mock_read, contig=contig) == ('-', ctg_offset, tail_len)
 
 
 def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():

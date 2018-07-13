@@ -56,30 +56,32 @@ def init_evidence_holder():
     }
 
 
-def do_fwd_ctg_lt_bdg(read):
+def do_fwd_ctg_lt_bdg(read, contig):
     """fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge"""
     return '-', read.reference_start, read.cigartuples[0][1]
 
 
-def do_fwd_ctg_rt_bdg(read):
+def do_fwd_ctg_rt_bdg(read, contig):
     """rt: right-tailed"""
     return '+', read.reference_end - 1, read.cigartuples[-1][1]
 
 
-def do_rev_ctg_lt_bdg(read, ctg_len):
+def do_rev_ctg_lt_bdg(read, contig):
+    ctg_len = contig.infer_query_length(always=True)
     # rev (reverse), opposite of fwd (forward)
     return '+', ctg_len - read.reference_start - 1, read.cigartuples[0][1]
 
 
-def do_rev_ctg_rt_bdg(read, ctg_len):
+def do_rev_ctg_rt_bdg(read, contig):
+    ctg_len = contig.infer_query_length(always=True)
     return '-', ctg_len - read.reference_end, read.cigartuples[-1][1]
 
 
 def do_forward_contig(contig, read):
     if apautils.left_tail(read, 'T'):
-        return do_fwd_ctg_lt_bdg(read) + ('left', )
+        return do_fwd_ctg_lt_bdg(read, contig) + ('left', )
     elif apautils.right_tail(read, 'A'):
-        return do_fwd_ctg_rt_bdg(read) + ('right', )
+        return do_fwd_ctg_rt_bdg(read, contig) + ('right', )
     else:
         raise ValueError('no tail found for read {0}'.format(read))
 
@@ -87,14 +89,13 @@ def do_forward_contig(contig, read):
 def do_reverse_contig(contig, read):
     # set always=True to include hard-clipped bases
     # https://pysam.readthedocs.io/en/latest/api.html?highlight=parse_region#pysam.AlignedSegment.infer_query_length
-    ctg_len = contig.infer_query_length(always=True)
     # TODO: avoid multiple calling of left_tail/right_tail
     if apautils.left_tail(read, 'T'):
         # it's right because it should be reversed again to match the forward
         # direction
-        return do_rev_ctg_lt_bdg(read, ctg_len) + ('right',)
+        return do_rev_ctg_lt_bdg(read, contig) + ('right',)
     elif apautils.right_tail(read, 'A'):
-        return do_rev_ctg_rt_bdg(read, ctg_len) + ('left',)
+        return do_rev_ctg_rt_bdg(read, contig) + ('left',)
     else:
         raise ValueError('no tail found for read {0}'.format(read))
 
