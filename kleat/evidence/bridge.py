@@ -102,7 +102,7 @@ def do_fwd_ctg_rt_bdg(read, contig):
     if read.reference_end - 1 < left_hc:
         # meaning clv is within left hardclip
         return
-    elif read.reference_end - 1 > ctg_len_with_hc - right_hc:
+    elif read.reference_end - 1 >= ctg_len_with_hc - right_hc:
         # meaning clv is within right hardclip
         return
     else:
