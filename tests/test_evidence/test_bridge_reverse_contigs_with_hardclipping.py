@@ -156,3 +156,131 @@ def test_do_rev_ctg_lt_bdg_with_right_hard_clipping_right_on_ctg_clv():
     ctg_offset = 0
     tail_len = 3
     assert bridge.do_rev_ctg_lt_bdg(read, contig) == ('+', ctg_offset, tail_len)
+
+
+###################################################
+# test different situations for do_rev_ctg_rt_bdg #
+###################################################
+
+
+def test_do_rev_ctg_rt_bdg_with_left_hardclipping():
+    """
+    hardclipping in such case has no effect
+
+              AAAA
+           CCG┘        <-right-tail read
+       \\\XCCGXX       <-contig
+       0123456789      <-contig coord
+          |  ^ctg_offset
+       ...XCCGXX...    <-rev ref genome
+         6543210       <-rev ref genome offset
+         9876543       <-rev ref genome coord
+      ref_clv^ ^begining of contig2genome alignment
+    """
+    read = MagicMock()
+    read.reference_start = 4
+    read.reference_end = 7
+    read.cigartuples = ((S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 4))
+
+    contig = MagicMock()
+    contig.infer_query_length.return_value = 9  # including hardclipping
+    contig.cigartuples = (
+        # from right to left
+        (S.BAM_CMATCH, 6),
+        (S.BAM_CHARD_CLIP, 3),
+
+    )
+
+    ctg_offset = 2
+    tail_len = 4
+    assert bridge.do_rev_ctg_rt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+
+
+def test_do_rev_ctg_rt_bdg_with_left_hardclipping_passing_ctg_clv():
+    """
+            AA
+         CCG┘       <-right-tail read
+        \\\\\XX      <-contig
+        01234567     <-contig coord
+        |  ^ctg_offset
+     ...XCCGXX...    <-rev ref genome
+       76543210      <-rev ref genome offset
+       09876543      <-rev ref genome coord
+    ref_clv^  ^begining of contig2genome alignment
+
+    ref_clv won't be captured by this bridge read
+    """
+    read = MagicMock()
+    read.reference_start = 3
+    read.reference_end = 4
+    read.cigartuples = ((S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 2))
+
+    contig = MagicMock()
+    contig.infer_query_length.return_value = 7  # including hardclipping
+    contig.cigartuples = (
+        # from right to left
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CHARD_CLIP, 5),
+    )
+
+    assert bridge.do_rev_ctg_rt_bdg(read, contig) is None
+
+
+def test_do_rev_ctg_rt_bdg_with_right_hardclipping():
+    """
+    right hardclipping does not have an effect in such case
+
+            AAAAA
+          CG┘         <-right-tail read
+        XCCGXX//      <-contig
+        012345678     <-contig coord
+           ^ctg_offset
+     ...XCCGXX...     <-rev ref genome
+        543210        <-rev ref genome offset
+        876543        <-rev ref genome coord
+    ref_clv^  ^begining of contig2genome alignment
+    """
+    read = MagicMock()
+    read.reference_start = 2
+    read.reference_end = 4
+    read.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CSOFT_CLIP, 5))
+
+    contig = MagicMock()
+    contig.infer_query_length.return_value = 8  # including hardclipping
+    contig.cigartuples = (
+        # from right to left
+        (S.BAM_CHARD_CLIP, 2),
+        (S.BAM_CMATCH, 6),
+    )
+
+    ctg_offset = 2
+    tail_len = 5
+    assert bridge.do_rev_ctg_rt_bdg(read, contig) == ('-', ctg_offset, tail_len)
+
+
+def test_do_rev_ctg_rt_bdg_with_right_hardclipping_right_on_ctg_clv():
+    """
+            AAAAA
+         CGT┘       <-right-tail read
+       XCCG///      <-contig
+       01234567     <-contig coord
+       |  ^ctg_offset
+    ...XCCG...      <-rev ref genome
+        543210      <-rev ref genome offset
+        876543      <-rev ref genome coord
+    ref_clv^  ^begining of contig2genome alignment
+    """
+    read = MagicMock()
+    read.reference_start = 2
+    read.reference_end = 4
+    read.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CSOFT_CLIP, 5))
+
+    contig = MagicMock()
+    contig.infer_query_length.return_value = 6  # including hardclipping
+    contig.cigartuples = (
+        # from right to left
+        (S.BAM_CHARD_CLIP, 3),
+        (S.BAM_CMATCH, 4),
+    )
+
+    assert bridge.do_rev_ctg_rt_bdg(read, contig) is None

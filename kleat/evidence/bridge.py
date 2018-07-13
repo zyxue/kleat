@@ -137,8 +137,29 @@ def do_rev_ctg_lt_bdg(read, contig):
 
 
 def do_rev_ctg_rt_bdg(read, contig):
-    ctg_len = contig.infer_query_length(always=True)
-    return '-', ctg_len - read.reference_end, read.cigartuples[-1][1]
+    ctg_len_with_hc = contig.infer_query_length(always=True)
+    cts = contig.cigartuples
+    cts_len = len(cts)
+
+    # left/right wst. contig
+    left_hc, right_hc = 0, 0
+    for k, (key, val) in enumerate(reversed(cts)):
+        if key == S.BAM_CHARD_CLIP:
+            if k == 0:
+                left_hc += val
+            elif k == cts_len - 1:
+                right_hc += val
+
+    pre_ctg_offset = read.reference_end - 1
+    if pre_ctg_offset < left_hc:
+        # meaning clv is within left hardclip
+        return
+    elif pre_ctg_offset >= ctg_len_with_hc - right_hc:
+        # meaning clv is within right hardclip
+        return
+    else:
+        ctg_offset = ctg_len_with_hc - pre_ctg_offset - 1 - right_hc
+        return '-', ctg_offset, read.cigartuples[-1][1]
 
 
 def do_forward_contig(contig, read):
