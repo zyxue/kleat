@@ -231,7 +231,7 @@ def test_do_fwd_ctg_rt_bdg_with_left_hardclipping():
        \\\XCCGXX     <-contig
        0123456789    <-contig coord
           |  ^ctg_offset
-    ...XXXCCGXX...   <-reference genome
+    ...XXXXCCGXX...   <-reference genome
           4567890    <-genome coord
           |  ^ref_clv
           ^starting the contig2genome alignment
@@ -243,10 +243,36 @@ def test_do_fwd_ctg_rt_bdg_with_left_hardclipping():
 
     contig = MagicMock()
     contig.cigartuples = ((S.BAM_CHARD_CLIP, 3), (S.BAM_CMATCH, 7))
+    contig.infer_query_length.return_value = 9
 
     ctg_offset = 3
     tail_len = 2
     assert bridge.do_fwd_ctg_rt_bdg(read, contig) == ('+', ctg_offset, tail_len)
+
+
+def test_do_fwd_ctg_rt_bdg_with_left_hardclipping_passing_ctg_clv():
+    """
+            AA
+         CCG┘       <-right-tail read
+        \\\\\X      <-contig
+        0123456     <-contig coord
+        |  ^ctg_offset
+     ...XCCGXX...   <-reference genome
+           45678    <-genome coord
+    ref_clv^ ^starting the contig2genome alignment
+
+    ref_clv won't be captured by this bridge read
+    """
+    read = MagicMock()
+    read.reference_start = 3
+    read.reference_end = 4
+    read.cigartuples = ((S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 2))
+
+    contig = MagicMock()
+    contig.cigartuples = ((S.BAM_CHARD_CLIP, 5), (S.BAM_CMATCH, 1))
+    contig.infer_query_length.return_value = 6
+
+    assert bridge.do_fwd_ctg_rt_bdg(read, contig) is None
 
 
 def test_do_fwd_ctg_rt_bdg_with_right_hardclipping():
@@ -268,6 +294,7 @@ def test_do_fwd_ctg_rt_bdg_with_right_hardclipping():
     read.cigartuples = ((S.BAM_CMATCH, 2), (S.BAM_CSOFT_CLIP, 5))
 
     contig = MagicMock()
+    contig.infer_query_length.return_value = 8
     contig.cigartuples = (
         (S.BAM_CMATCH, 6),
         (S.BAM_CHARD_CLIP, 2),

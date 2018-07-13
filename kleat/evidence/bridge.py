@@ -86,12 +86,28 @@ def do_fwd_ctg_lt_bdg(read, contig):
 
 def do_fwd_ctg_rt_bdg(read, contig):
     """rt: right-tailed"""
-    hc = 0
+    cts = contig.cigartuples
+    cts_len = len(cts)
+
+    left_hc, right_hc = 0, 0    # hc: hardclip
     for k, (key, val) in enumerate(contig.cigartuples):
-        if k == 0:
-            if key == S.BAM_CHARD_CLIP:
-                hc += val
-    return '+', read.reference_end - hc - 1, read.cigartuples[-1][1]
+        if key == S.BAM_CHARD_CLIP:
+            if k == 0:
+                left_hc += val
+            elif k == cts_len - 1:
+                right_hc += val
+
+    ctg_len_with_hc = contig.infer_query_length(always=True)
+
+    if read.reference_end - 1 < left_hc:
+        # meaning clv is within left hardclip
+        return
+    elif read.reference_end - 1 > ctg_len_with_hc - right_hc:
+        # meaning clv is within right hardclip
+        return
+    else:
+        ctg_offset = read.reference_end - 1 - left_hc
+        return '+', ctg_offset, read.cigartuples[-1][1]
 
 
 def do_rev_ctg_lt_bdg(read, contig):
