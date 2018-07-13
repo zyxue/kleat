@@ -154,3 +154,13 @@ def add_hex_dist(df):
 
     df = pd.concat([df1, df2])
     return df
+
+
+def add_extra(df):
+    """add additional handy columns"""
+    df['num_total_contigs'] = (
+        df.num_suffix_contigs +
+        df.num_bridge_contigs +
+        df.num_link_contigs +
+        df.num_blank_contigs
+    )

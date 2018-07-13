@@ -11,7 +11,9 @@ import pandas as pd
 from kleat.misc import apautils
 from kleat.args import get_args
 from kleat.proc import process_suffix, process_bridge_and_link, process_blank
-from kleat.post import aggregate_polya_evidence, add_annot_info, add_hex_dist
+from kleat.post import (
+    aggregate_polya_evidence, add_annot_info, add_hex_dist, add_extra
+)
 from kleat.misc import utils as U
 from kleat.misc import settings as S
 
@@ -83,6 +85,7 @@ def main():
 
     logger.info('Writing to {0}...'.format(output))
     out_df = df_hex_dist.rename(columns=S.FORMAT_OUTPUT_HEADER_DD)
+    add_extra(out_df)
     out_df = out_df[S.OUTPUT_HEADER]
     out_df.to_csv(output, index=False)
 

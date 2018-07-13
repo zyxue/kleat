@@ -76,6 +76,8 @@ OUTPUT_HEADER = [
 
     'num_blank_contigs',
 
+    'num_total_contigs',
+
     'ctg_hex',
     'ctg_hex_id',
     'ctg_hex_pos',
