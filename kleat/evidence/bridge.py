@@ -56,21 +56,28 @@ def init_evidence_holder():
     }
 
 
+def calc_hardclips(cigartuples):
+    """
+    calculate the number of bases hard clipped at both ends, given cigartuples
+    of a contig
+    """
+    first_idx, last_idx = 0, len(cigartuples) - 1
+    left_hc, right_hc = 0, 0    # hc: hardclip
+    for k, (key, val) in enumerate(cigartuples):
+        if key == S.BAM_CHARD_CLIP:
+            if k == first_idx:
+                left_hc += val
+            elif k == last_idx:
+                right_hc += val
+    return left_hc, right_hc
+
+
 def do_fwd_ctg_lt_bdg(read, contig):
     """
     fwd: forwad, ctg: contig, lt: left-tailed, bdg: bridge
     """
     ctg_len_with_hc = contig.infer_query_length(always=True)
-    cts = contig.cigartuples
-    cts_len = len(cts)
-
-    left_hc, right_hc = 0, 0    # hc: hardclip
-    for k, (key, val) in enumerate(cts):
-        if key == S.BAM_CHARD_CLIP:
-            if k == 0:
-                left_hc += val
-            elif k == cts_len - 1:
-                right_hc += val
+    left_hc, right_hc = calc_hardclips(contig.cigartuples)
 
     pre_ctg_offset = read.reference_start
     if pre_ctg_offset < left_hc:
@@ -87,16 +94,7 @@ def do_fwd_ctg_lt_bdg(read, contig):
 def do_fwd_ctg_rt_bdg(read, contig):
     """rt: right-tailed"""
     ctg_len_with_hc = contig.infer_query_length(always=True)
-    cts = contig.cigartuples
-    cts_len = len(cts)
-
-    left_hc, right_hc = 0, 0    # hc: hardclip
-    for k, (key, val) in enumerate(contig.cigartuples):
-        if key == S.BAM_CHARD_CLIP:
-            if k == 0:
-                left_hc += val
-            elif k == cts_len - 1:
-                right_hc += val
+    left_hc, right_hc = calc_hardclips(contig.cigartuples)
 
     pre_ctg_offset = read.reference_end - 1
     if pre_ctg_offset < left_hc:
@@ -112,17 +110,7 @@ def do_fwd_ctg_rt_bdg(read, contig):
 
 def do_rev_ctg_lt_bdg(read, contig):
     ctg_len_with_hc = contig.infer_query_length(always=True)
-    cts = contig.cigartuples
-    cts_len = len(cts)
-
-    # left/right wst. contig
-    left_hc, right_hc = 0, 0
-    for k, (key, val) in enumerate(reversed(cts)):
-        if key == S.BAM_CHARD_CLIP:
-            if k == 0:
-                left_hc += val
-            elif k == cts_len - 1:
-                right_hc += val
+    left_hc, right_hc = calc_hardclips(list(reversed(contig.cigartuples)))
 
     pre_ctg_offset = read.reference_start
     if pre_ctg_offset < left_hc:
@@ -138,17 +126,7 @@ def do_rev_ctg_lt_bdg(read, contig):
 
 def do_rev_ctg_rt_bdg(read, contig):
     ctg_len_with_hc = contig.infer_query_length(always=True)
-    cts = contig.cigartuples
-    cts_len = len(cts)
-
-    # left/right wst. contig
-    left_hc, right_hc = 0, 0
-    for k, (key, val) in enumerate(reversed(cts)):
-        if key == S.BAM_CHARD_CLIP:
-            if k == 0:
-                left_hc += val
-            elif k == cts_len - 1:
-                right_hc += val
+    left_hc, right_hc = calc_hardclips(list(reversed(contig.cigartuples)))
 
     pre_ctg_offset = read.reference_end - 1
     if pre_ctg_offset < left_hc:
