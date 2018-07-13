@@ -44,7 +44,11 @@ def extract_bridge_and_link(contig, aligned_reads, ref_fa):
     for read in aligned_reads:
         if bridge.is_a_bridge_read(read):
             bdg_evid = bridge.analyze_bridge(contig, read, ref_fa, dd_bridge)
-            bridge.update_evidence(bdg_evid, dd_bridge)
+            if bdg_evid is not None:
+                bridge.update_evidence(bdg_evid, dd_bridge)
+            # else: if bdg_evid is None, the bridge read is likely to be be
+            # aligned to a chimeric contig, depending on which part of the
+            # chimeric contig, it may or may not support a bridge clv
         elif link.is_a_link_read(read):
             link_evid = link.analyze_link(contig, read)
             link.update_evidence(link_evid, dd_link)
