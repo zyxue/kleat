@@ -28,7 +28,7 @@ def get_args():
               'this file is processed from GTF annotation file')
     )
     parser.add_argument(
-        '-o', '--output', type=str, default='./output.tsv',
+        '-o', '--output', type=str, default='./output.csv',
         help='output tsv file'
     )
     parser.add_argument(
