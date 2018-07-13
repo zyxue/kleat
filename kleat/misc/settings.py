@@ -20,7 +20,7 @@ HEADER = [
     'evidence_type', 'contig_id', 'contig_len', 'contig_mapq', 'contig_is_hardclipped',
 
     # suffix
-    'num_suffix_reads', 'max_suffix_contig_tail_len', 'num_suffix_contigs',
+    'num_suffix_reads', 'suffix_contig_tail_len', 'num_suffix_contigs',
 
     # bridge
     'num_bridge_reads', 'max_bridge_read_tail_len', 'num_bridge_contigs',
@@ -33,6 +33,58 @@ HEADER = [
 
     'ctg_hex', 'ctg_hex_id', 'ctg_hex_pos',
     'ref_hex', 'ref_hex_id', 'ref_hex_pos'
+]
+
+
+# A dictionary for renaming some of the columns in the header after aggregating
+# polyA evidence to be more sensible, and less confusing
+FORMAT_OUTPUT_HEADER_DD = {     # dd just means dict
+    'contig_len': 'max_contig_len',
+    'contig_mapq': 'max_contig_mapq',
+    'suffix_contig_tail_len': 'max_suffix_contig_tail_len',
+    'contig_is_hardclipped': 'any_contig_is_hardclipped',
+    'contig_id': 'contig_ids',
+}
+
+# header in the output sorted in a intuitive way.
+OUTPUT_HEADER = [
+    'seqname',
+    'strand',
+    'clv',
+
+    'aclv',
+    'gene_name',
+    'gene_id',
+    'signed_dist_to_aclv',
+
+    'evidence_type',
+    'contig_ids',
+    'max_contig_len',
+    'max_contig_mapq',
+    'any_contig_is_hardclipped',
+
+    'num_suffix_contigs',
+    'num_suffix_reads',
+    'max_suffix_contig_tail_len',
+
+    'num_bridge_contigs',
+    'num_bridge_reads',
+    'max_bridge_read_tail_len',
+
+    'num_link_contigs',
+    'num_link_reads',
+
+    'num_blank_contigs',
+
+    'ctg_hex',
+    'ctg_hex_id',
+    'ctg_hex_pos',
+    'ctg_hex_dist',
+
+    'ref_hex',
+    'ref_hex_id',
+    'ref_hex_pos',
+    'ref_hex_dist',
 ]
 
 
@@ -105,7 +157,7 @@ COLS_TO_SUM = [
 COLS_TO_MAX = [
     'contig_len',
     'contig_mapq',
-    'max_suffix_contig_tail_len',
+    'suffix_contig_tail_len',
     'max_bridge_read_tail_len'
 ]
 

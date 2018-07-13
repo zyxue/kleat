@@ -82,7 +82,9 @@ def main():
     df_hex_dist = add_hex_dist(df_ant_dist)
 
     logger.info('Writing to {0}...'.format(output))
-    df_hex_dist.to_csv(output, index=False)
+    out_df = df_hex_dist.rename(columns=S.FORMAT_OUTPUT_HEADER_DD)
+    out_df = out_df[S.OUTPUT_HEADER]
+    out_df.to_csv(output, index=False)
 
     if not args.keep_pre_aggregation_tmp_file:
         os.remove(tmp_output)
