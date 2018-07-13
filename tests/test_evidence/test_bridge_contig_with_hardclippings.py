@@ -31,6 +31,31 @@ def test_do_do_fwd_ctg_lt_bdg_with_left_hard_clipping():
     assert bridge.do_fwd_ctg_lt_bdg(read, contig) == ('-', ctg_offset, tail_len)
 
 
+def test_do_do_fwd_ctg_lt_bdg_with_left_hard_clipping_passing_the_ctg_clv():
+    """
+      TTT
+        └ACG      <-left-tail read
+     \\\\\CGX     <-contig, the "\\\\\" part would appear in another position in genome, although the read is well aligned to it
+     01234567     <-contig coord
+         ^ctg_offset(won't be captured by this read)
+       ...CGX...  <-reference genome
+          789     <-genome coord
+          ^starting the contig2genome alignment
+
+    ctg_offset would be 4 (ctg_clv) - 5 (hardclip) = -1 < 0, so this read
+    won't capture the genome offset of the clv, but its mate potentially will.
+    """
+    read = MagicMock()
+    read.reference_start = 4
+    read.reference_end = 7
+    read.cigartuples = ((S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3))
+
+    contig = MagicMock()
+    contig.cigartuples = ((S.BAM_CHARD_CLIP, 5), (S.BAM_CMATCH, 3))
+
+    assert bridge.do_fwd_ctg_lt_bdg(read, contig) is None
+
+
 def test_do_fwd_ctg_lt_bdg_with_right_hard_clipping():
     """
     right hardclipping won't have an effect in such case

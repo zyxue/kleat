@@ -65,7 +65,9 @@ def do_fwd_ctg_lt_bdg(read, contig):
         if k == 0:
             if key == S.BAM_CHARD_CLIP:
                 hc += val
-    return '-', read.reference_start - hc, read.cigartuples[0][1]
+    ctg_offset = read.reference_start - hc
+    if ctg_offset >= 0:
+        return '-', read.reference_start - hc, read.cigartuples[0][1]
 
 
 def do_fwd_ctg_rt_bdg(read, contig):
