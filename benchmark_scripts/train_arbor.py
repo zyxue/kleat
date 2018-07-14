@@ -220,7 +220,8 @@ def main():
     test_sample_ids = args.test_sample_ids
 
     df_tr = load_df(train_sample_id)
-    df_tr_mapped = map_to_ref(df_tr, train_sample_id)
+    df_tr_ref = load_polya_seq_df(train_sample_id)
+    df_tr_mapped = map_to_ref(df_tr, df_tr_ref, args.map_cutoff)
 
     beg, end, step = args.max_depths
     max_depth_list = range(beg, end, step)
