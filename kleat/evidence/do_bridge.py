@@ -34,7 +34,8 @@ def do_fwd_ctg_lt_bdg(read, contig):
         return
     else:
         ctg_offset = pre_ctg_offset - left_hc
-        return '-', ctg_offset, read.cigartuples[0][1]
+        tail_len = read.cigartuples[0][1]
+        return '-', ctg_offset, tail_len
 
 
 def do_fwd_ctg_rt_bdg(read, contig):

@@ -6,7 +6,7 @@ from kleat.evidence.do_bridge import (
     do_fwd_ctg_lt_bdg, do_fwd_ctg_rt_bdg,
     do_rev_ctg_lt_bdg, do_rev_ctg_rt_bdg
 )
-from kleat.misc.apautils import gen_clv_key_tuple
+
 import kleat.misc.settings as S
 
 
@@ -38,6 +38,7 @@ def test_do_fwd_ctg_lt_bdg():
       └ACG    <-left-tail read
      XXACGXX  <-contig
      0123456  <-contig coord
+     0123456  <-genome coord offset to 0
        ^ctg_offset
     """
     mock_read = get_mock_read(
@@ -59,6 +60,7 @@ def test_do_fwd_ctg_lt_bdg_2():
     |└AATTCCGG   <-left-tail read
     XXAATTCCGGXX <-contig
     890123456789 <-contig coord
+    890123456789 <-genome coord offset to 0
       1
       ^ctg_offset
     """
@@ -80,6 +82,7 @@ def test_do_fwd_ctg_rt_bdg():
      CCG┘      <-right-tail read
     XXCCGXX    <-contig
     0123456    <-contig coord
+    0123456    <-genome coord offset to 0
        ^ctg_offset
     """
     mock_read = get_mock_read(
@@ -98,9 +101,9 @@ def test_do_rev_ctg_lt_bdg():
     """
            TTT
             |└ACG   <-left-tail read
-            XXXACGX <-contig
+            XXACGXX <-contig
             0123456 <-contig coord
-            6543210 <-reversed contig coord, i.e. gnm offset from right to left
+            6543210 <-reversed genome coord offset to 0
     ctg_offset^
     """
     mock_read = get_mock_read(
@@ -121,7 +124,7 @@ def test_do_rev_ctg_rt_bdg():
             CCG┘|  <-right-tail read
            XXCCGXX <-contig
            0123456 <-contig coord
-           6543210 <-reversed contig coord
+           6543210 <-reversed genome coord offset to 0
     ctg_offset^
     """
     mock_read = get_mock_read(
@@ -133,72 +136,3 @@ def test_do_rev_ctg_rt_bdg():
     ctg_offset = 3
     tail_len = 2
     assert do_rev_ctg_rt_bdg(mock_read, contig=contig) == ('-', ctg_offset, tail_len)
-
-
-def test_analyze_left_tail_bridge_read_aligned_to_a_forward_contig():
-    """
-    TTT
-     |└ACG   <-left-tail read
-     XXACGXX <-contig
-     0123456 <-contig coord
-       ^ctg_offset
-    """
-    r = MagicMock()
-    r.reference_start = 2
-    r.reference_end = 5
-    r.cigartuples = ((S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 3))
-    r.query_sequence = 'TTTACG'
-
-    c = MagicMock()
-    c.reference_name = 'chr1'
-    c.is_reverse = False
-    c.reference_start = 0
-    c.reference_end = 7
-    c.infer_query_length.return_value = 7
-    c.cigartuples = ((S.BAM_CMATCH, 7),)
-
-    ref_clv = 2                 # =ctg_offset because c.reference_end = 0
-    tail_len = 3
-
-    # just for the sake of fullfilling API requirement
-    mock_dd_bridge = bridge.init_evidence_holder()
-    clv_key = gen_clv_key_tuple('chr1', '-', ref_clv)
-    mock_dd_bridge['hexamer_tuple'][clv_key] = ('NA', -1, -1)
-
-    ref_fa = MagicMock()
-    assert bridge.analyze_bridge(c, r, ref_fa, mock_dd_bridge) == ('chr1', '-', ref_clv, tail_len, None)
-
-
-def test_analyze_right_tail_bridge_read_aligned_to_a_forward_contig():
-    """
-         AA
-      CCG┘|   <-right-tail read
-     XXCCGXX  <-contig
-     0123456  <-contig coord
-        ^ctg_offset
-    """
-    r = MagicMock()
-    r.reference_start = 1
-    r.reference_end = 4
-    r.cigartuples = ((S.BAM_CMATCH, 3), (S.BAM_CSOFT_CLIP, 2))
-    r.query_sequence = 'CCGAA'
-
-    c = MagicMock()
-    c.reference_name = 'chr1'
-    c.is_reverse = False
-    c.reference_start = 0
-    c.reference_end = 7
-    c.infer_query_length.return_value = 7
-    c.cigartuples = ((S.BAM_CMATCH, 7),)
-
-    ref_clv = 3                 # =ctg_offset because c.reference_end = 0
-    tail_len = 2
-
-    # just for the sake of fullfilling API requirement
-    mock_dd_bridge = bridge.init_evidence_holder()
-    clv_key = gen_clv_key_tuple('chr1', '+', ref_clv)
-    mock_dd_bridge['hexamer_tuple'][clv_key] = ('NA', -1, -1)
-
-    ref_fa = MagicMock()
-
-    assert bridge.analyze_bridge(c, r, ref_fa, mock_dd_bridge) == ('chr1', '+', ref_clv, tail_len, None)
