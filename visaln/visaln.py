@@ -186,17 +186,9 @@ def calc_xlim_pairs(contig, predicted_clv):
 
     df_xlims = pd.DataFrame(xlim_pairs, columns=['xmin', 'xmax'])
     df_xlims['span'] = df_xlims['xmax'] - df_xlims['xmin']
+    df_xlims['cover_prd_clv'] = df_xlims.apply(
+        lambda row: row.xmin <= predicted_clv < row.xmax, axis=1)
     return df_xlims
-    # max_span = df_xlims.span.max()
-
-    # out_xlim_pairs = []
-    # for xl in xlim_pairs:
-    #     spn = xl[1] - xl[0]
-    #     pad = (max_span - spn) / 2
-    # #     print(f'max_span spn, pad, xl[0], xl[1], {spn}, {max_span}, {pad}, {xl[0]}, {xl[1]}')
-    #     nxmin, nxmax = xl[0] - pad, xl[1] + pad
-    #     ax.text(0.6, 0.9, f'{int(np.floor(nxmin))} - {int(np.ceil(nxmax))}', transform=ax.transAxes)
-    #     ax.set_xlim(nxmin, nxmax)
 
 
 def calc_num_skips(contig):
