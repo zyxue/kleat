@@ -8,7 +8,6 @@ import subprocess
 
 
 import pandas as pd
-from tqdm import tqdm
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 
 from ml_utils import load_polya_seq_df, map_clvs, compare, KARBOR_FEATURE_COLS
@@ -63,27 +62,13 @@ def predict(df_te_mapped, clf):
     return out_df
 
 
-# TODO: this is a common pattern to parallelize groupby -> apply operation,
-# apply the patter to polyA evidence aggregation later
-def prepare_args_for_cluster(df, groupby_cols):
-    logging.info('grouping by {0}'.format(groupby_cols))
-    iters = tqdm(df.groupby(groupby_cols))
-    grps = []
-    for key, grp in iters:
-        # Heads-up: different from the argument passed to groupby(...).apply(),
-        # this grp would have groupby_cols still in it
-        grps.append(grp)
-    return grps
-
-
-def cluster_clv_sites_wrapper(args):
-    df, cutoff = args
-    return cluster_clv_sites(df, cutoff)
-
-
-def cluster_clv(df, cutoff=20, num_cpus=24):
+def cluster_clv(df, cutoff=20):
     """
-    :param num_cpus: 24 is the number of large chromosomes in human
+    Serial version, as tests are already paralleled, otherwise
+
+        AssertionError: daemonic processes are not allowed to have children
+
+    see max_recall_analyiss.cluster_clv_parallel for a parallel version
 
     return clustered clv in new dataframe with three columns:
 
@@ -91,19 +76,9 @@ def cluster_clv(df, cutoff=20, num_cpus=24):
     - strand
     - clv, i.e. the representative mode clv for each cluster
     """
-    grps = prepare_args_for_cluster(df, ['seqname', 'strand'])
-    grps = [(g, 20) for g in grps]  # add cutoff
-
-    with multiprocessing.Pool(num_cpus) as p:
-        print('clustering clvs in parallel) using {0} CPUs ...'.format(num_cpus))
-        res = p.map(cluster_clv_sites_wrapper, grps)
-
-    logging.info('concatenating clustered sub dataframes ...')
-    df_res = pd.concat(res)
-
-    logging.info('dropping duplicates after clustering ...')
-    dedupped = df_res[['seqname', 'strand', 'mode_clv']].drop_duplicates()
-
+    grped = df.groupby(['seqname', 'strand'])
+    applied = grped.apply(cluster_clv_sites, cutoff)
+    dedupped = applied[['seqname', 'strand', 'mode_clv']].drop_duplicates()
     out = dedupped.rename(columns={'mode_clv': 'clv'}).reset_index(drop=True)
     return out
 
