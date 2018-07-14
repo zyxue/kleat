@@ -9,7 +9,7 @@ of a reference genome
 from Bio import Seq
 
 import kleat.misc.settings as S
-from kleat.misc.apautils import fetch_seq, infer_query_sequence
+from kleat.misc import apautils
 from kleat.hexamer import xseq_plus, xseq_minus
 
 
@@ -101,7 +101,7 @@ def search_ref_genome(refseq, chrom, clv, strand, window=50):
     return: a tuple of (hexamer, hexamer id (indicates strength), 0-based hexamer location)
     """
     beg, end = gen_coords(clv, strand, window)
-    seq = fetch_seq(refseq, chrom, beg, end)
+    seq = apautils.fetch_seq(refseq, chrom, beg, end)
     # -1 as it's 0-based
     res = search_hexamer(seq, strand, beg, end - 1)
     return res
@@ -117,7 +117,13 @@ def extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv, window=50):
     :param ctg_clv: the position of clv in contig coordinate.
     """
     seqname = contig.reference_name
-    ctg_seq = infer_query_sequence(contig, always=True)
+
+    # TODO: this can be done in one step, but needs update a lot of tests
+    if apautils.is_hardclipped(contig):
+        ctg_seq = apautils.infer_query_sequence(contig, always=True)
+    else:
+        ctg_seq = contig.query_sequence
+
     cigartuples = contig.cigartuples
 
     args = cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window
