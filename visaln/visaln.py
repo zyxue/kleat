@@ -35,7 +35,7 @@ CIGAR_EVENTS_HEIGHT_DD = {
 def make_line(ax, cx, cy, width, color='black'):
     xs = [cx, cx + width]
     ys = [cy, cy]
-    line = ax.plot(xs, ys, ':', color=color)
+    line = ax.plot(xs, ys, '-', color=color)
     return line
 
 
@@ -126,30 +126,36 @@ def get_abs_start(aln):
 
 
 def get_abs_end(aln):
+    "a point always refer to the index"
     cx = aln.reference_end
     last_idx = len(aln.cigartuples) - 1
     # bring to the absolute beginning
     for k, (key, val) in enumerate(aln.cigartuples):
         if k == last_idx and key in [S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
-            cx += val
+            cx += val - 1
     return cx
 
 
-def calc_xlim(contig, nth_skip):
+def calc_xlim(contig, ith_skip, jth_skip, predicted_clv, padding=None):
     """
     calculate the proper xlim boundries for the region between nth and nth+1 skip regions
-    """
-    assert nth_skip >= 0
 
-    total_span = contig.reference_end - contig.reference_start
-    skip_buffer = total_span * 0.002  # use this number to replace skip span
-    # print(f'skip buffer: {int(skip_buffer)}')
+    :param padding: pad the beginning and ending around an interested region
+    """
+    assert ith_skip >= 0
+    assert jth_skip > ith_skip
+
+    if padding is None:
+        total_span = contig.reference_end - contig.reference_start
+        # use this number to replace skip span
+        padding = total_span * 0.002
 
     # init
-    x0 = get_abs_start(contig) - 150
-    x1 = get_abs_end(contig) + 150
+    x0 = get_abs_start(contig) - padding
+    x1 = get_abs_end(contig) + padding
 
-    res = get_abs_start(contig)
+    pos = get_abs_start(contig)
+
     skip_count = 0
     for (key, val) in contig.cigartuples:
         if key == S.BAM_CREF_SKIP:
@@ -157,23 +163,25 @@ def calc_xlim(contig, nth_skip):
 
         if key == S.BAM_CREF_SKIP:
             # print(skip_count, end=', ')
-            if skip_count == nth_skip - 1:
-                x0 = res + val - skip_buffer
-            elif skip_count == nth_skip:
-                x1 = res + skip_buffer
+            if skip_count == ith_skip:
+                x0 = pos + val - padding
+                if pos < predicted_clv and x0 >= predicted_clv:
+                    x0 = predicted_clv - padding  # 100 is padding
+            elif skip_count == jth_skip:
+                x1 = pos + padding - 1
                 break
 
         if key not in [S.BAM_CINS]:
-            res += val
+            pos += val
     return int(np.floor(x0)), int(np.ceil(x1))
 
 
-def calc_xlim_pairs(contig):
+def calc_xlim_pairs(contig, predicted_clv):
     """calculate xlim pairs for each region in between two skip regions"""
     xlim_pairs = []
     num_skips = calc_num_skips(contig)
     for k in range(num_skips + 1):
-        xlim = calc_xlim(contig, k + 1)
+        xlim = calc_xlim(contig, k, k + 1, predicted_clv)
         xlim_pairs.append(xlim)
 
     df_xlims = pd.DataFrame(xlim_pairs, columns=['xmin', 'xmax'])
