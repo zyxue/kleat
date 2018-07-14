@@ -9,7 +9,7 @@ of a reference genome
 from Bio import Seq
 
 import kleat.misc.settings as S
-from kleat.misc.apautils import fetch_seq
+from kleat.misc.apautils import fetch_seq, infer_query_sequence
 from kleat.hexamer import xseq_plus, xseq_minus
 
 
@@ -117,7 +117,7 @@ def extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv, window=50):
     :param ctg_clv: the position of clv in contig coordinate.
     """
     seqname = contig.reference_name
-    ctg_seq = contig.query_sequence
+    ctg_seq = infer_query_sequence(contig, always=True)
     cigartuples = contig.cigartuples
 
     args = cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, window

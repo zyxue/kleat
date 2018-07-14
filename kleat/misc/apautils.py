@@ -56,6 +56,27 @@ def is_hardclipped(contig):
     return False
 
 
+# TODO: test this
+def infer_query_sequence(contig, always=False):
+    """
+    :param always: mimic pysam api for infer_query_length, by setting always to
+    True, it will try to infer sequence with hardclipped region based on XH
+    tag. XH tag must exist, otherwise, it would fail loudly
+
+    http://pysam.readthedocs.io/en/latest/api.html#pysam.AlignedSegment.infer_query_length
+
+    """
+    res = contig.query_sequence
+    if always:
+        num_cigars = len(contig.cigartuples)
+        for k, (key, val) in enumerate(contig.cigartuples):
+            if k == 0 and key == S.BAM_CHARD_CLIP:
+                res = contig.get_tag('XH') + res
+            elif k == num_cigars - 1:
+                res += contig.get_tag('XH')
+    return res
+
+
 def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
     """Calculate the offset needed for inferring the clv in genomic coordinate
 
