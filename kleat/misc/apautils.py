@@ -1,4 +1,13 @@
+from Bio import Seq
+
 import kleat.misc.settings as S
+
+
+def reverse_complement(seq):
+    return str(Seq.Seq(seq).reverse_complement().upper())
+    # TODO: if prefer to drop dependency on biopython, test this function
+    # thoroughly
+    # return seq.translate(COMPLEMENT_DICT)[::-1]
 
 
 def gen_clv_key_tuple(seqname, strand, clv):

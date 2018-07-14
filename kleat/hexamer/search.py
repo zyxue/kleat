@@ -6,18 +6,11 @@ version, it search for hexamer inside a given sequence (e.g contig) independent
 of a reference genome
 """
 
-from Bio import Seq
 
 import kleat.misc.settings as S
+from kleat.misc.apautils import reverse_complement
 from kleat.misc import apautils
 from kleat.hexamer import xseq_plus, xseq_minus
-
-
-def reverse_complement(seq):
-    return str(Seq.Seq(seq).reverse_complement().upper())
-    # TODO: if prefer to drop dependency on biopython, test this function
-    # thoroughly
-    # return seq.translate(COMPLEMENT_DICT)[::-1]
 
 
 def gen_coords(clv, strand, window=50):
