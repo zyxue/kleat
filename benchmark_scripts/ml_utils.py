@@ -5,29 +5,31 @@ import pandas as pd
 
 
 KARBOR_FEATURE_COLS = [
-    'contig_len',
-    'contig_mapq',
+    'signed_dist_to_aclv',
+    # 'abs_dist_to_aclv',
+
+    'max_contig_len',
+    'max_contig_mapq',
+    'any_contig_is_hardclipped',
+
+    'num_suffix_contigs', 'num_bridge_contigs', 'num_link_contigs',
+    'num_blank_contigs', 'num_total_contigs',
+
     'num_suffix_reads',
     'max_suffix_contig_tail_len',
-    'num_suffix_contigs',
 
     'num_bridge_reads',
     'max_bridge_read_tail_len',
-    'max_bridge_read_tail_len',
 
     'num_link_reads',
-    'num_link_contigs',
-
-    'num_blank_contigs',
-
-    'signed_dist_to_aclv',
-    # 'abs_dist_to_aclv',
 
     # PAS hexamer shown on contig
     'ctg_AATAAA', 'ctg_ATTAAA', 'ctg_AGTAAA', 'ctg_TATAAA',
     'ctg_CATAAA', 'ctg_GATAAA', 'ctg_AATATA', 'ctg_AATACA',
     'ctg_AATAGA', 'ctg_AAAAAG', 'ctg_ACTAAA', 'ctg_AAGAAA',
     'ctg_AATGAA', 'ctg_TTTAAA', 'ctg_AAAACA', 'ctg_GGGGCT', 'ctg_NA',
+
+    'ref_hex_dist',          # ideally use 'ctg_hex_dist', but it's still buggy
 
     # # PAS hexamer shown on reference genome
     # 'ref_AATAAA', 'ref_ATTAAA', 'ref_AGTAAA', 'ref_TATAAA',
