@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import MagicMock
+from unittest.mock import patch
 
 import kleat.misc.settings as S
 from kleat.hexamer.search import extract_seq
@@ -142,7 +143,8 @@ class TestExtractSeqForSoftClippedSeq(unittest.TestCase):
 
 class TestExtractSeqForHardClippedSeq(unittest.TestCase):
     """The same to the above test, but replaced BAM_CSOFT_CLIP with BAM_CHARD_CLIP"""
-    def test_extract_seq_with_starting_softclip(self):
+    @patch('kleat.hexamer.search.apautils')
+    def test_extract_seq_with_starting_softclip(self, mock_apautils):
         """
         TT
          └CAA
@@ -151,11 +153,12 @@ class TestExtractSeqForHardClippedSeq(unittest.TestCase):
         """
         strand = '-'
         contig = MagicMock()
-        contig.query_sequence = 'TTCCA'
+        mock_apautils.infer_query_sequence.return_value = 'TTCCA'
         contig.cigartuples = ((S.BAM_CHARD_CLIP, 2), (S.BAM_CMATCH, 4))
         assert extract_seq(contig, strand, ref_clv=8, ref_fa=MagicMock(), ctg_clv=2) == 'CCA'
 
-    def test_extract_seq_with_ending_softclip(self):
+    @patch('kleat.hexamer.search.apautils')
+    def test_extract_seq_with_ending_softclip(self, mock_apautils):
         """
            AA
         GGG┘|
@@ -163,11 +166,12 @@ class TestExtractSeqForHardClippedSeq(unittest.TestCase):
         234567 <-genome coord
         """
         contig = MagicMock()
-        contig.query_sequence = 'GGGAA'
+        mock_apautils.infer_query_sequence.return_value = 'GGGAA'
         contig.cigartuples = ((S.BAM_CMATCH, 3), (S.BAM_CHARD_CLIP, 2))
         assert extract_seq(contig, strand='+', ref_clv=7, ref_fa=MagicMock(), ctg_clv=2) == 'GGG'
 
-    def test_extract_seq_with_both_ends_clipped(self):
+    @patch('kleat.hexamer.search.apautils')
+    def test_extract_seq_with_both_ends_clipped(self, mock_apautils):
         """
         TTT   AA
         ||└CCC┘|
@@ -177,6 +181,6 @@ class TestExtractSeqForHardClippedSeq(unittest.TestCase):
            ^clv
         """
         contig = MagicMock()
-        contig.query_sequence = 'TTTCCCAA'
+        mock_apautils.infer_query_sequence.return_value = 'TTTCCCAA'
         contig.cigartuples = ((S.BAM_CHARD_CLIP, 3), (S.BAM_CMATCH, 3), (S.BAM_CHARD_CLIP, 2))
         assert extract_seq(contig, strand='-', ref_clv=12, ref_fa=MagicMock(), ctg_clv=3) == 'CCC'

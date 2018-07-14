@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, patch
 
 import kleat.misc.settings as S
 from kleat.hexamer.search import extract_seq
@@ -163,7 +163,8 @@ def test_extract_seq_for_bridge_with_insertion():
     assert extract_seq(**kw) == 'CGGTAGCTC'
 
 
-def test_extract_seq_with_hardclipped_region():
+@patch('kleat.hexamer.search.apautils')
+def test_extract_seq_with_hardclipped_region(mock_apautils):
     """
              TT
              |└GXXX  <-bridge read
@@ -177,7 +178,7 @@ def test_extract_seq_with_hardclipped_region():
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
-    ctg.query_sequence = 'ATTCG'
+    mock_apautils.infer_query_sequence.return_value = 'ATTCG'
     ctg.cigartuples = ((S.BAM_CMATCH, 5), (S.BAM_CHARD_CLIP, 3))
 
     ref_fa = MagicMock()

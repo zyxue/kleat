@@ -4,10 +4,10 @@ import unittest
 import pysam
 
 from kleat.hexamer.search import (
-    fetch_seq,
     gen_coords,
     search_ref_genome,
 )
+from kleat.misc.apautils import fetch_seq
 
 
 # tests here are about search PAS hexamer on the reference genome
