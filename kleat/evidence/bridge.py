@@ -64,8 +64,7 @@ def gen_hex_tuple(contig, strand, ref_clv, ref_fa, ctg_clv, dd_bridge):
     seqname = contig.reference_name
     clv_key = apautils.gen_clv_key_tuple(seqname, strand, ref_clv)
     if dd_bridge['hexamer_tuple'][clv_key] is None:  # do search
-        hex_src_seq = extract_seq(
-            contig, strand, ref_clv, ref_fa, ctg_clv)
+        hex_src_seq = extract_seq(contig, strand, ref_clv, ref_fa, ctg_clv)
 
         ctg_hex_tuple = search(strand, ref_clv, hex_src_seq)
         if ctg_hex_tuple is None:
