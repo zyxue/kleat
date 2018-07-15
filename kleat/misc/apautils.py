@@ -86,7 +86,7 @@ def infer_query_sequence(contig, always=False):
     return res
 
 
-def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_side='left'):
+def calc_genome_offset(cigartuples, ctg_offset, tail_side='left'):
     """Calculate the offset needed, considering the skipped region caused by
     intron or deletion, for inferring the clv in genomic coordinate
 
@@ -108,44 +108,42 @@ def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_side='left'):
     insertion when it's polyT; otherwise, use the position of the rightmost
     base.
     """
-    cur_ctg_ofs = 0             # curent offset in contig coordinate
-    cur_gnm_ofs = 0             # current offset in genome coordinate
+    ctg_pos = 0             # current position in contig coordinate
+    gnm_pos = 0             # current position in genome coordinate
 
-    for key, val in ctg_cigartuples:
+    for key, val in cigartuples:
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
             ctg_offset -= val
 
-        elif key == S.BAM_CMATCH or key == S.BAM_CEQUAL or key == S.BAM_CDIFF:
-            cur_ctg_ofs += val
-            if cur_ctg_ofs >= ctg_offset:
-                delta = val - (cur_ctg_ofs - ctg_offset)
-                cur_gnm_ofs += delta
+        elif key == S.BAM_CMATCH:
+            ctg_pos += val
+
+            if ctg_pos > ctg_offset:
+                delta = ctg_pos - ctg_offset
+                gnm_pos = gnm_pos + val - delta
                 break
-            cur_gnm_ofs += val
+            else:
+                gnm_pos = gnm_pos + val
 
         elif key == S.BAM_CREF_SKIP or key == S.BAM_CDEL:
-            cur_gnm_ofs += val
+            gnm_pos += val
 
         elif key == S.BAM_CINS:
-            # these don't consume reference coordinates, but consumes contig
-            # coordinates, so needs subtraction
-            ctg_offset -= val
-            if cur_ctg_ofs >= ctg_offset:
-                # this means that the clv happens to be in the middle of the
-                # inserted sequence
+            ctg_pos += val
+            if ctg_pos > ctg_offset:
                 if tail_side == 'left':
+                    gnm_pos -= 1
                     break
                 else:
-                    # jump to the next position in genome coordinate
-                    cur_gnm_ofs += 1
                     break
         else:
-            err_msg = ('Not sure how to deal with S.BAM_CPAD & BAM_CBACK '
-                       'cigar value yet. Please report. '
+            err_msg = (' S.BAM_CEQUA, S.BAM_CDIFF & S.BAM_CPAD & BAM_CBACK '
+                       'cigar value are note implemented yet. Please report. '
                        'Your cigar: ({0}, {1})\n'
                        '{2}'.format(key, val, S.CIGAR_TABLE))
             raise NotImplementedError(err_msg)
-    return cur_gnm_ofs
+    gnm_offset = gnm_pos
+    return gnm_offset
 
 
 """
