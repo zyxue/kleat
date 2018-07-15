@@ -92,12 +92,11 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
     res_seq = ''
     for idx, (key, val) in enumerate(reversed(cigartuples)):
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
-            if idx == 0:        # meaning its the upstream clip
-                ce -= val
-                fe -= val
-            elif idx == len(cigartuples) - 1:
+            if ce <= ctg_clv:
                 seq = ctg_seq[ce - val:ce]
                 res_seq = seq + res_seq
+            ce -= val
+            fe -= val
 
         elif key == S.BAM_CMATCH:
             ce, fe, seq = do_match(ce, fe, val, ctg_seq, ctg_clv)
@@ -122,7 +121,7 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
             raise NotImplementedError(err)
 
         if fe <= target_fe:
-            res_seq = res_seq[target_fe - fe:]
+            res_seq = res_seq[target_fe - fe + 1:]
             break
 
     # remove placeholders for deletion
