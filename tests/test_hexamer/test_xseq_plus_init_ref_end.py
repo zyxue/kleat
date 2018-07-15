@@ -309,3 +309,21 @@ def test_bridge_init_ends_with_hardclip_after_clv():
 
     assert init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq) == 18
     assert init_ctg_end(ctg_seq) == 10
+
+
+def test_link_init_ends():
+    """
+          TT...AA
+       ATCGAC    <-link contig
+       0123456   <-contig coord
+            ^ctg_clv
+    ...7890123... <-genome coord
+          1 ^ref_clv
+    """
+    ref_clv = 12
+    cigartuples = ((S.BAM_CMATCH, 6),)
+    ctg_clv = 5
+    ctg_seq = 'ATCGAC'
+
+    assert init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq) == 13
+    assert init_ctg_end(ctg_seq) == 6
