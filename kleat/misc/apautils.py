@@ -86,20 +86,26 @@ def infer_query_sequence(contig, always=False):
     return res
 
 
-def calc_genome_offset(cigartuples, ctg_offset, tail_side='left'):
-    """Calculate the offset needed, considering the skipped region caused by
-    intron or deletion, for inferring the clv in genomic coordinate
+def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
+    """Calculate the genome offset based on clv in the contig coordinate and the
+    contig cigars when it's aligned to the reference genome.
 
-    If the contig is reversed, the ctg_offset and tail_base should be based on
-    the flipped contig. In other words, ctg_offset is on the same direction of
-    the reference genome. see corresponding test cases for detail.
+    Note the ctg_clv and tail_base should be in contig coordinate in the same
+    direction of the reference genome. If the contig is reversed when aligned
+    to the genome, the contig should be flipped to derive its corresponding
+    ctg_clv and tail_base serving this function. see corresponding test cases
+    for detail.
 
-    :param ctg_offset: contig offset, the offset calculated based on clv in
-    contig coordinate. similar to genome offset, it doesn't include clipped
-    regions; but different to genome offset, it considers indels, which would
-    inc/dec the offset compared to genome offset. both genome_offset/ctg_offset
-    is always forward.
+    ctg_clv is independent of the reference genome except that its direction
+    needs to be the same as the reference genome. When the contig is aligned to
+    it may include softclip, hardclip, skips (e.g introns) and indels, these
+    regions are properly dealt by this function to obtain an genome offset that
+    is directly addable to the genome coordinate.
 
+    For example, This genome offset is needed for inferring the clv in genomic
+    coordinate, i.e. gnm_clv = ctg_clv + gnm_offset
+
+    :param ctg_clv: clv in contig coordinate.
     :param tail_side: T or A, meaning the tail is polyA or polyT. If not
     specified, default to T. This parameter is only used when the clv happens
     to within a insertion. In such case, the exact coordinate of the clv in the
@@ -107,19 +113,20 @@ def calc_genome_offset(cigartuples, ctg_offset, tail_side='left'):
     strategy is to use the position of leftmost genome base around the
     insertion when it's polyT; otherwise, use the position of the rightmost
     base.
+
     """
     ctg_pos = 0             # current position in contig coordinate
     gnm_pos = 0             # current position in genome coordinate
 
     for key, val in cigartuples:
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
-            ctg_offset -= val
+            ctg_clv -= val
 
         elif key == S.BAM_CMATCH:
             ctg_pos += val
 
-            if ctg_pos > ctg_offset:
-                delta = ctg_pos - ctg_offset
+            if ctg_pos > ctg_clv:
+                delta = ctg_pos - ctg_clv
                 gnm_pos = gnm_pos + val - delta
                 break
             else:
@@ -130,7 +137,7 @@ def calc_genome_offset(cigartuples, ctg_offset, tail_side='left'):
 
         elif key == S.BAM_CINS:
             ctg_pos += val
-            if ctg_pos > ctg_offset:
+            if ctg_pos > ctg_clv:
                 if tail_side == 'left':
                     gnm_pos -= 1
                     break
