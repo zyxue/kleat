@@ -13,7 +13,6 @@ def do_match(ctg_e, ref_e, cigar_val, ctg_seq, ctg_clv):
     :param ref_e: reference end index
     :param ctg_clv: cleavage site in contig coordinate
     """
-
     ctg_b = ctg_e - cigar_val
     ref_b = ref_e - cigar_val
 
@@ -50,6 +49,10 @@ def do_skip(ref_e, cigar_val, ref_fa, seqname, ref_clv):
     return next_ref_e, seq_to_add
 
 
+def init_ctg_end(ctg_seq):
+    return len(ctg_seq)
+
+
 def init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq):
     """
     Initialize the end index in genome coordinate by calculating the offset
@@ -57,12 +60,19 @@ def init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq):
 
     comparing to the minus corresponding function, there is one additional
     argument neeed, i.e. `ctg_seq`
+
+    :param ctg_seq: should include soft/hardclipped region if it's clipped
     """
-    cigartuples = reversed(cigartuples)
-    ctg_clv = len(ctg_seq) - ctg_clv     # from_the_right
+    cigartuples = list(reversed(cigartuples))
+    ctg_clv = len(ctg_seq) - ctg_clv  # from_the_right
 
     # TODO: left may not matter in such case
     offset = calc_genome_offset(cigartuples, ctg_clv, 'left')
+
+    cgr = cigartuples[0]
+    # needs to add back clipped regions here
+    if cgr[0] == S.BAM_CSOFT_CLIP or cgr[0] == S.BAM_CHARD_CLIP:
+        offset += cgr[1]
     return ref_clv + offset
 
 
@@ -75,17 +85,19 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
 
     use fe instead of re because re is a Python module for regex
     """
-
-    ce = len(ctg_seq)
-    fe = raw_fe = init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq)
-    target_fe = raw_fe - window
+    ce = init_ctg_end(ctg_seq)
+    fe = init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq)
+    target_fe = max(0, ref_clv - window)
 
     res_seq = ''
     for idx, (key, val) in enumerate(reversed(cigartuples)):
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
             if idx == 0:        # meaning its the upstream clip
                 ce -= val
-            # else, downstream clip should just be ignored
+                fe -= val
+            elif idx == len(cigartuples) - 1:
+                seq = ctg_seq[ce - val:ce]
+                res_seq = seq + res_seq
 
         elif key == S.BAM_CMATCH:
             ce, fe, seq = do_match(ce, fe, val, ctg_seq, ctg_clv)
