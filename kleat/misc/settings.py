@@ -1,7 +1,7 @@
 from collections import namedtuple
 
 
-# http://pysam.readthedocs.io/en/latest/api.html#pysam.AlignedSegment.cigartuples
+CIGAR_TABLE = """# http://pysam.readthedocs.io/en/latest/api.html#pysam.AlignedSegment.cigartuples
 BAM_CMATCH = 0                  # M
 BAM_CINS = 1                    # I
 BAM_CDEL = 2                    # D
@@ -12,7 +12,9 @@ BAM_CPAD = 6                    # P
 BAM_CEQUAL = 7                  # =
 BAM_CDIFF = 8                   # X
 BAM_CBACK = 9                   # B
+"""
 
+exec(CIGAR_TABLE)
 
 HEADER = [
     'seqname', 'strand', 'clv',

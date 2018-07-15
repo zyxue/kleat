@@ -86,59 +86,65 @@ def infer_query_sequence(contig, always=False):
     return res
 
 
-def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_direction):
-    """Calculate the offset needed for inferring the clv in genomic coordinate
+def calc_genome_offset(ctg_cigartuples, ctg_offset, tail_side='left'):
+    """Calculate the offset needed, considering the skipped region caused by
+    intron or deletion, for inferring the clv in genomic coordinate
 
-    Offset needs taking into oconsideration the skipped region caused by intron
-    or deletion
+    If the contig is reversed, the ctg_offset and tail_base should be based on
+    the flipped contig. In other words, ctg_offset is on the same direction of
+    the reference genome. see corresponding test cases for detail.
 
-    :param ctg_offset: the offset calculated based on clv in contig coordinate.
-    ctg_offset is always forward.
+    :param ctg_offset: contig offset, the offset calculated based on clv in
+    contig coordinate. similar to genome offset, it doesn't include clipped
+    regions; but different to genome offset, it considers indels, which would
+    inc/dec the offset compared to genome offset. both genome_offset/ctg_offset
+    is always forward.
 
-    If the contig is forward, ctg_offset is equal to ctg_clv, i.e. clv in ctg
-    coordinate.
-
-    If the contig is reversed, its value is still based on forward coordinates
-    of this contig. See the following test cases for details in test_bridge.py
-
-    test_do_forwad_contig_left_tail_brdige_read()
-    test_do_forwad_contig_right_tail_brdige_read()
-    test_do_reverse_contig_left_tail_brdige_read()
-    test_do_reverse_contig_right_tail_brdige_read()
+    :param tail_side: T or A, meaning the tail is polyA or polyT. If not
+    specified, default to T. This parameter is only used when the clv happens
+    to within a insertion. In such case, the exact coordinate of the clv in the
+    genome is not available, but trying to be as accurate as possible, one
+    strategy is to use the position of leftmost genome base around the
+    insertion when it's polyT; otherwise, use the position of the rightmost
+    base.
     """
     cur_ctg_ofs = 0             # curent offset in contig coordinate
     cur_gnm_ofs = 0             # current offset in genome coordinate
+
     for key, val in ctg_cigartuples:
-        if key in [S.BAM_CMATCH, S.BAM_CEQUAL, S.BAM_CDIFF]:
+        if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
+            ctg_offset -= val
+
+        elif key == S.BAM_CMATCH or key == S.BAM_CEQUAL or key == S.BAM_CDIFF:
             cur_ctg_ofs += val
             if cur_ctg_ofs >= ctg_offset:
                 delta = val - (cur_ctg_ofs - ctg_offset)
                 cur_gnm_ofs += delta
                 break
             cur_gnm_ofs += val
-        elif key in [S.BAM_CREF_SKIP, S.BAM_CDEL]:
+
+        elif key == S.BAM_CREF_SKIP or key == S.BAM_CDEL:
             cur_gnm_ofs += val
-        elif key in [S.BAM_CINS, S.BAM_CSOFT_CLIP, S.BAM_CHARD_CLIP]:
+
+        elif key == S.BAM_CINS:
             # these don't consume reference coordinates, but consumes contig
             # coordinates, so needs subtraction
             ctg_offset -= val
             if cur_ctg_ofs >= ctg_offset:
                 # this means that the clv happens to be in the middle of the
                 # inserted sequence
-                if tail_direction == 'left':
+                if tail_side == 'left':
                     break
-                elif tail_direction == 'right':
+                else:
                     # jump to the next position in genome coordinate
                     cur_gnm_ofs += 1
                     break
-                else:
-                    err_msg = ('tail_direction must be "left" or "right", '
-                               'but received {0}'.format(tail_direction))
-                    raise ValueError(err_msg)
         else:
-            pass
-            # Not sure about S.BAM_CPAD & BAM_CBACK,
-            # please let me know if you do
+            err_msg = ('Not sure how to deal with S.BAM_CPAD & BAM_CBACK '
+                       'cigar value yet. Please report. '
+                       'Your cigar: ({0}, {1})\n'
+                       '{2}'.format(key, val, S.CIGAR_TABLE))
+            raise NotImplementedError(err_msg)
     return cur_gnm_ofs
 
 
