@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import kleat.misc.settings as S
 from kleat.hexamer.search import extract_seq
@@ -233,27 +233,3 @@ def test_extract_seq_for_bridge_with_insertion():
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=7)
     assert extract_seq(**kw) == 'GAAGCGGT'
-
-
-@patch('kleat.hexamer.search.apautils')
-def test_extract_seq_with_hardclipped_region(mock_apautils):
-    """
-           AA
-         TC┘|      <-bridge read
-    \\\ATTCGT      <-bridge contig (hardcipped, could be chimeric https://www.biostars.org/p/109333/)
-       0123456     <-contig coord
-        cc^  ^ice
-    ...ATTCGXXX... <-genome
-       567890123   <-genome coord
-          | 1|
-        rc^  ^ire
-    """
-    ctg = MagicMock()
-    ctg.reference_name = 'chr2'
-    mock_apautils.infer_query_sequence.return_value = 'ATTCGT'
-    ctg.cigartuples = ((S.BAM_CHARD_CLIP, 3), (S.BAM_CMATCH, 6))
-
-    ref_fa = MagicMock()
-    ref_fa.get_reference_length.return_value = 100
-    kw = dict(contig=ctg, strand='+', ref_clv=8, ref_fa=ref_fa, ctg_clv=3)
-    assert extract_seq(**kw) == 'ATTC'
