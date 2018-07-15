@@ -74,10 +74,10 @@ def test_extract_seq_with_2_base_insertion():
               GA
          TTT  ┬       <-tail of suffix contig
          ||└AC TCG    <-suffix contig
-         01234 567    <-contig coord
+         01234 5678   <-contig coord
       ici^  ^ctg_clv
          XXXXX XXX    <-genome
-         456789012... <-genome coord
+         45678 9012... <-genome coord
             |  1
             ^ref_clv/iri
     """
@@ -86,7 +86,7 @@ def test_extract_seq_with_2_base_insertion():
     ctg.query_sequence = 'TTTACGATCG'
     ctg.cigartuples = (
         (S.BAM_CSOFT_CLIP, 3),
-        (S.BAM_CMATCH, 2), 
+        (S.BAM_CMATCH, 2),
         (S.BAM_CINS, 2),
         (S.BAM_CMATCH, 3),
     )
@@ -95,7 +95,7 @@ def test_extract_seq_with_2_base_insertion():
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'ACGATCG'
-    assert extract_seq(window=3, **kw) == 'ACG'
+    assert extract_seq(window=3, **kw) == 'ACGAT'
 
 
 def test_extract_seq_with_skipped_region_and_insertion_and_mismatches():
@@ -128,8 +128,9 @@ def test_extract_seq_with_skipped_region_and_insertion_and_mismatches():
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'AGCGATAG'
     ref_fa.fetch.assert_called_with('chr1', 8, 9)
+
     assert extract_seq(window=1, **kw) == 'A'
-    assert extract_seq(window=5, **kw) == 'AGCGA'
+    assert extract_seq(window=5, **kw) == 'AGCGATA'
 
 
 def test_extract_seq_with_skipped_region_and_indels_and_mismatches():
@@ -138,7 +139,7 @@ def test_extract_seq_with_skipped_region_and_indels_and_mismatches():
          TTT   ┬           <-tail of suffix contig
          ||└A-C TAG__GT    <-suffix contig
          0123 4 78901234   <-contig coord
-      ici^  ^ctc x 1
+      ici^  ^ctc x 1 ||
          XXXXGX XTXTAXX... <-genome
          456789 01234567   <-genome coord
             |   1

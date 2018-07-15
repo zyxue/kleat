@@ -62,7 +62,8 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
     use fe instead of re because re is a Python module for regex
     """
     cb = 0
-    fb = init_ref_beg(ref_clv, cigartuples, ctg_clv)
+    fb = raw_fb = init_ref_beg(ref_clv, cigartuples, ctg_clv)
+    target_fb = raw_fb + window
 
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
@@ -79,6 +80,7 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
             res_seq += seq
 
         elif key == S.BAM_CDEL:
+            res_seq += ' ' * val  # placeholders for deletion
             fb += val
 
         elif key == S.BAM_CINS:
@@ -90,8 +92,10 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
                    "for '{1}' strand, please report".format(key, strand))
             raise NotImplementedError(err)
 
-        if len(res_seq) >= window:
-            res_seq = res_seq[:window]
+        if fb > target_fb:
+            res_seq = res_seq[:target_fb - fb]
             break
 
+    # remove placeholders for deletion
+    res_seq = res_seq.replace(' ', '')
     return res_seq
