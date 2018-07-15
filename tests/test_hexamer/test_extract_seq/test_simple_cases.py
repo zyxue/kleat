@@ -10,11 +10,12 @@ def test_extract_seq_for_plus_strand_clv_supported_by_link():
     """
        ATCGAC    <-link contig
        012345    <-contig coord
+            ^ctg_clv
     ...789012... <-genome coord
-            ^ref_clv
+          1 ^ref_clv
     """
     strand = '+'
-    ref_clv = 2
+    ref_clv = 12
     ctg_clv = 5
     ref_fa = MagicMock()
     contig = MagicMock()
