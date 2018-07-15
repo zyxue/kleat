@@ -26,7 +26,7 @@ def test_for_nonskipped_contig(
       └AC     <-bridge read
       AACG    <-bridge contig
       01234   <-contig offset coord: different from "contig coord", it doesn't consider clipped regions
-       ^ctg_offset
+       ^ctg_clv   
       01234   <-genome offset coord
        ^gnm_offset
     """
@@ -64,7 +64,7 @@ def test_for_skipped_contig_with_clv_after_a_skip(
           |└AC  <-bridge read
       CG--ATCGAT    <-bridge contig
       01  2345678   <-contig offset coord
-            ^ctg_offset
+            ^ctg_clv   
       01234567890   <-genome offset coord
             ^gnm_offset
     """
@@ -87,7 +87,7 @@ def test_for_a_long_contig_with_deletion(ctg_cigartuples, ctg_offset, gnm_offset
     ATCGATCGATCGATCGATCGATCGATCGATC__ATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCG  <-bridge contig
     0123456789012345678901234567890  123456789012345678901234567890123456789012345 <-bridge offset coord
          |    1         2         3  |        4         5         6         7
-         ^ctg_offset       (case2)^  ^ctg_offset(case3)
+         ^ctg_clv          (case2)^  ^ctg_clv   (case3)
     012345678901234567890123456789012345678901234567890123456789012345678901234567 <-genome offset coord
          |    1         2         3  |      4         5         6         7
          ^gnm_offset(case1)          ^gnm_offset(case3)

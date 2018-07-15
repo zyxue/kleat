@@ -18,7 +18,7 @@ def test_for_contig_with_3_base_insertion_with_clv_before_the_insertion(ctg_offs
       | ┬
     ATCG GT    <-contig
     0123 789   <-contig offset coord
-      ^ctg_offset
+      ^ctg_clv   
     0123 456   <-genome offset coord
       ^gnm_offset
     """
@@ -38,7 +38,7 @@ def test_for_contig_with_3_base_insertion_with_clv_inside_the_insertion(ctg_offs
               ||       # blank line to separate the bridge read the insertion
               AGC      <-inserted sequence
               456      <-contig offset coord for inserted sequence
-    ctg_offset^|
+       ctg_clv^|
               |┬
            ATCG GT    <-contig
            0123 789   <-contig offset coord
@@ -63,7 +63,7 @@ def test_for_contig_with_3_base_insertion_with_clv_inside_the_insertion_and_clv_
                |       # blank line to separate the bridge read the insertion
               AGC      <-inserted sequence
               456      <-contig offset coord for inserted sequence
-    ctg_offset^|
+       ctg_clv^|
               |┬
            ATCG GT     <-contig
            0123 789    <-contig offset coord
@@ -88,7 +88,7 @@ def test_for_contig_with_3_base_insertion_with_clv_after_the_insertion(ctg_offse
        ┬ |
     ATCG GT    <-contig
     0123 78    <-contig offset coord
-         ^ctg_offset
+         ^ctg_clv   
     0123 45    <-genome offset coord
          ^gnm_offset
     """
@@ -114,7 +114,7 @@ def test_for_contig_with_1_base_insertion_with_clv_before_insertion(ctg_offset, 
       | ┬
     ATCG AC    <-contig
     0123 56    <-contig offset coord
-      ^ctg_offset
+      ^ctg_clv   
     0123 45    <-genome offset coord
       ^gnm_offset
     see parameters in the decorator for various ctg_offset
@@ -134,7 +134,7 @@ def test_for_contig_with_1_base_insertion_with_clv_inside_insertion(ctg_offset, 
         |      # blank line to separate the bridge read the insertion
         G      <-inserted sequence
         4      <-contig offset coord for inserted sequence
-        ^ctg_offset
+        ^ctg_clv   
         ┬
     ATCG AC    <-contig
     0123 56    <-contig offset coord
@@ -160,7 +160,7 @@ def test_for_contig_with_1_base_insertion_with_clv_after_insertion(ctg_offset, e
         ┬|
     ATCG AC    <-contig
     0123 56    <-contig offset coord
-         ^ctg_offset
+         ^ctg_clv   
     0123 45    <-genome offset coord
          ^gnm_offset
     see parameters in the decorator for various ctg_offset
