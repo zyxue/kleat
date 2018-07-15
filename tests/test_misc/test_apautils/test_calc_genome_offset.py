@@ -26,8 +26,9 @@ def test_for_nonskipped_contig(
       └AC     <-bridge read
       AACG    <-bridge contig
       01234   <-contig offset coord: different from "contig coord", it doesn't consider clipped regions
+       ^ctg_offset
       01234   <-genome offset coord
-       ^ctf/gnm_offset
+       ^gnm_offset
     """
     assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
 
@@ -40,10 +41,11 @@ def test_for_nonskipped_contig(
 def test_for_skipped_with_clv_before_a_skip(
         ctg_cigartuples, ctg_offset, gnm_offset):
     """
-      TT
-      |└AC            <-bridge read
+     TT
+      └AC            <-bridge read
       AACGTA--ATCG    <-bridge contig
       012345  67890   <-contig offset coord
+        ^
       0123456789012   <-genome offset coord
         ^ctf/gnm_offset
     """
@@ -70,21 +72,25 @@ def test_for_skipped_contig_with_clv_after_a_skip(
 
 
 @pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
-    [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 5, 5],
+    [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 5, 5],  # case1
 
-    [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 31, 31],
+    [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 30, 30],  # case2
+
+    [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 31, 33],  # case3
     [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 32, 34],
     [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 33, 35],
 ])
-def test_for_contig_with_deletion(ctg_cigartuples, ctg_offset, gnm_offset):
+def test_for_a_long_contig_with_deletion(ctg_cigartuples, ctg_offset, gnm_offset):
     """
-       TT
-       |└TC                                                                        <-bridge read
+       TT                       TT TT
+       |└TC                      └C └TC                                            <-bridge read
     ATCGATCGATCGATCGATCGATCGATCGATC__ATCGATCGATCGATCGATCGATCGATCGATCGATCGATCGATCG  <-bridge contig
     0123456789012345678901234567890  123456789012345678901234567890123456789012345 <-bridge offset coord
-         ^ctg_offset
+         |    1         2         3  |        4         5         6         7
+         ^ctg_offset       (case2)^  ^ctg_offset(case3)
     012345678901234567890123456789012345678901234567890123456789012345678901234567 <-genome offset coord
-         ^gnm_offset
+         |    1         2         3  |      4         5         6         7
+         ^gnm_offset(case1)          ^gnm_offset(case3)
     """
     assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
 
