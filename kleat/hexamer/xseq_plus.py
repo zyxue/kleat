@@ -77,7 +77,8 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
     """
 
     ce = len(ctg_seq)
-    fe = init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq)
+    fe = raw_fe = init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq)
+    target_fe = raw_fe - window
 
     res_seq = ''
     for idx, (key, val) in enumerate(reversed(cigartuples)):
@@ -95,6 +96,7 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
             res_seq = seq + res_seq
 
         elif key == S.BAM_CDEL:
+            res_seq = ' ' * val + res_seq  # placeholders for deletion
             fe -= val
 
         elif key == S.BAM_CINS:
@@ -107,8 +109,10 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
                    "for '{1}' strand, please report".format(key, strand))
             raise NotImplementedError(err)
 
-        if len(res_seq) >= window:
-            res_seq = res_seq[-window:]
+        if fe <= target_fe:
+            res_seq = res_seq[target_fe - fe:]
             break
 
+    # remove placeholders for deletion
+    res_seq = res_seq.replace(' ', '')
     return res_seq
