@@ -146,6 +146,16 @@ underlying system is still 0-based_).
 .. _0-based: https://software.broadinstitute.org/software/igv/IGV.
 
 
+Some key concepts in the code:
+
+- ctg_clv: clv in contig coordinate including clipped regions and indels
+
+- gnm_clv: or ref_clv. clv in genome coordinate
+
+- gnm_offset: ctg_clv converted genome coordinate with proper handling of skips,
+clips, indels, so that gnm_offset is addable to the genome coordinate directly.
+
+
 Credits
 -------
 
