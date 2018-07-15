@@ -210,6 +210,57 @@ def test_init_ends_with_insertion():
     assert init_ctg_end(ctg_seq) == 11
 
 
+def test_bridge_init_ends_with_sofclip_before_clv():
+    """
+             AAA                <-polyA softclip
+          GTT┘                  <-bridge read
+    CCC   |||                   <-non-polyA softclip
+    01└GA-GGTTGCAGA             <-suffix contig
+       |  |||  ////             <-hardclip mask
+       34 5678901234            <-contig coord
+     ctg_clv^  |   ^init_ctg_idx
+    ...ACGGTTGC...              <-genome
+       7890123456789             <-genome coord
+          1 |      |
+     ref_clv^      ^init_ref_idx
+    """
+    ref_clv = 12
+    cigartuples = (
+        (S.BAM_CSOFT_CLIP, 3),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CREF_SKIP, 1),
+        (S.BAM_CMATCH, 5),
+        (S.BAM_CHARD_CLIP, 4)
+    )
+    ctg_clv = 7
+    ctg_seq = 'CCCGAGGTTGCAGA'
+
+    assert init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq) == 19
+    assert init_ctg_end(ctg_seq) == 14
+
+
+def test_bridge_init_ends_with_softclip_after_clv():
+    """
+           AA       <-polyA clip
+         TC┘|       <-bridge read
+         ||  CC     <-non-polyA softclip
+    \\\ATTCGT┘|     <-bridge contig (hardcipped, could be chimeric https://www.biostars.org/p/109333/)
+       012345678    <-contig coord
+        cc^    ^ice
+    ...ATTCGTXX...  <-genome
+       567890123    <-genome coord
+          | 1  |
+        rc^    ^ire
+    """
+    ref_clv = 8
+    cigartuples = ((S.BAM_CHARD_CLIP, 3), (S.BAM_CMATCH, 6), (S.BAM_CSOFT_CLIP, 2))
+    ctg_clv = 3
+    ctg_seq = 'ATTCGTCC'
+
+    assert init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq) == 13
+    assert init_ctg_end(ctg_seq) == 8
+
+
 def test_bridge_init_ends_with_hardclip_before_clv():
     """
            AA
