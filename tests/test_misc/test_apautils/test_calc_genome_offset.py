@@ -26,7 +26,7 @@ def test_for_nonskipped_contig(
       └AC     <-bridge read
       AACG    <-bridge contig
       01234   <-contig offset coord: different from "contig coord", it doesn't consider clipped regions
-       ^ctg_clv   
+       ^ctg_clv
       01234   <-genome offset coord
        ^gnm_offset
     """
@@ -64,7 +64,7 @@ def test_for_skipped_contig_with_clv_after_a_skip(
           |└AC  <-bridge read
       CG--ATCGAT    <-bridge contig
       01  2345678   <-contig offset coord
-            ^ctg_clv   
+            ^ctg_clv
       01234567890   <-genome offset coord
             ^gnm_offset
     """

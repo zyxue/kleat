@@ -22,7 +22,7 @@ def test_clv_before_insertion(ctg_offset_cutoff, tail_side, expected_gnm_offset)
      |  ┬
     AT-G GT     <-contig
     01 2 678    <-contig offset coord
-     ^ctg_clv   
+     ^ctg_clv
     0123 456    <-genome offset coord
      ^gnm_offset
     """
@@ -85,7 +85,7 @@ def test_clv_after_insertion(ctg_offset_cutoff, tail_side, expected_gnm_offset):
                ┬
            AT-G GT    <-contig
            01 2 678   <-contig offset coord
-                ^ctg_clv   
+                ^ctg_clv
            0123 456   <-genome offset coord
                 ^gnm_offset
     """
