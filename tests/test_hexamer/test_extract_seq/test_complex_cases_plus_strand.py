@@ -5,7 +5,7 @@ import kleat.misc.settings as S
 from kleat.hexamer.search import extract_seq
 
 
-def test_extract_seq_with_skipped_region_for_plus_strand_clv():
+def test_with_skipped_region_for_plus_strand_clv():
     """
                AAA             <-tail of suffix contig
        ACGG--GC┘||             <-suffix contig with skip
@@ -31,7 +31,7 @@ def test_extract_seq_with_skipped_region_for_plus_strand_clv():
     ref_fa.fetch.assert_called_with('chr1', 11, 13)
 
 
-def test_extract_seq_with_1_base_insertion_for_plus_strand_clv():
+def test_with_1_base_insertion_for_plus_strand_clv():
     """
            T
            ┬  AAA              <-tail of suffix contig
@@ -58,10 +58,10 @@ def test_extract_seq_with_1_base_insertion_for_plus_strand_clv():
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=12, ref_fa=ref_fa, ctg_clv=6)
     assert extract_seq(**kw) == 'ACGGTGC'
-    assert extract_seq(window=4, **kw) == 'GGTGC'
+    assert extract_seq(window=4, **kw) == 'GTGC'
 
 
-def test_extract_seq_with_5_base_inserted_region_for_plus_strand_clv():
+def test_with_5_base_inserted_region_for_plus_strand_clv():
     """
          AATCC
            ┬   AA              <-tail of suffix contig
@@ -88,10 +88,10 @@ def test_extract_seq_with_5_base_inserted_region_for_plus_strand_clv():
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=13, ref_fa=ref_fa, ctg_clv=11)
     assert extract_seq(**kw) == 'ACGGAATCCGCG'
-    assert extract_seq(window=5, **kw) == 'GGAATCCGCG'
+    assert extract_seq(window=5, **kw) == 'CCGCG'
 
 
-def test_extract_seq_with_deleted_region_for_plus_strand_clv():
+def test_with_deleted_region_for_plus_strand_clv():
     """
                AAA             <-tail of suffix contig
        ACGG__GC┘||             <-suffix contig with skip
@@ -111,11 +111,11 @@ def test_extract_seq_with_deleted_region_for_plus_strand_clv():
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=14, ref_fa=ref_fa, ctg_clv=5)
-    # assert extract_seq(**kw) == 'ACGGGC'
-    assert extract_seq(window=3, **kw) == 'GC'
+    assert extract_seq(**kw) == 'ACGGGC'
+    assert extract_seq(window=3, **kw) == 'GGC'
 
 
-def test_extract_seq_with_two_skipped_region_for_plus_strand_clv():
+def test_with_two_skipped_region_for_plus_strand_clv():
     """
                AAA             <-tail of suffix contig
        A-TT--GC┘||             <-suffix contig with skip
@@ -156,7 +156,7 @@ def test_extract_seq_with_two_skipped_region_for_plus_strand_clv():
     assert ref_fa.fetch.call_count == 1
 
 
-def test_extract_seq_with_skipped_region_and_insertions_mismatches_for_plus_strand_clv():
+def test_with_skipped_region_and_insertions_mismatches_for_plus_strand_clv():
     """
         G
         ┬       AAA             <-tail of suffix contig
@@ -189,10 +189,10 @@ def test_extract_seq_with_skipped_region_and_insertions_mismatches_for_plus_stra
     ref_fa.fetch.assert_called_once_with('chr3', 10, 12)
     assert extract_seq(window=1, **kw) ==         'G'
     assert extract_seq(window=3, **kw) ==       'GCG'
-    assert extract_seq(window=8, **kw) == 'AGTACCGCG'
+    assert extract_seq(window=8, **kw) == 'GTACCGCG'
 
 
-def test_extract_seq_with_skipped_and_deleted_regions_for_plus_strand_clv():
+def test_with_skipped_and_deleted_regions_for_plus_strand_clv():
     """
                AAA             <-tail of suffix contig
        A_TT--GC┘||             <-suffix contig with skip
@@ -225,7 +225,7 @@ def test_extract_seq_with_skipped_and_deleted_regions_for_plus_strand_clv():
     assert extract_seq(window=5, **kw) == 'TAAGC'
 
 
-def test_extract_seq_with_three_skipped_region_and_mismatches_for_plus_strand_clv():
+def test_with_three_skipped_region_and_mismatches_for_plus_strand_clv():
     """
                      AA             <-tail of suffix contig
        A---CC-GTA--GC┘|             <-suffix contig with skip
@@ -267,7 +267,7 @@ def test_extract_seq_with_three_skipped_region_and_mismatches_for_plus_strand_cl
     assert ref_fa.fetch.call_count == 2
 
 
-def test_extract_seq_with_indel_and_skipped_regions_and_mismatches_for_plus_strand_clv():
+def test_with_indel_and_skipped_regions_and_mismatches_for_plus_strand_clv():
     """
              TC
              ┬       AA             <-tail of suffix contig
