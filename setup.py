@@ -14,9 +14,10 @@ with open('HISTORY.rst') as history_file:
 requirements = [
     'pysam>=0.14.1',
     'tqdm>=4.23.4',
-    'biopython==1.72',
-    'pandas==0.23.1',
-    'numpy==1.14.5'
+    'biopython>=1.72',
+    'pandas>=0.23.1',
+    'numpy>=1.14.5',
+    'matplotlib>=2.2.2'
 ]
 
 setup_requirements = ['pytest-runner', ]
