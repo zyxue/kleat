@@ -31,6 +31,8 @@ def test_extract_seq_for_bridge():
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
     assert extract_seq(**kw) == 'CGGTTGC'
+    assert extract_seq(window=3, **kw) == 'CGG'
+    assert extract_seq(window=1, **kw) == 'C'
 
 
 def test_extract_seq_for_bridge_with_skip():
@@ -57,6 +59,8 @@ def test_extract_seq_for_bridge_with_skip():
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
     assert extract_seq(**kw) == 'CGGTAGC'
     ref_fa.fetch.assert_called_with('chr2', 11, 12)
+    assert extract_seq(window=5, **kw) == 'CGGTA'
+    assert extract_seq(window=1, **kw) == 'C'
 
 
 def test_extract_seq_for_bridge_with_skip_before_clv():
@@ -80,6 +84,7 @@ def test_extract_seq_for_bridge_with_skip_before_clv():
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=12, ref_fa=ref_fa, ctg_clv=5)
     assert extract_seq(**kw) == 'AGC'
+    assert extract_seq(window=2, **kw) == 'AG'
 
 
 def test_extract_seq_for_bridge_with_multiple_skips_before_clv():
@@ -109,16 +114,17 @@ def test_extract_seq_for_bridge_with_multiple_skips_before_clv():
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=12, ref_fa=ref_fa, ctg_clv=4)
     assert extract_seq(**kw) == 'AGC'
+    assert extract_seq(window=1, **kw) == 'A'
 
 
 def test_extract_seq_for_bridge_with_deletion():
     """
         T
-        └GT         <-bread read
-       GACGGT_CGC    <-bridge contig
-       012345 678   <-contig coord
-    ici^ ^cc | x 1   <-contig coord
-    ...GACGGTCCTC... <-genome
+        └GT           <-bread read
+       GACGGT_CGC     <-bridge contig
+       012345 678     <-contig coord
+    ici^ ^cc | x 1    <-contig coord
+    ...GACGGTCCTC...  <-genome
        56789012345    <-genome coord
        | |  1
     iri^ ^ref_clv
@@ -133,6 +139,7 @@ def test_extract_seq_for_bridge_with_deletion():
 
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
     assert extract_seq(**kw) == 'CGGTCGC'
+    assert extract_seq(window=4, **kw) == 'CGGT'
 
 
 def test_extract_seq_for_bridge_with_insertion():
@@ -161,6 +168,10 @@ def test_extract_seq_for_bridge_with_insertion():
 
     kw = dict(contig=ctg, strand='-', ref_clv=7, ref_fa=ref_fa, ctg_clv=2)
     assert extract_seq(**kw) == 'CGGTAGCTC'
+    assert extract_seq(window=4, **kw) == 'CGGT'
+    assert extract_seq(window=5, **kw) == 'CGGTA'
+    assert extract_seq(window=6, **kw) == 'CGGTAG'
+    assert extract_seq(window=7, **kw) == 'CGGTAGC'
 
 
 @patch('kleat.hexamer.search.apautils')
