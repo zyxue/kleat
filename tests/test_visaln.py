@@ -1,6 +1,6 @@
 from unittest.mock import MagicMock
 
-from .visaln import calc_xlim
+from kleat.visaln.visaln import calc_xlim
 import kleat.misc.settings as S
 
 
