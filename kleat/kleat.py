@@ -50,7 +50,7 @@ def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter):
 
 def gen_tmp_output(output):
     return os.path.join(
-        os.path.dirname(output), '__tmp_{0}'.format(os.path.basename(output)))
+        os.path.dirname(output), '__tmp_{0}.csv'.format(os.path.basename(output)))
 
 
 def gen_output(args_output, output_format):
