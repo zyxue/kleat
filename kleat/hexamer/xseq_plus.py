@@ -16,8 +16,8 @@ def do_match(ctg_e, ref_e, cigar_val, ctg_seq, ctg_clv):
     ctg_b = ctg_e - cigar_val
     ref_b = ref_e - cigar_val
 
-    if ctg_e >= ctg_clv:
-        if ctg_b < ctg_clv:
+    if ctg_e > ctg_clv:
+        if ctg_b <= ctg_clv:
             seq_to_add = ctg_seq[ctg_b: ctg_clv + 1]
         else:
             seq_to_add = ''
@@ -69,8 +69,9 @@ def init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq):
     # TODO: left may not matter in such case
     offset = calc_genome_offset(cigartuples, ctg_clv, 'left')
 
+    # note ref_clv = contig.reference_start + offset
+
     cgr = cigartuples[0]
-    # needs to add back clipped regions here
     if cgr[0] == S.BAM_CSOFT_CLIP or cgr[0] == S.BAM_CHARD_CLIP:
         offset += cgr[1]
     return ref_clv + offset
@@ -91,11 +92,20 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
     res_seq = ''
     for idx, (key, val) in enumerate(reversed(cigartuples)):
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
-            if ce <= ctg_clv:
-                seq = ctg_seq[ce - val:ce]
+            cb = ce - val
+            if ce > ctg_clv:
+                if cb <= ctg_clv:  # meaning clip spans the clv
+                    break
+                else:
+                    seq = ctg_seq[cb: ctg_clv]
+                    res_seq = seq + res_seq
+                    ce -= val
+                    fe -= val
+            else:
+                seq = ctg_seq[ce - val: ce]
                 res_seq = seq + res_seq
-            ce -= val
-            fe -= val
+                ce -= val
+                fe -= val
 
         elif key == S.BAM_CMATCH:
             ce, fe, seq = do_match(ce, fe, val, ctg_seq, ctg_clv)
