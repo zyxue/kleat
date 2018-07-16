@@ -103,7 +103,7 @@ def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
     is directly addable to the genome coordinate.
 
     For example, This genome offset is needed for inferring the clv in genomic
-    coordinate, i.e. gnm_clv = ctg_clv + gnm_offset
+    coordinate, i.e. gnm_clv = ctg.reference_start + gnm_offset
 
     :param ctg_clv: clv in contig coordinate.
     :param tail_side: T or A, meaning the tail is polyA or polyT. If not
