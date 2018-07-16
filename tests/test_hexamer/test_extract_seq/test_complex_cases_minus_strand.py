@@ -5,8 +5,8 @@ from kleat.hexamer.search import extract_seq
 
 
 """
-cc: ctg_clv; ici: init_clv_idx
-rc: ref_clv; iri: init_ref_idx
+cc: ctg_clv; icb: init_clv_beg
+rc: ref_clv; irb: init_ref_beg
 """
 
 
@@ -15,17 +15,21 @@ def test_with_skipped_region():
                 TTT             <-tail of suffix contig
                 ||└GT--C        <-suffix contig with skip
                 01234  56      <-contig coord
-    init_ctg_clv^  ^ctg_clv     <-contig coord
-                     | |
+             icb^  ^ctg_clv     <-contig coord
              ...XXXGTTGC...    <-genome
                 5678901234      <-genome coord
-                   | 1
-                   ^ref_clv/iri
+                |  | 1
+             irb^  ^ref_clv/iri
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
     ctg.query_sequence = 'TTTGTC'
-    ctg.cigartuples = ((S.BAM_CSOFT_CLIP, 3), (S.BAM_CMATCH, 2), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 1))
+    ctg.cigartuples = (
+        (S.BAM_CSOFT_CLIP, 3),
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CREF_SKIP, 2),
+        (S.BAM_CMATCH, 1)
+    )
 
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
@@ -33,6 +37,7 @@ def test_with_skipped_region():
     kw = dict(contig=ctg, strand='-', ref_clv=8, ref_fa=ref_fa, ctg_clv=3)
     assert extract_seq(**kw) == 'GTTGC'
     ref_fa.fetch.assert_called_with('chr2', 10, 12)
+
     # **kw needs go after window for py34 syntax
     assert extract_seq(window=1, **kw) == 'G'
     assert extract_seq(window=3, **kw) == 'GTT'
