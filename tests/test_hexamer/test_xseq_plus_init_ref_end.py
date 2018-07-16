@@ -241,46 +241,48 @@ def test_bridge_init_ends_with_sofclip_before_clv():
 
 def test_bridge_init_ends_with_softclip_after_clv():
     """
-           AA       <-polyA clip
-         TC┘|       <-bridge read
-         ||  CC     <-non-polyA softclip
-    \\\ATTCGT┘|     <-bridge contig (hardcipped, could be chimeric https://www.biostars.org/p/109333/)
-       012345678    <-contig coord
-        cc^    ^ice
-    ...ATTCGTXX...  <-genome
-       567890123    <-genome coord
-          | 1  |
-        rc^    ^ire
+              AA       <-polyA clip
+            TC┘|       <-bridge read
+            ||  CC     <-non-polyA softclip
+       CGCATTCGT┘|     <-bridge contig (hardcipped, could be chimeric https://www.biostars.org/p/109333/)
+       \\\   |
+       012345678901    <-contig coord
+           cc^    ^ice
+    ...CGCATTCGTXX...  <-genome
+       234567890123    <-genome coord
+             | 1  |
+           rc^    ^ire
     """
     ref_clv = 8
     cigartuples = ((S.BAM_CHARD_CLIP, 3), (S.BAM_CMATCH, 6), (S.BAM_CSOFT_CLIP, 2))
-    ctg_clv = 3
-    ctg_seq = 'ATTCGTCC'
+    ctg_clv = 6
+    ctg_seq = 'CGCATTCGTCC'
 
     assert init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq) == 13
-    assert init_ctg_end(ctg_seq) == 8
+    assert init_ctg_end(ctg_seq) == 11
 
 
 def test_bridge_init_ends_with_hardclip_before_clv():
     """
-           AA
-         TC┘|      <-bridge read
-    \\\ATTCGT      <-bridge contig (hardcipped, could be chimeric https://www.biostars.org/p/109333/)
-       0123456     <-contig coord
-        cc^  ^ice
-    ...ATTCGXX...  <-genome
-       5678901     <-genome coord
-          | 1|
-        rc^  ^ire
+              AA
+            TC┘|      <-bridge read
+       CGCATTCGT      <-bridge contig
+       \\\            <-hardclip mask
+       0123456789     <-contig coord
+           cc^  ^ice
+    ...CGCATTCGXX...  <-genome
+       2345678901     <-genome coord
+             | 1|
+           rc^  ^ire
     """
 
     ref_clv = 8
     cigartuples = ((S.BAM_CHARD_CLIP, 3), (S.BAM_CMATCH, 6))
-    ctg_clv = 3
-    ctg_seq = 'ATTCGT'
+    ctg_clv = 6
+    ctg_seq = 'CGCATTCGT'
 
     assert init_ref_end(ref_clv, cigartuples, ctg_clv, ctg_seq) == 11
-    assert init_ctg_end(ctg_seq) == 6
+    assert init_ctg_end(ctg_seq) == 9
 
 
 def test_bridge_init_ends_with_hardclip_after_clv():
