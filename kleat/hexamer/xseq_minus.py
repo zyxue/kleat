@@ -83,7 +83,6 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
             res_seq += seq
 
         elif key == S.BAM_CDEL:
-            res_seq += val
             fb += val
 
         elif key == S.BAM_CINS:
