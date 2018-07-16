@@ -5,8 +5,8 @@ from kleat.hexamer.xseq_plus import init_ctg_end, init_ref_end
 
 
 """
-cc: ctg_clv; ice: init_clv_e
-rc: ref_clv; ire: init_ref_end
+cc: ctg_clv; icb: init_clv_beg
+rc: ref_clv; irb: init_ref_end
 """
 
 
@@ -16,11 +16,11 @@ def test_init_ends():
            GT┘       <-bridge read
        GACGGTTGC     <-bridge contig
        0123456789    <-contig coord
-     ctg_clv^   ^ice
+          cc^   ^ice
     ...GACGGTTGC...  <-genome
        5678901234    <-genome coord
             1   |
-     ref_clv^   ^ire
+          rc^   ^ire
     """
     ref_clv = 10
     cigartuples = ((S.BAM_CMATCH, 9),)
@@ -37,11 +37,11 @@ def test_init_ends_with_skip_after_clv():
            GT┘       <-bridge read
        GACGGT-GC     <-bridge contig
        012345 678    <-contig coord
-     ctg_clv^   ^ice
+          cc^   ^ice
     ...GACGGTTGC...  <-genome
        5678901234    <-genome coord
             1   |
-     ref_clv^   ^ire
+          rc^   ^ire
     """
     ref_clv = 10
     cigartuples = ((S.BAM_CMATCH, 6), (S.BAM_CREF_SKIP, 1), (S.BAM_CMATCH, 2))
@@ -58,11 +58,11 @@ def test_init_ends_with_skip_before_clv():
            GT┘       <-bridge read
        G--AGTTGC     <-bridge contig
        0  1234567    <-contig coord
-     ctg_clv^   ^ice
+          cc^   ^ice
     ...GACAGTTGC...  <-genome
        5678901234    <-genome coord
             1   |
-     ref_clv^   ^ire
+          rc^   ^ire
     """
     ref_clv = 10
     cigartuples = ((S.BAM_CMATCH, 1), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 6))
@@ -79,11 +79,11 @@ def test_init_ends_with_skip_both_before_and_after_clv():
            GT┘       <-bridge read
        G--AGT-GC     <-bridge contig
        0  123 456    <-contig coord
-     ctg_clv^   ^ice
+          cc^   ^ice
     ...GACAGTTGC...  <-genome
        5678901234    <-genome coord
             1   |
-     ref_clv^   ^ire
+          rc^   ^ire
     """
     ref_clv = 10
     cigartuples = (
@@ -106,11 +106,11 @@ def test_init_ends_with_skip_both_before_and_after_ctg_clv_and_a_mismatch():
            GT┘        <-bridge read
        G--AGT-GC      <-bridge contig
        0  x23 456     <-contig coord
-     ctg_clv^   ^ice
+          cc^   ^ice
     ...GACAGTTGC...   <-genome
        5678901234     <-genome coord
             1   |
-     ref_clv^   ^ire
+          rc^   ^ire
     """
 
     ref_clv = 10
@@ -218,11 +218,11 @@ def test_bridge_init_ends_with_sofclip_before_clv():
     01└GA-GGTTGCAGA             <-suffix contig
        |  |||  ////             <-hardclip mask
        34 5678901234            <-contig coord
-     ctg_clv^  |   ^init_ctg_idx
+          cc^  |   ^ice
     ...ACGGTTGC...              <-genome
        7890123456789             <-genome coord
           1 |      |
-     ref_clv^      ^init_ref_idx
+          rc^      ^init_ref_idx
     """
     ref_clv = 12
     cigartuples = (
@@ -290,11 +290,11 @@ def test_bridge_init_ends_with_hardclip_after_clv():
        A-GGTTGCAGA              <-suffix contig
        | |  |  ///              <-hardclip mask
        0 1234567890             <-contig coord
-     ctg_clv^     ^init_ctg_idx
+          cc^     ^ice
     ...ACGGTTGC...              <-genome
        789012345678             <-genome coord
           1 |     |
-     ref_clv^     ^init_ref_idx
+          rc^     ^init_ref_idx
     """
 
     ref_clv = 12
