@@ -81,7 +81,7 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
             ce = cb + val
             if cb <= ctg_clv:
-                if ce > ctg_clv:  # meaning hardclip spans the clv
+                if ce > ctg_clv:  # meaning clip spans the clv
                     break
                 else:
                     cb += val
