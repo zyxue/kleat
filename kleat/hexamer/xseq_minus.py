@@ -42,6 +42,10 @@ def do_skip(ref_b, cigar_val, ref_fa, seqname, ref_clv):
     return next_ref_b, seq_to_add
 
 
+def init_ctg_beg(ctg_seq):
+    return 0
+
+
 def init_ref_beg(ref_clv, cigartuples, ctg_clv):
     """
     Initialize the beginning index in genome coordinate by calculating the
@@ -61,9 +65,8 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
 
     use fe instead of re because re is a Python module for regex
     """
-    cb = 0
-    fb = raw_fb = init_ref_beg(ref_clv, cigartuples, ctg_clv)
-    target_fb = raw_fb + window
+    cb = init_ctg_beg(ctg_seq)
+    fb = init_ref_beg(ref_clv, cigartuples, ctg_clv)
 
     res_seq = ''
     for idx, (key, val) in enumerate(cigartuples):
@@ -80,7 +83,7 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
             res_seq += seq
 
         elif key == S.BAM_CDEL:
-            res_seq += ' ' * val  # placeholders for deletion
+            res_seq += val
             fb += val
 
         elif key == S.BAM_CINS:
@@ -92,10 +95,8 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
                    "for '{1}' strand, please report".format(key, strand))
             raise NotImplementedError(err)
 
-        if fb > target_fb:
-            res_seq = res_seq[:target_fb - fb]
+        if len(res_seq) >= window:
+            res_seq = res_seq[:window]
             break
 
-    # remove placeholders for deletion
-    res_seq = res_seq.replace(' ', '')
     return res_seq
