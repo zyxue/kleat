@@ -89,8 +89,25 @@ Then install kleat with pip
 Features
 --------
 
-* TODO
+* Suffix (previously known as tail), bridge, link, blank
+* Search PAS hexamer on the contig
+* Hardclip regions are considered, too, and well tested.
 
+Notes on result interpretation
+------------------------------
+
+`ctg_hex_pos`, the distance between contig PAS hexamer and clv is not
+interpretable in terms of reference genome because there might be insertion and
+deletion, but `ctg_hex_dist`, the distance between contig PAS hexamer and clv is
+interpretation.
+  
+We decided not to remove this column, and leave as a sanity check/indication of
+indels. Indels can also be inferred from the difference between `ctg_hex_dist` and
+`ref_hex_dist` if they exist.
+
+`ctg_hex_pos` may become especially useful when the ref_hex is not found, as it
+can be used as a rough estimate of the location of the hexamer, helpful for
+locating the PAS hexamer on the contig in a genome browser (e.g. IGV), quickly.
 
 Development
 -----------
