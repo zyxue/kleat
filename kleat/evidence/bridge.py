@@ -90,6 +90,9 @@ def analyze_bridge(contig, read, ref_fa, dd_bridge):
     offset = apautils.calc_genome_offset(
         contig.cigartuples, ctg_offset, tail_direction)
 
+    if offset < 0:             # meaning the clv is on soft/hard clipped region
+        return
+
     ref_clv = contig.reference_start + offset
 
     # ctg_clv is ctg_offset, i.e. the pos of clv in contig coordinate
