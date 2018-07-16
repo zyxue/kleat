@@ -53,6 +53,12 @@ def init_ref_beg(ref_clv, cigartuples, ctg_clv):
     """
     # TODO: left may not matter in such case
     offset = calc_genome_offset(cigartuples, ctg_clv, 'left')
+
+    # needs to consider into the back clipped regions here, since it's missing
+    # from calc_genome_offset
+    cgr = cigartuples[0]
+    if cgr[0] == S.BAM_CSOFT_CLIP or cgr[0] == S.BAM_CHARD_CLIP:
+        offset += cgr[1]
     return ref_clv - offset
 
 
@@ -69,10 +75,21 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
     fb = init_ref_beg(ref_clv, cigartuples, ctg_clv)
 
     res_seq = ''
+
     for idx, (key, val) in enumerate(cigartuples):
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
-            if idx == 0:
+            ce = cb + val
+            if cb <= ctg_clv:
+                if ce > ctg_clv:  # meaning hardclip spans the clv
+                    break
+                else:
+                    cb += val
+                    fb += val
+            else:
+                seq = ctg_seq[cb: cb + val]
+                res_seq += seq
                 cb += val
+                fb += val
 
         elif key == S.BAM_CMATCH:
             cb, fb, seq = do_match(cb, fb, val, ctg_seq, ctg_clv)
