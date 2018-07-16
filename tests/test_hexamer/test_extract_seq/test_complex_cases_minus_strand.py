@@ -10,7 +10,7 @@ rc: ref_clv; iri: init_ref_idx
 """
 
 
-def test_extract_seq_with_skipped_region():
+def test_with_skipped_region():
     """
                 TTT             <-tail of suffix contig
                 ||└GT--C        <-suffix contig with skip
@@ -39,7 +39,7 @@ def test_extract_seq_with_skipped_region():
     assert extract_seq(window=4, **kw) == 'GTTG'
 
 
-def test_extract_seq_with_two_skipped_regions_and_a_mismatch():
+def test_with_two_skipped_regions_and_a_mismatch():
     """
                 TTT              <-tail of suffix contig
                 ||└GT--CAG-AC    <-suffix contig with skip
@@ -71,7 +71,7 @@ def test_extract_seq_with_two_skipped_regions_and_a_mismatch():
     ref_fa.fetch.assert_has_calls([call('chr2', 10, 12), call('chr2', 15, 16)])
 
 
-def test_extract_seq_with_2_base_insertion():
+def test_with_2_base_insertion():
     """
               GA
          TTT  ┬       <-tail of suffix contig
@@ -101,7 +101,7 @@ def test_extract_seq_with_2_base_insertion():
     assert extract_seq(window=3, **kw) == 'ACG'
 
 
-def test_extract_seq_with_skipped_region_and_insertion_and_mismatches():
+def test_with_skipped_region_and_insertion_and_mismatches():
     """
                GA
          TTT   ┬       <-tail of suffix contig
@@ -141,7 +141,7 @@ def test_extract_seq_with_skipped_region_and_insertion_and_mismatches():
     assert extract_seq(window=7, **kw) == 'AGCGATA'
 
 
-def test_extract_seq_with_skipped_region_and_indels_and_mismatches():
+def test_with_skipped_region_and_indels_and_mismatches():
     """
                GA
          TTT   ┬           <-tail of suffix contig

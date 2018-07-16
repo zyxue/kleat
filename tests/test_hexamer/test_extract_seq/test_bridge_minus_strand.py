@@ -10,7 +10,7 @@ rc: ref_clv; iri: init_ref_idx
 """
 
 
-def test_extract_seq_for_bridge():
+def test_for_bridge():
     """
         T
         └CG         <-bread read
@@ -35,7 +35,7 @@ def test_extract_seq_for_bridge():
     assert extract_seq(window=1, **kw) == 'C'
 
 
-def test_extract_seq_for_bridge_with_skip():
+def test_for_bridge_with_skip():
     """
         T
         └GT         <-bread read
@@ -63,7 +63,7 @@ def test_extract_seq_for_bridge_with_skip():
     assert extract_seq(window=1, **kw) == 'C'
 
 
-def test_extract_seq_for_bridge_with_skip_before_clv():
+def test_for_bridge_with_skip_before_clv():
     """
              T
              └AG       <-bridge read
@@ -87,7 +87,7 @@ def test_extract_seq_for_bridge_with_skip_before_clv():
     assert extract_seq(window=2, **kw) == 'AG'
 
 
-def test_extract_seq_for_bridge_with_multiple_skips_before_clv():
+def test_for_bridge_with_multiple_skips_before_clv():
     """
              T
              └AG       <-bridge read
@@ -117,7 +117,7 @@ def test_extract_seq_for_bridge_with_multiple_skips_before_clv():
     assert extract_seq(window=1, **kw) == 'A'
 
 
-def test_extract_seq_for_bridge_with_deletion():
+def test_for_bridge_with_deletion():
     """
         T
         └GT           <-bread read
@@ -142,7 +142,7 @@ def test_extract_seq_for_bridge_with_deletion():
     assert extract_seq(window=4, **kw) == 'CGGT'
 
 
-def test_extract_seq_for_bridge_with_insertion():
+def test_for_bridge_with_insertion():
     """
         T    AG      <-inserted bases
         └CG  ┬       <-bread read
