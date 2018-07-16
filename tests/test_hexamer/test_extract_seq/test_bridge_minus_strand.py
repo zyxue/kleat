@@ -5,8 +5,8 @@ from kleat.hexamer.search import extract_seq
 
 
 """
-cc: ctg_clv; ici: init_clv_idx
-rc: ref_clv; iri: init_ref_idx
+cc: ctg_clv; icb: init_clv_beg
+rc: ref_clv; irb: init_ref_beg
 """
 
 
@@ -16,11 +16,11 @@ def test_for_bridge():
         └CG         <-bread read
        GACGGTTGC    <-bridge contig
        0123456789   <-contig coord
-    ici^ ^ctg_clv   <-contig coord
+    icb^ ^ctg_clv   <-contig coord
     ...GACGGTTGC... <-genome
        567890123    <-genome coord
        | |  1
-    iri^ ^ref_clv
+    irb^ ^ref_clv
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
@@ -41,11 +41,11 @@ def test_for_bridge_with_skip():
         └GT         <-bread read
        GACGGT-GC    <-bridge contig
        012345 678   <-contig coord
-    ici^ ^ctg_clv   <-contig coord
+    icb^ ^ctg_clv   <-contig coord
     ...GACGGTAGC... <-genome
        5678901234   <-genome coord
        | |  1
-    iri^ ^ref_clv
+    irb^ ^ref_clv
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
@@ -69,11 +69,11 @@ def test_for_bridge_with_skip_before_clv():
              └AG       <-bridge read
        GA--GGTAGC      <-bridge contig
        01  2345678     <-contig coord
-    ici^ | |  ^ctg_clv <-contig coord
+    icb^ | |  ^ctg_clv <-contig coord
     ...GACTGGTAGC...   <-genome
        5678901234      <-genome coord
        |    1 |
-    iri^      ^ref_clv
+    irb^      ^ref_clv
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
@@ -93,11 +93,11 @@ def test_for_bridge_with_multiple_skips_before_clv():
              └AG       <-bridge read
        G-C--GTAGC      <-bridge contig
        0 1  234567     <-contig coord
-    ici^||| | ^ctg_clv <-contig coord
+    icb^||| | ^ctg_clv <-contig coord
     ...GACTGGTAGC...   <-genome
        5678901234      <-genome coord
        |    1 |
-    iri^      ^ref_clv
+    irb^      ^ref_clv
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
@@ -123,11 +123,11 @@ def test_for_bridge_with_deletion():
         └GT           <-bread read
        GACGGT_CGC     <-bridge contig
        012345 678     <-contig coord
-    ici^ ^cc | x 1    <-contig coord
+    icb^ ^cc | x 1    <-contig coord
     ...GACGGTCCTC...  <-genome
        56789012345    <-genome coord
        | |  1
-    iri^ ^ref_clv
+    irb^ ^ref_clv
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'
@@ -148,11 +148,11 @@ def test_for_bridge_with_insertion():
         └CG  ┬       <-bread read
        GACGGT CTC    <-bridge contig
        012345 8901   <-contig coord
-    ici^ ^cc   x1    <-contig coord
+    icb^ ^cc   x1    <-contig coord
     ...GACGGT CGC... <-genome
        567890 1234    <-genome coord
        | |  1
-    iri^ ^ref_clv
+    irb^ ^ref_clv
     """
     ctg = MagicMock()
     ctg.reference_name = 'chr2'

@@ -4,6 +4,12 @@ import kleat.misc.settings as S
 from kleat.hexamer.search import extract_seq
 
 
+"""
+cc: ctg_clv; ice: init_clv_end
+rc: ref_clv; ire: init_ref_end
+"""
+
+
 @patch('kleat.hexamer.search.apautils')
 def test_hardclip_before_clv(mock_apautils):
     """
