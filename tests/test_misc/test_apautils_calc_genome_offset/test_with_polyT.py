@@ -93,3 +93,31 @@ def test_for_a_long_contig_with_deletion(ctg_cigartuples, ctg_clv, gnm_offset):
          ^gnm_offset(case1)          ^gnm_offset(case3)
     """
     assert calc_genome_offset(ctg_cigartuples, ctg_clv, 'left') == gnm_offset
+
+
+#########################
+# test skip_check_sizes #
+#########################
+
+def test_for_skip_check_sizes():
+    """
+         TT
+          └A--T       <-bridge read
+         GTA--AT      <-bridge contig
+         012--345     <-contig coord
+           ^ctg_clv
+        5432--10      <-rev contig coord
+           |  |
+        76543210      <-rev genome offset coord
+         01234567     <-genome offset coord
+              ^gnm_offset
+    """
+    cigartuples = [
+        (S.BAM_CMATCH, 3),
+        (S.BAM_CREF_SKIP, 2),
+        (S.BAM_CMATCH, 2),
+    ]
+
+    assert calc_genome_offset(cigartuples, ctg_clv=2, tail_side='left', skip_check_size=1) == 5
+
+    assert calc_genome_offset(cigartuples, ctg_clv=2, tail_side='left') == 2
