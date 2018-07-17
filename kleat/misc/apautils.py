@@ -116,7 +116,7 @@ def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
 
     """
     ctg_pos = 0             # current position in contig coordinate
-    gnm_pos = 0             # current position in genome coordinate
+    ref_pos = 0             # current position in genome coordinate
 
     for key, val in cigartuples:
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
@@ -127,19 +127,19 @@ def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
 
             if ctg_pos > ctg_clv:
                 delta = ctg_pos - ctg_clv
-                gnm_pos = gnm_pos + val - delta
+                ref_pos = ref_pos + val - delta
                 break
             else:
-                gnm_pos = gnm_pos + val
+                ref_pos = ref_pos + val
 
         elif key == S.BAM_CREF_SKIP or key == S.BAM_CDEL:
-            gnm_pos += val
+            ref_pos += val
 
         elif key == S.BAM_CINS:
             ctg_pos += val
             if ctg_pos > ctg_clv:
                 if tail_side == 'left':
-                    gnm_pos -= 1
+                    ref_pos -= 1
                     break
                 else:
                     break
@@ -149,8 +149,8 @@ def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
                        'Your cigar: ({0}, {1})\n'
                        '{2}'.format(key, val, S.CIGAR_TABLE))
             raise NotImplementedError(err_msg)
-    gnm_offset = gnm_pos
-    return gnm_offset
+    ref_offset = ref_pos
+    return ref_offset           # offset wst. the reference genome 
 
 
 """
