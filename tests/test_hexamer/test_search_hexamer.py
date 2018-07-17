@@ -1,11 +1,7 @@
 import unittest
 
-from kleat.hexamer.search import (
-    plus_search,
-    minus_search,
-    search,
-    extract_seq
-)
+from kleat.hexamer.search import plus_search, minus_search, search
+from kleat.hexamer.hexamer import extract_seq
 
 
 class TestSearchHexamer(unittest.TestCase):

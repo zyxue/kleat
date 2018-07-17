@@ -1,10 +1,6 @@
-from collections import defaultdict
 from unittest.mock import MagicMock
 
-import pytest
-
 from kleat.evidence import link
-import kleat.misc.settings as S
 
 
 def test_analyze_forward_link_for_polyA_read():

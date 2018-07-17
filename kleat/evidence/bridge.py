@@ -6,11 +6,8 @@ import kleat.misc.settings as S
 
 # for bridge PAS hexamer search needs done in a more customized way than just
 # using gen_contig_hexamer_tuple
-from kleat.hexamer.search import (
-    search,
-    extract_seq,
-    gen_reference_hexamer_tuple
-)
+from kleat.hexamer.search import search
+from kleat.hexamer.hexamer import extract_seq, gen_reference_hexamer_tuple
 
 
 def write_evidence(dd_bridge, contig, ref_fa, csvwriter):

@@ -1,8 +1,9 @@
 from kleat.misc import apautils
 from kleat.misc.settings import ClvRecord
 
-from kleat.hexamer.search import (
-    gen_contig_hexamer_tuple, gen_reference_hexamer_tuple
+from kleat.hexamer.hexamer import (
+    gen_contig_hexamer_tuple,
+    gen_reference_hexamer_tuple
 )
 
 

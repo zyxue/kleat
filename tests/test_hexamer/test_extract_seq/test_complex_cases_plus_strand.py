@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import MagicMock, call
 
 import kleat.misc.settings as S
-from kleat.hexamer.search import extract_seq
+from kleat.hexamer.hexamer import extract_seq
 
 
 def test_with_skipped_region_for_plus_strand_clv():

@@ -3,7 +3,7 @@ from unittest.mock import MagicMock
 from unittest.mock import patch
 
 import kleat.misc.settings as S
-from kleat.hexamer.search import extract_seq
+from kleat.hexamer.hexamer import extract_seq
 
 
 def test_extract_seq_for_plus_strand_clv_supported_by_link():

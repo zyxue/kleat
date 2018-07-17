@@ -1,7 +1,7 @@
 from unittest.mock import MagicMock
 
 import kleat.misc.settings as S
-from kleat.hexamer.search import extract_seq
+from kleat.hexamer.hexamer import extract_seq
 
 
 """
