@@ -29,8 +29,8 @@ KARBOR_FEATURE_COLS = [
     'ctg_AATAGA', 'ctg_AAAAAG', 'ctg_ACTAAA', 'ctg_AAGAAA',
     'ctg_AATGAA', 'ctg_TTTAAA', 'ctg_AAAACA', 'ctg_GGGGCT', 'ctg_NA',
 
-    'ctg_hex_dist',
-    # 'ref_hex_dist',
+    # 'ctg_hex_dist',
+    'ref_hex_dist',
 
     # # PAS hexamer shown on reference genome
     # 'ref_AATAAA', 'ref_ATTAAA', 'ref_AGTAAA', 'ref_TATAAA',
