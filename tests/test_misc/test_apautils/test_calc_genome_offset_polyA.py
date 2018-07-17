@@ -113,28 +113,50 @@ def test_for_contig_with_two_skips_and_soft_clip_edge_case_2():
     assert calc_genome_offset(cigartuples, ctg_clv=5, tail_side='right') == gnm_offset
 
 
-# def test_for_contig_real_case_E1_L_4362_chr16_plus_strand():
-#     cigartuples = [
-#         (S.BAM_CMATCH, 501),
-#         (S.BAM_CREF_SKIP, 743),
-#         (S.BAM_CMATCH, 169),
-#         (S.BAM_CREF_SKIP, 661),
-#         (S.BAM_CMATCH, 145),
-#         (S.BAM_CREF_SKIP, 1005),
-#         (S.BAM_CMATCH, 94),
-#         (S.BAM_CREF_SKIP, 1712),
-#         (S.BAM_CMATCH, 220),
-#         (S.BAM_CREF_SKIP, 3379),
-#         (S.BAM_CMATCH, 156),
-#         (S.BAM_CREF_SKIP, 1043),
-#         (S.BAM_CMATCH, 78),
-#         (S.BAM_CREF_SKIP, 492),
-#         (S.BAM_CMATCH, 155),
-#         (S.BAM_CREF_SKIP, 101),
-#         (S.BAM_CMATCH, 183),
-#         (S.BAM_CREF_SKIP, 183),
-#         (S.BAM_CMATCH, 508),
-#         (S.BAM_CSOFT_CLIP, 13)
-#     ]
-#     gnm_offset = 5250
-#     assert calc_genome_offset(cigartuples, ctg_clv=1129, tail_side='right') == gnm_offset
+def test_for_a_case_derived_from_a_real_one_E1_L_4362_chr16_plus_strand():
+    """
+    mostly just the bases around the clv are copied, the coordinates are
+    arbitray
+
+               AA
+      AAG-----G┘  AAAA     <-bridge read
+      AAG-----GCTT┘        <-bridge contig
+      012     34567        <-contig coord
+              ^ctg_clv
+      AAGXXXXXGCTT
+      0123456789012        <-genome offset coord
+              ^gnm_offset
+
+    """
+    cigartuples = [
+        (S.BAM_CMATCH, 3),
+        (S.BAM_CREF_SKIP, 5),
+        (S.BAM_CMATCH, 4),
+        (S.BAM_CSOFT_CLIP, 4),
+    ]
+    gnm_offset = 8
+    assert calc_genome_offset(cigartuples, ctg_clv=3, tail_side='right') == gnm_offset
+
+
+def test_for_a_case_derived_from_a_real_one_E1_L_4362_chr16_plus_strand_v2():
+    """
+    basically the same as above, much a bit more bases are included on both sides
+
+                   AA
+      AATAAAG-----G┘     AAAA     <-bridge read
+      AATAAAG-----GCTTGGA┘        <-bridge contig
+      0123456     78901234        <-contig coord
+            |     ^ctg_clv
+      AATAAAGXXXXXGCTTGGA
+      01234567890123456789        <-genome offset coord
+                1 ^gnm_offset
+
+    """
+    cigartuples = [
+        (S.BAM_CMATCH, 7),
+        (S.BAM_CREF_SKIP, 5),
+        (S.BAM_CMATCH, 7),
+        (S.BAM_CSOFT_CLIP, 4),
+    ]
+    gnm_offset = 12
+    assert calc_genome_offset(cigartuples, ctg_clv=7, tail_side='right') == gnm_offset
