@@ -23,6 +23,25 @@ def test_for_skipped_contig_with_clv_right_before_the_skip():
     assert calc_genome_offset(cigartuples, ctg_clv=3, tail_side='right') == gnm_offset
 
 
+def test_skip_check():
+    """
+           AA
+       G--A┘         <-bridge read
+      CG--ATC    <-bridge contig
+      01  2345   <-contig offset coord
+          ^ctg_clv
+      01234567   <-genome offset coord
+       ^gnm_offset
+    """
+    cigartuples = [
+        (S.BAM_CMATCH, 2),
+        (S.BAM_CREF_SKIP, 2),
+        (S.BAM_CMATCH, 3),
+    ]
+    gnm_offset = 1
+    assert calc_genome_offset(cigartuples, ctg_clv=2, tail_side='right', skip_check_size=1) == gnm_offset
+
+
 def test_for_contig_with_two_skips_with_clv_right_before_the_skip():
     """
              AA
@@ -65,6 +84,9 @@ def test_for_contig_with_two_skips_and_soft_clip_with_clv_before_the_skip():
     gnm_offset = 5
     assert calc_genome_offset(cigartuples, ctg_clv=3, tail_side='right') == gnm_offset
 
+    assert calc_genome_offset(cigartuples, ctg_clv=3, tail_side='right', skip_check_size=1) == 5
+    assert calc_genome_offset(cigartuples, ctg_clv=3, tail_side='right', skip_check_size=2) == 1
+
 
 def test_for_contig_with_two_skips_and_soft_clip_edge_case_1():
     """
@@ -88,9 +110,6 @@ def test_for_contig_with_two_skips_and_soft_clip_edge_case_1():
     assert calc_genome_offset(cigartuples, ctg_clv=4, tail_side='right') == gnm_offset
 
 
-# TODO: think if such is a realistic treatment of the clv, maybe it's better to
-# assign clv to C(4), this would be caused by c2g alignment, the tool may
-# wander around where the skip boundry should be. This would fix the real case below it
 def test_for_contig_with_two_skips_and_soft_clip_edge_case_2():
     """
                 AA
@@ -99,7 +118,7 @@ def test_for_contig_with_two_skips_and_soft_clip_edge_case_2():
       01  234  56789012   <-contig offset coord
                ^ctg_clv
       0123456789012   <-genome offset coord
-               ^gnm_offset
+               ^gnm_offset(check the passing for introns)
     """
     cigartuples = [
         (S.BAM_CMATCH, 2),
@@ -111,6 +130,9 @@ def test_for_contig_with_two_skips_and_soft_clip_edge_case_2():
     ]
     gnm_offset = 9
     assert calc_genome_offset(cigartuples, ctg_clv=5, tail_side='right') == gnm_offset
+
+    assert calc_genome_offset(cigartuples, ctg_clv=5, tail_side='right', skip_check_size=1) == 6
+    assert calc_genome_offset(cigartuples, ctg_clv=5, tail_side='right', skip_check_size=2) == 6
 
 
 def test_for_a_case_derived_from_a_real_one_E1_L_4362_chr16_plus_strand():
@@ -137,6 +159,8 @@ def test_for_a_case_derived_from_a_real_one_E1_L_4362_chr16_plus_strand():
     gnm_offset = 8
     assert calc_genome_offset(cigartuples, ctg_clv=3, tail_side='right') == gnm_offset
 
+    assert calc_genome_offset(cigartuples, ctg_clv=3, tail_side='right', skip_check_size=1) == 2
+
 
 def test_for_a_case_derived_from_a_real_one_E1_L_4362_chr16_plus_strand_v2():
     """
@@ -160,3 +184,5 @@ def test_for_a_case_derived_from_a_real_one_E1_L_4362_chr16_plus_strand_v2():
     ]
     gnm_offset = 12
     assert calc_genome_offset(cigartuples, ctg_clv=7, tail_side='right') == gnm_offset
+
+    assert calc_genome_offset(cigartuples, ctg_clv=7, tail_side='right', skip_check_size=1) == 6
