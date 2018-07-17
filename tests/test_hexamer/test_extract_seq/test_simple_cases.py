@@ -134,7 +134,7 @@ class TestExtractSeqForSoftClippedSeq(unittest.TestCase):
 
 class TestExtractSeqForHardClippedSeq(unittest.TestCase):
     """The same to the above test, but replaced BAM_CSOFT_CLIP with BAM_CHARD_CLIP"""
-    @patch('kleat.hexamer.search.apautils')
+    @patch('kleat.hexamer.hexamer.apautils')
     def test_extract_seq_with_starting_softclip(self, mock_apautils):
         """
         TT
@@ -148,7 +148,7 @@ class TestExtractSeqForHardClippedSeq(unittest.TestCase):
         contig.cigartuples = ((S.BAM_CHARD_CLIP, 2), (S.BAM_CMATCH, 4))
         assert extract_seq(contig, strand, ref_clv=8, ref_fa=MagicMock(), ctg_clv=2) == 'CCA'
 
-    @patch('kleat.hexamer.search.apautils')
+    @patch('kleat.hexamer.hexamer.apautils')
     def test_extract_seq_with_ending_softclip(self, mock_apautils):
         """
            AA

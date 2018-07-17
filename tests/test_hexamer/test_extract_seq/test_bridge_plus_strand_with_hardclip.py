@@ -10,7 +10,7 @@ rc: ref_clv; ire: init_ref_end
 """
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_hardclip_before_clv(mock_apautils):
     """
            AA
@@ -42,7 +42,7 @@ def test_hardclip_before_clv(mock_apautils):
 
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_hardclip_after_clv(mock_apautils):
     """
              AAA
@@ -80,7 +80,7 @@ def test_hardclip_after_clv(mock_apautils):
     assert extract_seq(window=5, **kw) == 'CGGTT'
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_hardclip_spanning_clv_from_before_edgecase_1(mock_apautils):
     """
            AA
@@ -108,7 +108,7 @@ def test_hardclip_spanning_clv_from_before_edgecase_1(mock_apautils):
     assert extract_seq(**kw) == 'CATTC'
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_hardclip_spanning_clv_from_before_edgecase_2(mock_apautils):
     """
            AA
@@ -137,7 +137,7 @@ def test_hardclip_spanning_clv_from_before_edgecase_2(mock_apautils):
 
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_hardclip_spanning_clv_from_before_edgecase_3(mock_apautils):
     """
            AA
@@ -166,7 +166,7 @@ def test_hardclip_spanning_clv_from_before_edgecase_3(mock_apautils):
 
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_hardclip_spanning_clv_from_after_edgecase_1(mock_apautils):
     """
              AAA
@@ -205,7 +205,7 @@ def test_hardclip_spanning_clv_from_after_edgecase_1(mock_apautils):
 
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_hardclip_spanning_clv_from_after_edgecase_2(mock_apautils):
     """
              AAA
@@ -237,7 +237,7 @@ def test_hardclip_spanning_clv_from_after_edgecase_2(mock_apautils):
 
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_hardclip_spanning_clv_from_after_edgecase_3(mock_apautils):
     """
              AAA

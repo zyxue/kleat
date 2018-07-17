@@ -10,7 +10,7 @@ rc: ref_clv; irb: init_ref_beg
 """
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_after_clv(mock_apautils):
     """
              TT
@@ -39,7 +39,7 @@ def test_with_hardclip_after_clv(mock_apautils):
     assert extract_seq(window=5, **kw) == 'GTGA'
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_before_clv(mock_apautils):
     """
              TT
@@ -67,7 +67,7 @@ def test_with_hardclip_before_clv(mock_apautils):
     assert extract_seq(**kw) == 'GTGA'
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_spanning_clv_from_before(mock_apautils):
     """
              TT
@@ -95,7 +95,7 @@ def test_with_hardclip_spanning_clv_from_before(mock_apautils):
     assert extract_seq(**kw) == ''
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_spanning_clv_from_before_edgecase_1(mock_apautils):
     """
              TT
@@ -124,7 +124,7 @@ def test_with_hardclip_spanning_clv_from_before_edgecase_1(mock_apautils):
 
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_not_spanning_clv_from_before_edgecase_2(mock_apautils):
     """
              TT
@@ -152,7 +152,7 @@ def test_with_hardclip_not_spanning_clv_from_before_edgecase_2(mock_apautils):
     assert extract_seq(**kw) == 'GTGA'
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_spanning_clv_from_before_edgecase_3(mock_apautils):
     """
              TT
@@ -180,7 +180,7 @@ def test_with_hardclip_spanning_clv_from_before_edgecase_3(mock_apautils):
     assert extract_seq(**kw) == ''
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_spanning_clv_from_after_edgecase_1(mock_apautils):
     """
              TT
@@ -208,7 +208,7 @@ def test_with_hardclip_spanning_clv_from_after_edgecase_1(mock_apautils):
     assert extract_seq(**kw) == ''
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_not_spanning_clv_from_after_edgecase_2(mock_apautils):
     """
              TT
@@ -236,7 +236,7 @@ def test_with_hardclip_not_spanning_clv_from_after_edgecase_2(mock_apautils):
     assert extract_seq(**kw) == 'GTGA'
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_spanning_clv_from_after_edgecase_3(mock_apautils):
     """
              TT
@@ -264,7 +264,7 @@ def test_with_hardclip_spanning_clv_from_after_edgecase_3(mock_apautils):
     assert extract_seq(**kw) == ''
 
 
-@patch('kleat.hexamer.search.apautils')
+@patch('kleat.hexamer.hexamer.apautils')
 def test_with_hardclip_spanning_clv_from_after(mock_apautils):
     """
              TT
