@@ -33,7 +33,7 @@ def calc_genome_seq_len(cigartuples):
                if _[0] in CIGARS_FOR_GENOME_SEQ_LENGTH)
 
 
-def calc_offset(cigartuples, ctg_clv, tail_side, skip_check_size):
+def calc_offset(cigartuples, ctg_clv, skip_check_size):
     # current position in contig coordinate and genome offset coordinates
     ctg_pos, ref_pos = 0, 0
 
@@ -69,11 +69,7 @@ def calc_offset(cigartuples, ctg_clv, tail_side, skip_check_size):
         elif key == S.BAM_CINS:
             ctg_pos += val
             if ctg_pos > ctg_clv:
-                if tail_side == 'left':
-                    ref_pos -= 1
-                    break
-                else:
-                    break
+                break
         else:
             err_msg = (' S.BAM_CEQUA, S.BAM_CDIFF & S.BAM_CPAD & BAM_CBACK '
                        'cigar value are note implemented yet. Please report. '
@@ -124,7 +120,7 @@ def calc_genome_offset(cigartuples, ctg_clv, tail_side='left', skip_check_size=N
         cigartuples = list(reversed(cigartuples))
         ctg_clv = ctg_seq_len - ctg_clv - 1
 
-    ref_offset = calc_offset(cigartuples, ctg_clv, tail_side, skip_check_size)
+    ref_offset = calc_offset(cigartuples, ctg_clv, skip_check_size)
 
     if tail_side == 'left':     # flip back
         ref_seq_len = calc_genome_seq_len(cigartuples)
