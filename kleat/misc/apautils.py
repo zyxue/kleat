@@ -1,6 +1,7 @@
 from Bio import Seq
 
 import kleat.misc.settings as S
+from kleat.misc.calc_genome_offset import calc_genome_offset
 
 
 def reverse_complement(seq):
@@ -84,92 +85,6 @@ def infer_query_sequence(contig, always=False):
             elif k == num_cigars - 1:
                 res += contig.get_tag('XH')
     return res
-
-
-def calc_genome_offset(cigartuples, ctg_clv, tail_side='left', skip_check_size=None):
-    """Calculate the genome offset based on clv in the contig coordinate and the
-    contig cigars when it's aligned to the reference genome.
-
-    Note the ctg_clv and tail_base should be in contig coordinate in the same
-    direction of the reference genome. If the contig is reversed when aligned
-    to the genome, the contig should be flipped to derive its corresponding
-    ctg_clv and tail_base serving this function. see corresponding test cases
-    for detail.
-
-    ctg_clv is independent of the reference genome except that its direction
-    needs to be the same as the reference genome. When the contig is aligned to
-    it may include softclip, hardclip, skips (e.g introns) and indels, these
-    regions are properly dealt by this function to obtain an genome offset that
-    is directly addable to the genome coordinate.
-
-    For example, This genome offset is needed for inferring the clv in genomic
-    coordinate, i.e. gnm_clv = ctg.reference_start + gnm_offset
-
-    :param ctg_clv: clv in contig coordinate.
-    :param tail_side: T or A, meaning the tail is polyA or polyT. If not
-    specified, default to T. This parameter is only used when the clv happens
-    to within a insertion. In such case, the exact coordinate of the clv in the
-    genome is not available, but trying to be as accurate as possible, one
-    strategy is to use the position of leftmost genome base around the
-    insertion when it's polyT; otherwise, use the position of the rightmost
-    base.
-
-    """
-    ctg_pos = 0             # current position in contig coordinate
-    ref_pos = 0             # current position in genome coordinate
-    last_cigar_is_skip = None
-    last_skip_size = 0
-
-    for key, val in cigartuples:
-        if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
-            ctg_clv -= val
-
-        elif key == S.BAM_CMATCH:
-            ctg_pos += val
-
-            if ctg_pos > ctg_clv:
-                delta = ctg_pos - ctg_clv
-                next_ref_pos = ref_pos + val - delta
-
-                if last_cigar_is_skip:
-                    # import pdb; pdb.set_trace()
-                    if skip_check_size is not None and next_ref_pos - ref_pos < skip_check_size:
-                        ref_pos = ref_pos - last_skip_size - 1
-                    else:
-                        ref_pos = next_ref_pos
-                else:
-                    ref_pos = next_ref_pos
-                break
-            else:
-                ref_pos = ref_pos + val
-
-        elif key == S.BAM_CREF_SKIP or key == S.BAM_CDEL:
-            ref_pos += val
-            last_skip_size = val
-
-        elif key == S.BAM_CINS:
-            ctg_pos += val
-            if ctg_pos > ctg_clv:
-                if tail_side == 'left':
-                    ref_pos -= 1
-                    break
-                else:
-                    break
-        else:
-            err_msg = (' S.BAM_CEQUA, S.BAM_CDIFF & S.BAM_CPAD & BAM_CBACK '
-                       'cigar value are note implemented yet. Please report. '
-                       'Your cigar: ({0}, {1})\n'
-                       '{2}'.format(key, val, S.CIGAR_TABLE))
-            raise NotImplementedError(err_msg)
-
-        if key == S.BAM_CREF_SKIP:
-            last_cigar_is_skip = True
-        else:
-            last_cigar_is_skip = False
-
-
-    ref_offset = ref_pos
-    return ref_offset           # offset wst. the reference genome 
 
 
 """
