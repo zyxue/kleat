@@ -13,14 +13,14 @@ drawing
 """
 
 
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
+@pytest.mark.parametrize("ctg_cigartuples, ctg_clv, gnm_offset", [
     [((S.BAM_CMATCH, 4),), 1, 1],
 
     [((S.BAM_CMATCH, 10),), 2, 2],
     [((S.BAM_CMATCH, 20),), 5, 5],
 ])
 def test_for_nonskipped_contig(
-        ctg_cigartuples, ctg_offset, gnm_offset):
+        ctg_cigartuples, ctg_clv, gnm_offset):
     """
      TT
       └AC     <-bridge read
@@ -30,16 +30,16 @@ def test_for_nonskipped_contig(
       01234   <-genome offset coord
        ^gnm_offset
     """
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
+    assert calc_genome_offset(ctg_cigartuples, ctg_clv, 'left') == gnm_offset
 
 
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
+@pytest.mark.parametrize("ctg_cigartuples, ctg_clv, gnm_offset", [
     [((S.BAM_CMATCH, 6), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 4)), 2, 2],
 
     [((S.BAM_CMATCH, 10), (S.BAM_CREF_SKIP, 5), (S.BAM_CMATCH, 10)), 2, 2],
 ])
 def test_for_skipped_with_clv_before_a_skip(
-        ctg_cigartuples, ctg_offset, gnm_offset):
+        ctg_cigartuples, ctg_clv, gnm_offset):
     """
      TT
       └AC            <-bridge read
@@ -49,16 +49,16 @@ def test_for_skipped_with_clv_before_a_skip(
       0123456789012   <-genome offset coord
         ^ctf/gnm_offset
     """
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
+    assert calc_genome_offset(ctg_cigartuples, ctg_clv, 'left') == gnm_offset
 
 
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
+@pytest.mark.parametrize("ctg_cigartuples, ctg_clv, gnm_offset", [
     [((S.BAM_CMATCH, 2), (S.BAM_CREF_SKIP, 2), (S.BAM_CMATCH, 6)), 4, 6],
 
     [((S.BAM_CMATCH, 10), (S.BAM_CREF_SKIP, 5), (S.BAM_CMATCH, 10)), 12, 17],
 ])
 def test_for_skipped_contig_with_clv_after_a_skip(
-        ctg_cigartuples, ctg_offset, gnm_offset):
+        ctg_cigartuples, ctg_clv, gnm_offset):
     """
           TT
           |└AC  <-bridge read
@@ -68,10 +68,10 @@ def test_for_skipped_contig_with_clv_after_a_skip(
       01234567890   <-genome offset coord
             ^gnm_offset
     """
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
+    assert calc_genome_offset(ctg_cigartuples, ctg_clv, 'left') == gnm_offset
 
 
-@pytest.mark.parametrize("ctg_cigartuples, ctg_offset, gnm_offset", [
+@pytest.mark.parametrize("ctg_cigartuples, ctg_clv, gnm_offset", [
     [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 5, 5],  # case1
 
     [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 30, 30],  # case2
@@ -80,7 +80,7 @@ def test_for_skipped_contig_with_clv_after_a_skip(
     [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 32, 34],
     [((S.BAM_CMATCH, 31), (S.BAM_CDEL, 2), (S.BAM_CMATCH, 44)), 33, 35],
 ])
-def test_for_a_long_contig_with_deletion(ctg_cigartuples, ctg_offset, gnm_offset):
+def test_for_a_long_contig_with_deletion(ctg_cigartuples, ctg_clv, gnm_offset):
     """
        TT                       TT TT
        |└TC                      └C └TC                                            <-bridge read
@@ -92,4 +92,4 @@ def test_for_a_long_contig_with_deletion(ctg_cigartuples, ctg_offset, gnm_offset
          |    1         2         3  |      4         5         6         7
          ^gnm_offset(case1)          ^gnm_offset(case3)
     """
-    assert calc_genome_offset(ctg_cigartuples, ctg_offset, 'left') == gnm_offset
+    assert calc_genome_offset(ctg_cigartuples, ctg_clv, 'left') == gnm_offset
