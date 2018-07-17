@@ -86,7 +86,7 @@ def infer_query_sequence(contig, always=False):
     return res
 
 
-def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
+def calc_genome_offset(cigartuples, ctg_clv, tail_side='left', skip_check_size=None):
     """Calculate the genome offset based on clv in the contig coordinate and the
     contig cigars when it's aligned to the reference genome.
 
@@ -117,6 +117,8 @@ def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
     """
     ctg_pos = 0             # current position in contig coordinate
     ref_pos = 0             # current position in genome coordinate
+    last_cigar_is_skip = None
+    last_skip_size = 0
 
     for key, val in cigartuples:
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
@@ -127,13 +129,23 @@ def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
 
             if ctg_pos > ctg_clv:
                 delta = ctg_pos - ctg_clv
-                ref_pos = ref_pos + val - delta
+                next_ref_pos = ref_pos + val - delta
+
+                if last_cigar_is_skip:
+                    # import pdb; pdb.set_trace()
+                    if skip_check_size is not None and next_ref_pos - ref_pos < skip_check_size:
+                        ref_pos = ref_pos - last_skip_size - 1
+                    else:
+                        ref_pos = next_ref_pos
+                else:
+                    ref_pos = next_ref_pos
                 break
             else:
                 ref_pos = ref_pos + val
 
         elif key == S.BAM_CREF_SKIP or key == S.BAM_CDEL:
             ref_pos += val
+            last_skip_size = val
 
         elif key == S.BAM_CINS:
             ctg_pos += val
@@ -149,6 +161,13 @@ def calc_genome_offset(cigartuples, ctg_clv, tail_side='left'):
                        'Your cigar: ({0}, {1})\n'
                        '{2}'.format(key, val, S.CIGAR_TABLE))
             raise NotImplementedError(err_msg)
+
+        if key == S.BAM_CREF_SKIP:
+            last_cigar_is_skip = True
+        else:
+            last_cigar_is_skip = False
+
+
     ref_offset = ref_pos
     return ref_offset           # offset wst. the reference genome 
 
