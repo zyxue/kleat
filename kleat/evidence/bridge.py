@@ -74,7 +74,7 @@ def gen_hex_tuple(contig, strand, ref_clv, ref_fa, ctg_clv, dd_bridge):
     return ctg_hex_tuple
 
 
-def analyze_bridge(contig, read, ref_fa, dd_bridge):
+def analyze_bridge(contig, read, ref_fa, dd_bridge, bridge_skip_check_size):
     """
     :param dd_bridge: holds bridge_evidence for a given contig, here it's just
     used to check if hexamer_search has already been done for a given ref_clv
@@ -88,7 +88,7 @@ def analyze_bridge(contig, read, ref_fa, dd_bridge):
     strand, ctg_offset, tail_len, tail_direction = bdg_support
 
     offset = apautils.calc_genome_offset(
-        contig.cigartuples, ctg_offset, tail_direction)
+        contig.cigartuples, ctg_offset, tail_direction, skip_check_size=3)
 
     if offset < 0:             # meaning the clv is on soft/hard clipped region
         return

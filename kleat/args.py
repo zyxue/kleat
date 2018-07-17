@@ -50,4 +50,15 @@ def get_args():
               'aggregating polyA evidence per cleavage site, mostly for '
               'debugging purpose')
     )
+
+    parser.add_argument(
+        '--bridge-skip-check-size', type=int, default=3,
+        help=('the size beyond which the clv is predicted be on the next '
+              'matched region. Otherwise, clv is predicted to be at the edge '
+              'of the prevision match. The argument is added because '
+              'inconsistent break points are observed between read '
+              '(softclip as in r2c alignment) and contig '
+              '(boundry between BAM_CMATCH and BAM_CREF_SKIP)')
+    )
+
     return parser.parse_args()

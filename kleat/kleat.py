@@ -24,7 +24,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter):
+def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size):
     """loop through each contig and collect polyA evidence"""
     gen_key = apautils.gen_clv_key_tuple_from_clv_record
     iters = tqdm(enumerate(c2g_bam), desc='processed', unit=' contigs')
@@ -38,8 +38,8 @@ def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter):
         if rec is not None:
             ascs.append(gen_key(rec))
 
-        for rec in process_bridge_and_link(contig, r2c_bam,
-                                           ref_fa, csvwriter):
+        for rec in process_bridge_and_link(
+                contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size):
             # TODO: with either bridge or link, they probably won't support
             # clv of the other strand
             ascs.append(gen_key(rec))
@@ -90,7 +90,10 @@ def main():
     with open(tmp_output, 'wt') as opf:
         csvwriter = csv.writer(opf, delimiter='\t')
         csvwriter.writerow(S.HEADER)
-        collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter)
+        collect_polya_evidence(
+            c2g_bam, r2c_bam, ref_fa, csvwriter,
+            args.bridge_skip_check_size
+        )
 
     logger.info('Reading {0} into a pandas.DataFrame...'.format(tmp_output))
     df_clv = U.timeit(pd.read_csv)(tmp_output, keep_default_na=False, sep='\t')
