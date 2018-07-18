@@ -97,8 +97,6 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
                 if cb <= ctg_clv:  # meaning clip spans the clv
                     break
                 else:
-                    seq = ctg_seq[cb: ctg_clv]
-                    res_seq = seq + res_seq
                     ce -= val
                     fe -= val
             else:
