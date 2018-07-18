@@ -126,6 +126,28 @@ To uninstall
 
    python setup.py develop --uninstall
 
+
+Debug instruction
+-----------------
+
+For a particular contig, you could insert pdb such as below
+
+.. code-block::
+
+@@ -32,6 +32,11 @@ def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter, bridge_skip_chec
+         if contig.is_unmapped:
+             continue
+ 
++        if contig.query_name == "<your contig name>" and contig.reference_name == "chrX":
++            pass
++        else:
++            continue
++
+         ascs = []           # already supported clvs
+         rec = process_suffix(
+             contig, r2c_bam, ref_fa, csvwriter)
+
+
 Zero-based index
 ----------------
 
