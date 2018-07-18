@@ -33,6 +33,27 @@ def calc_genome_seq_len(cigartuples):
                if _[0] in CIGARS_FOR_GENOME_SEQ_LENGTH)
 
 
+def do_match(cigar_val, ctg_pos, ref_pos, ctg_clv,
+             last_cigar_is_skip, last_skip_size, skip_check_size):
+    val = cigar_val
+
+    if ctg_pos > ctg_clv:
+        delta = ctg_pos - ctg_clv
+        next_ref_pos = ref_pos + val - delta
+
+        if last_cigar_is_skip:
+            if (skip_check_size is not None and
+                next_ref_pos - ref_pos < skip_check_size):
+                ref_pos = ref_pos - last_skip_size - 1
+            else:
+                ref_pos = next_ref_pos
+        else:
+            ref_pos = next_ref_pos
+    else:
+        ref_pos = ref_pos + val
+    return ctg_pos, ref_pos
+
+
 def calc_offset(cigartuples, ctg_clv, skip_check_size):
     # current position in contig coordinate and genome offset coordinates
     ctg_pos, ref_pos = 0, 0
@@ -40,27 +61,24 @@ def calc_offset(cigartuples, ctg_clv, skip_check_size):
     last_cigar_is_skip = None
     last_skip_size = 0
 
-    for key, val in cigartuples:
+    for idx, (key, val) in enumerate(cigartuples):
         if key == S.BAM_CSOFT_CLIP or key == S.BAM_CHARD_CLIP:
-            ctg_clv -= val
+            if idx == 0:
+                ctg_clv -= val
+            else:
+                # deal in a way similar to match
+                ctg_pos, ref_pos = do_match(
+                    val, ctg_pos, ref_pos, ctg_clv,
+                    last_cigar_is_skip, last_skip_size, skip_check_size
+                )
+                ref_pos -= 1
 
         elif key == S.BAM_CMATCH:
             ctg_pos += val
-
-            if ctg_pos > ctg_clv:
-                delta = ctg_pos - ctg_clv
-                next_ref_pos = ref_pos + val - delta
-
-                if last_cigar_is_skip:
-                    if skip_check_size is not None and next_ref_pos - ref_pos < skip_check_size:
-                        ref_pos = ref_pos - last_skip_size - 1
-                    else:
-                        ref_pos = next_ref_pos
-                else:
-                    ref_pos = next_ref_pos
-                break
-            else:
-                ref_pos = ref_pos + val
+            ctg_pos, ref_pos = do_match(
+                val, ctg_pos, ref_pos, ctg_clv,
+                last_cigar_is_skip, last_skip_size, skip_check_size,
+            )
 
         elif key == S.BAM_CREF_SKIP or key == S.BAM_CDEL:
             ref_pos += val
@@ -81,6 +99,9 @@ def calc_offset(cigartuples, ctg_clv, skip_check_size):
             last_cigar_is_skip = True
         else:
             last_cigar_is_skip = False
+
+        if ctg_pos > ctg_clv:
+            break
     return ref_pos
 
 
