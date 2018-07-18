@@ -36,6 +36,7 @@ def calc_genome_seq_len(cigartuples):
 def do_match(cigar_val, ctg_pos, ref_pos, ctg_clv,
              last_cigar_is_skip, last_skip_size, skip_check_size):
     val = cigar_val
+    ctg_pos += val
 
     if ctg_pos > ctg_clv:
         delta = ctg_pos - ctg_clv
@@ -66,15 +67,14 @@ def calc_offset(cigartuples, ctg_clv, skip_check_size):
             if idx == 0:
                 ctg_clv -= val
             else:
-                # deal in a way similar to match
+                # deal in a way similar to S.BAM_CMATCH
                 ctg_pos, ref_pos = do_match(
                     val, ctg_pos, ref_pos, ctg_clv,
                     last_cigar_is_skip, last_skip_size, skip_check_size
                 )
-                ref_pos -= 1
 
         elif key == S.BAM_CMATCH:
-            ctg_pos += val
+            # ctg_pos += val
             ctg_pos, ref_pos = do_match(
                 val, ctg_pos, ref_pos, ctg_clv,
                 last_cigar_is_skip, last_skip_size, skip_check_size,
