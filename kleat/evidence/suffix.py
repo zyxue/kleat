@@ -37,13 +37,13 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
     ref_clv = apautils.calc_ref_clv(contig, tail_side)
     tail_len = apautils.calc_tail_length(contig, tail_side)
 
-
     num_suffix_reads = calc_num_suffix_reads(r2c_bam, contig, ref_clv)
 
     if strand == '-':
         ctg_clv = tail_len
     else:
-        ctg_clv = len(contig.query_sequence) - tail_len - 1
+        ctg_seq_len = contig.infer_query_length(always=True)
+        ctg_clv = ctg_seq_len - tail_len - 1
     ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
         contig, strand, ref_clv, ref_fa, ctg_clv)
 

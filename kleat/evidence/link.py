@@ -99,7 +99,8 @@ def gen_clv_record(contig, clv_key_tuple, num_link_reads, ref_fa):
     if strand == '-':
         ctg_clv = 0
     else:
-        ctg_clv = len(contig.query_sequence) - 1
+        ctg_seq_len = contig.infer_query_length(always=True)
+        ctg_clv = ctg_seq_len - 1
 
     ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
         contig, strand, ref_clv, ref_fa, ctg_clv)
