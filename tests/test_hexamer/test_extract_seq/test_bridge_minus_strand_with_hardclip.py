@@ -92,7 +92,7 @@ def test_with_hardclip_spanning_clv_from_before(mock_apautils):
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=9, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'GTGA'
 
 
 @patch('kleat.hexamer.hexamer.apautils')
@@ -120,7 +120,7 @@ def test_with_hardclip_spanning_clv_from_before_edgecase_1(mock_apautils):
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=9, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'GTGA'
 
 
 
@@ -177,7 +177,7 @@ def test_with_hardclip_spanning_clv_from_before_edgecase_3(mock_apautils):
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=0, ref_fa=ref_fa, ctg_clv=0)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'GTGA'
 
 
 @patch('kleat.hexamer.hexamer.apautils')
@@ -205,7 +205,7 @@ def test_with_hardclip_spanning_clv_from_after_edgecase_1(mock_apautils):
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=9, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'GTGA'
 
 
 @patch('kleat.hexamer.hexamer.apautils')
@@ -261,7 +261,7 @@ def test_with_hardclip_spanning_clv_from_after_edgecase_3(mock_apautils):
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=9, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'GTGA'
 
 
 @patch('kleat.hexamer.hexamer.apautils')
@@ -286,4 +286,4 @@ def test_with_hardclip_spanning_clv_from_after(mock_apautils):
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='-', ref_clv=9, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'GTGA'
