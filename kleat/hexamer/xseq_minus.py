@@ -73,7 +73,9 @@ def extract(cigartuples, ctg_seq, seqname, strand, ctg_clv, ref_clv, ref_fa, win
 
     use fe instead of re because re is a Python module for regex
     """
+    # aka. ctg_b: contig beginning
     cb = init_ctg_beg(ctg_seq)
+    # aka. ref_b: reference genome ending
     fb = init_ref_beg(ref_clv, cigartuples, ctg_clv)
 
     res_seq = ''
