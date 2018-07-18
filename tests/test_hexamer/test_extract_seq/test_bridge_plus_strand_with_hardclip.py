@@ -133,7 +133,7 @@ def test_hardclip_spanning_clv_from_before_edgecase_2(mock_apautils):
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=6, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'CATTC'
 
 
 
@@ -162,7 +162,7 @@ def test_hardclip_spanning_clv_from_before_edgecase_3(mock_apautils):
     ref_fa = MagicMock()
     ref_fa.get_reference_length.return_value = 100
     kw = dict(contig=ctg, strand='+', ref_clv=6, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'CATTC'
 
 
 
@@ -233,7 +233,7 @@ def test_hardclip_spanning_clv_from_after_edgecase_2(mock_apautils):
     ref_fa.get_reference_length.return_value = 100
     ref_fa.fetch = MagicMock(return_value='C')
     kw = dict(contig=ctg, strand='+', ref_clv=12, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'ACGGTT'
 
 
 
@@ -265,4 +265,54 @@ def test_hardclip_spanning_clv_from_after_edgecase_3(mock_apautils):
     ref_fa.get_reference_length.return_value = 100
     ref_fa.fetch = MagicMock(return_value='C')
     kw = dict(contig=ctg, strand='+', ref_clv=12, ref_fa=ref_fa, ctg_clv=4)
-    assert extract_seq(**kw) == ''
+    assert extract_seq(**kw) == 'ACGGTT'
+
+
+def test_for_clv_on_the_end_of_contig_edgecase():
+    """
+                 AA
+              ACT┘|      <-bridge read
+          ACGTACT |      <-suffix contig
+          0123456789     <-contig coord
+                ^ctg_clv
+          4567890123     <-genome coord
+                ^ref_clv
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr1'
+    ctg.query_sequence = 'ACGTACT'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 7),
+    )
+
+    ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
+    ref_fa.fetch = MagicMock(return_value='C')
+    kw = dict(contig=ctg, strand='+', ref_clv=10, ref_fa=ref_fa, ctg_clv=6)
+    assert extract_seq(**kw) == 'ACGTACT'
+
+
+def test_for_bridge_read_on_suffix_end_and_clv_is_on_the_end_of_contig_edgecase():
+    """
+                 AA
+           CGTACT┘|      <-bridge read
+           012345678
+           |||AAA  |
+       ATGACGT┘ |  |     <-suffix contig
+       0123456789012     <-contig offset coord
+           |    ^ctg_clv
+       5678901234567     <-genome offset coord
+            1   ^ref_clv
+    """
+    ctg = MagicMock()
+    ctg.reference_name = 'chr1'
+    ctg.query_sequence = 'ATGACGTAAA'
+    ctg.cigartuples = (
+        (S.BAM_CMATCH, 7),
+        (S.BAM_CSOFT_CLIP, 3)
+    )
+
+    ref_fa = MagicMock()
+    ref_fa.get_reference_length.return_value = 100
+    kw = dict(contig=ctg, strand='+', ref_clv=9, ref_fa=ref_fa, ctg_clv=9)
+    assert extract_seq(**kw) == 'ATGACGTAAA'
