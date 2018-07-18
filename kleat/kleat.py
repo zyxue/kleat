@@ -81,7 +81,7 @@ def main():
     c2g_bam = pysam.AlignmentFile(args.contigs_to_genome)
     r2c_bam = pysam.AlignmentFile(args.reads_to_contigs)
     ref_fa = pysam.FastaFile(args.reference_genome)
-    output = gen_output(args.output, args.output_format)
+    output = gen_output(args.output, args.output_format.lower())
     tmp_output = gen_tmp_output(output)
     for o in [output, tmp_output]:
         if os.path.exists(o):
