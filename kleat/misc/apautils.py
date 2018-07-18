@@ -36,31 +36,39 @@ def fetch_seq(pysam_fa, seqname, beg, end):
     circular_contigs = {'chrM', 'MT'}
     if beg <= end:
         if beg >= 0:
-            if end <= seq_len:
-                res = pysam_fa.fetch(seqname, beg, end)
+            if beg >= seq_len:
+                beg -= seq_len
+                end -= seq_len
+                res = fetch_seq(pysam_fa, seqname, beg, end)
             else:
-                if seqname in circular_contigs:
-                    if beg == 16606:
-                        import pdb; pdb.set_trace()
-                    p1 = pysam_fa.fetch(seqname, beg, seq_len)
-                    p2 = pysam_fa.fetch(seqname, 0, end - seq_len)
-                    res = p1 + p2
+                if end <= seq_len:
+                    res = pysam_fa.fetch(seqname, beg, end)
                 else:
-                    res = pysam_fa.fetch(seqname, beg, seq_len)
+                    if seqname in circular_contigs:
+                        p1 = pysam_fa.fetch(seqname, beg, seq_len)
+                        p2 = pysam_fa.fetch(seqname, 0, end - seq_len)
+                        res = p1 + p2
+                    else:
+                        res = pysam_fa.fetch(seqname, beg, seq_len)
         else:
-            if end <= seq_len:
-                if seqname in circular_contigs:
-                    p1 = pysam_fa.fetch(seqname, seq_len + beg, seq_len)
-                    p2 = pysam_fa.fetch(seqname, 0, end)
-                    res = p1 + p2
-                else:
-                    res = pysam_fa.fetch(seqname, 0, end)
+            if end <= 0:
+                beg += seq_len
+                end += seq_len
+                res = fetch_seq(pysam_fa, seqname, beg, end)
             else:
-                raise NotImplementedError('How is this possible? Please report'
-                                          'seqname: {0}, '
-                                          'seq_length: {1}, '
-                                          'beg: {2}, '
-                                          'end: {3}')
+                if end <= seq_len:
+                    if seqname in circular_contigs:
+                        p1 = pysam_fa.fetch(seqname, seq_len + beg, seq_len)
+                        p2 = pysam_fa.fetch(seqname, 0, end)
+                        res = p1 + p2
+                    else:
+                        res = pysam_fa.fetch(seqname, 0, end)
+                else:
+                    raise NotImplementedError('How is this possible? Please report'
+                                              'seqname: {0}, '
+                                              'seq_length: {1}, '
+                                              'beg: {2}, '
+                                              'end: {3}')
     else:
         beg -= seq_len
         res = fetch_seq(pysam_fa, seqname, beg, end)
