@@ -74,6 +74,50 @@ def test_fetch_seq_for_circular_DNA_when_ending_beg_is_larger_than_end_set_seq_l
     assert fetch_seq(REF_FA, seqname='MT', beg=21, end=3) == 'AT'
 
 
+def test_fetch_seq_for_circular_DNA_when_both_beg_and_end_are_larger_than_seq_len():
+    """
+    this happens when the assembled contig cross the starting point of a circular DNA
+
+              ┬          ┬
+    AATTCCGGAC AATTCCGGAC AATTCCGGAC
+    0123456789 0123456789 0123456789
+    """
+    assert fetch_seq(REF_FA, seqname='MT', beg=0, end=10) == 'AATTCCGGAC'
+
+    assert fetch_seq(REF_FA, seqname='MT', beg=10, end=11) == 'A'
+    assert fetch_seq(REF_FA, seqname='MT', beg=10, end=12) == 'AA'
+    assert fetch_seq(REF_FA, seqname='MT', beg=10, end=13) == 'AAT'
+    assert fetch_seq(REF_FA, seqname='MT', beg=10, end=14) == 'AATT'
+
+    assert fetch_seq(REF_FA, seqname='MT', beg=11, end=11) == ''
+    assert fetch_seq(REF_FA, seqname='MT', beg=11, end=12) == 'A'
+    assert fetch_seq(REF_FA, seqname='MT', beg=11, end=13) == 'AT'
+
+    assert fetch_seq(REF_FA, seqname='MT', beg=12, end=11) == 'TTCCGGACA'
+    assert fetch_seq(REF_FA, seqname='MT', beg=12, end=12) == ''
+    assert fetch_seq(REF_FA, seqname='MT', beg=12, end=13) == 'T'
+
+    assert fetch_seq(REF_FA, seqname='MT', beg=21, end=21) == ''
+    assert fetch_seq(REF_FA, seqname='MT', beg=21, end=23) == 'AT'
+
+
+def test_fetch_seq_for_circular_DNA_when_both_beg_and_end_are_less_than_0():
+    """
+    this happens when the assembled contig cross the starting point of a circular DNA
+
+              ┬          ┬
+    AATTCCGGAC AATTCCGGAC AATTCCGGAC
+    0123456789 0123456789 0123456789
+    """
+    assert fetch_seq(REF_FA, seqname='MT', beg=-1, end=1) == 'CA'
+
+    assert fetch_seq(REF_FA, seqname='MT', beg=-3, end=-1) == 'GA'
+    assert fetch_seq(REF_FA, seqname='MT', beg=-2, end=-1) == 'A'
+
+    assert fetch_seq(REF_FA, seqname='MT', beg=-3, end=0) == 'GAC'
+    assert fetch_seq(REF_FA, seqname='MT', beg=-2, end=0) == 'AC'
+
+
 def test_fetch_seq_for_linear_DNA_with_positive_beginning_and_ending_less_than_contig_length():
     assert fetch_seq(REF_FA, seqname='chr_mock1', beg=0, end=8) == 'AATTCCGG'
     assert fetch_seq(REF_FA, seqname='chr_mock1', beg=2, end=6) == 'TTCC'
