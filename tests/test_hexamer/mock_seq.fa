@@ -4,3 +4,5 @@ AATTCCGG
 TTCCGGAA
 >chrM # test for circular DNA
 AATTCCGG
+>MT # another case with length set to 10 for testing convenience 
+AATTCCGGAC
