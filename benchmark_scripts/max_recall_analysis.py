@@ -55,11 +55,7 @@ def cluster_clv_parallel(df, cutoff=20, num_cpus=24):
     logging.info('concatenating clustered sub dataframes ...')
     df_res = pd.concat(res)
 
-    logging.info('dropping duplicates after clustering ...')
-    dedupped = df_res[['seqname', 'strand', 'mode_clv']].drop_duplicates()
-
-    out = dedupped.rename(columns={'mode_clv': 'clv'}).reset_index(drop=True)
-    return out
+    return df_res
 
 
 if __name__ == "__main__":
@@ -70,7 +66,11 @@ if __name__ == "__main__":
     print(f'before clustering df.shape: {adf.shape}')
 
     print('clustering ...')
-    bdf = cluster_clv_parallel(adf)
+    adf_clustered = cluster_clv_parallel(adf)
+    logging.info('dropping duplicates after clustering ...')
+
+    bdf = adf_clustered[['seqname', 'strand', 'mode_clv']].drop_duplicates()
+    bdf = bdf.rename(columns={'mode_clv': 'clv'}).reset_index(drop=True)
     print(f'after clustering df.shape: {bdf.shape}')
 
     print('mapping ...')
