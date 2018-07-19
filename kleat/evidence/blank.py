@@ -29,7 +29,8 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
         if strand == '-':
             ctg_clv = 0
         else:
-            ctg_clv = len(contig.query_sequence) - 1
+            ctg_seq_len = contig.infer_query_length(always=True)
+            ctg_clv = ctg_seq_len - 1
 
         ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
             contig, strand, ref_clv, ref_fa, ctg_clv)
