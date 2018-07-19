@@ -16,12 +16,7 @@ def gen_outfile(infile):
                         '{0}.ml_ready.pkl'.format(base))
 
 
-if __name__ == "__main__":
-    infile = sys.argv[1]
-    outfile = gen_outfile(infile)
-
-    logging.info('reading {0}'.format(infile))
-    adf = pd.read_pickle(infile)
+def convert_to_ml_ready_df(adf):
     adf['abs_dist_to_aclv'] = adf['signed_dist_to_aclv'].abs()
 
     used_hexamers = [_[0] for _ in S.CANDIDATE_HEXAMERS] + ['NA']
@@ -32,6 +27,16 @@ if __name__ == "__main__":
     ref_dum_hxm.columns = ['ref_' + _ for _ in ref_dum_hxm.columns.values]
 
     bdf = pd.concat([adf, ctg_dum_hxm, ref_dum_hxm], axis=1)
+    return bdf
 
+
+if __name__ == "__main__":
+    infile = sys.argv[1]
+    outfile = gen_outfile(infile)
+
+    logging.info('reading {0}'.format(infile))
+    adf = pd.read_pickle(infile)
+
+    bdf = convert_to_ml_ready_df(adf)
     logging.info('writing {0}'.format(outfile))
     timeit(bdf.to_pickle)(outfile.replace('.fea', '.pkl'))
