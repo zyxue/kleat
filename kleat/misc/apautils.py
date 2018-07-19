@@ -94,12 +94,21 @@ def infer_query_sequence(contig, always=False):
     """
     res = contig.query_sequence
     if always:
-        num_cigars = len(contig.cigartuples)
-        for k, (key, val) in enumerate(contig.cigartuples):
-            if k == 0 and key == S.BAM_CHARD_CLIP:
+        cgts = contig.cigartuples
+        num_cigars = len(cgts)
+        for k, (key, val) in enumerate(cgts):
+            if key != S.BAM_CHARD_CLIP:
+                continue
+
+            if k == 0:
                 res = contig.get_tag('XH') + res
             elif k == num_cigars - 1:
                 res += contig.get_tag('XH')
+            else:
+                err_msg = ("it seems there is a hardclip in the middle "
+                           "of the contig, which was thought to be impossible"
+                           "please report by opening a new github issue")
+                raise ValueError(err_msg)
     return res
 
 
