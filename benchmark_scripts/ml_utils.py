@@ -3,41 +3,41 @@ import logging
 import numpy as np
 import pandas as pd
 
+from kleat.misc.settings import CANDIDATE_HEXAMERS_WITH_NA
 
-KARBOR_FEATURE_COLS = [
-    'signed_dist_to_aclv',
-    # 'abs_dist_to_aclv',
 
-    'max_contig_len',
-    'max_contig_mapq',
-    'any_contig_is_hardclipped',
+CTG_HEX_DUMMY_COLS = ['ctg_{0}'.format(_[0]) for _ in CANDIDATE_HEXAMERS_WITH_NA]
+REF_HEX_DUMMY_COLS = ['ref_{0}'.format(_[0]) for _ in CANDIDATE_HEXAMERS_WITH_NA]
 
-    'num_suffix_contigs', 'num_bridge_contigs', 'num_link_contigs',
-    'num_blank_contigs', 'num_total_contigs',
+KARBOR_FEATURE_COLS = (
+    [
+        'signed_dist_to_aclv',
+        # 'abs_dist_to_aclv',
 
-    'num_suffix_reads',
-    'max_suffix_contig_tail_len',
+        'max_contig_len',
+        'max_contig_mapq',
+        'any_contig_is_hardclipped',
 
-    'num_bridge_reads',
-    'max_bridge_read_tail_len',
+        'num_suffix_contigs',
+        'num_bridge_contigs',
+        'num_link_contigs',
+        'num_blank_contigs',
+        'num_total_contigs',
 
-    'num_link_reads',
+        'num_suffix_reads',
+        'max_suffix_contig_tail_len',
 
-    # PAS hexamer shown on contig
-    'ctg_AATAAA', 'ctg_ATTAAA', 'ctg_AGTAAA', 'ctg_TATAAA',
-    'ctg_CATAAA', 'ctg_GATAAA', 'ctg_AATATA', 'ctg_AATACA',
-    'ctg_AATAGA', 'ctg_AAAAAG', 'ctg_ACTAAA', 'ctg_AAGAAA',
-    'ctg_AATGAA', 'ctg_TTTAAA', 'ctg_AAAACA', 'ctg_GGGGCT', 'ctg_NA',
+        'num_bridge_reads',
+        'max_bridge_read_tail_len',
 
-    'ctg_hex_dist',
-    # 'ref_hex_dist',
+        'num_link_reads',
 
-    # # PAS hexamer shown on reference genome
-    # 'ref_AATAAA', 'ref_ATTAAA', 'ref_AGTAAA', 'ref_TATAAA',
-    # 'ref_CATAAA', 'ref_GATAAA', 'ref_AATATA', 'ref_AATACA',
-    # 'ref_AATAGA', 'ref_AAAAAG', 'ref_ACTAAA', 'ref_AAGAAA',
-    # 'ref_AATGAA', 'ref_TTTAAA', 'ref_AAAACA', 'ref_GGGGCT', 'ref_NA',
-]
+        'ctg_hex_dist',
+        # 'ref_hex_dist',
+    ]
+    + CTG_HEX_DUMMY_COLS        # PAS hexamer shown on contig
+    # + REF_HEX_DUMMY_COLS        # PAS hexamer shown on reference genome
+)
 
 
 def map_clvs(df_pred, df_ref):
