@@ -120,6 +120,8 @@ CANDIDATE_HEXAMERS = [
     # ('ATTATA', ?)
 ]
 
+CANDIDATE_HEXAMERS_WITH_NA = CANDIDATE_HEXAMERS + [('NA', -1)]
+
 
 UCSC_SEQNAMES = [
     'chr1', 'chr2', 'chr3', 'chr4', 'chr5', 'chr6', 'chr7', 'chr8', 'chr9', 'chr10',
