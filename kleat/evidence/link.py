@@ -114,7 +114,7 @@ def gen_clv_record(contig, clv_key_tuple, num_link_reads, ref_fa):
         ref_clv,
 
         'link',
-        contig.query_name,
+        '{0}@{1}'.format(contig.query_name, ctg_clv),
         contig.query_length,
         contig.mapq,
         apautils.is_hardclipped(contig),

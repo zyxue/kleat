@@ -56,7 +56,7 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
         ref_clv,
 
         'suffix',
-        contig.query_name,
+        '{0}@{1}'.format(contig.query_name, ctg_clv),
         contig.query_length,
         contig.mapq,
         apautils.is_hardclipped(contig),

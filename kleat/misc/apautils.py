@@ -15,6 +15,13 @@ def gen_clv_key_tuple(seqname, strand, clv):
     return (seqname, strand, clv)
 
 
+def gen_clv_key_tuple_with_ctg_clv(seqname, strand, clv, ctg_clv):
+    """
+    :param ctg_clv: the clv in contig coordinate
+    """
+    return (seqname, strand, clv, ctg_clv)
+
+
 def gen_clv_key_tuple_from_clv_record(clv_record):
     crec = clv_record
     return gen_clv_key_tuple(crec.seqname, crec.strand, crec.clv)

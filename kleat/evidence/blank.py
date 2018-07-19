@@ -39,10 +39,12 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
             ref_fa, contig.reference_name, strand, ref_clv)
 
         yield ClvRecord(
-            contig.reference_name, strand, ref_clv,
+            contig.reference_name,
+            strand,
+            ref_clv,
 
             'blank',
-            contig.query_name,
+            '{0}@{1}'.format(contig.query_name, ctg_clv),
             contig.query_length,
             contig.mapq,
             is_hardclipped,

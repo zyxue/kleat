@@ -19,7 +19,7 @@ exec(CIGAR_TABLE)
 HEADER = [
     'seqname', 'strand', 'clv',
 
-    'evidence_type', 'contig_id', 'contig_len', 'contig_mapq', 'contig_is_hardclipped',
+    'evidence_type', 'contig_id_at_pos', 'contig_len', 'contig_mapq', 'contig_is_hardclipped',
 
     # suffix
     'num_suffix_reads', 'suffix_contig_tail_len', 'num_suffix_contigs',
@@ -45,7 +45,7 @@ FORMAT_OUTPUT_HEADER_DD = {     # dd just means dict
     'contig_mapq': 'max_contig_mapq',
     'suffix_contig_tail_len': 'max_suffix_contig_tail_len',
     'contig_is_hardclipped': 'any_contig_is_hardclipped',
-    'contig_id': 'contig_ids',
+    'contig_id_at_pos': 'contig_ids_at_pos',
 }
 
 # header in the output sorted in a intuitive way.
@@ -60,7 +60,7 @@ OUTPUT_HEADER = [
     'signed_dist_to_aclv',
 
     'evidence_type',
-    'contig_ids',
+    'contig_ids_at_pos',
     'max_contig_len',
     'max_contig_mapq',
     'any_contig_is_hardclipped',
@@ -169,7 +169,7 @@ COLS_TO_ANY = [                 # any(), if any is True, then True
 ]
 
 COLS_TO_JOIN = [
-    'evidence_type', 'contig_id'
+    'evidence_type', 'contig_id_at_pos',
 ]
 
 
