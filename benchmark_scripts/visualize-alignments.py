@@ -171,8 +171,8 @@ def add_figure_title(figure, contig, clvs):
         contig.reference_name,
         rev,
         ','.join([str(_) for _ in sorted(clvs)]),
-    ),
-    figure.suptitle(title, fontsize=20, y=1.02, verticalalignment='bottom')
+    )
+    figure.suptitle(title, fontsize=15, y=1.02, verticalalignment='bottom')
 
 
 def plot_alignment(contig, df_reads, clvs, output, fig_width, seqname_beg_end=None):
