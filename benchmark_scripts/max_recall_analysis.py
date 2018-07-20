@@ -60,9 +60,9 @@ def cluster_clv_parallel(df, cutoff=20, num_cpus=24):
 
 if __name__ == "__main__":
     sample_id = sys.argv[1]
-    infile = f'./benchmark_transcriptome/before_chimeric/{sample_id}.tsv'
+    infile = f'./benchmark_transcriptome/tcga-run-3/{sample_id}.pkl'
     print(f'reading {infile}')
-    adf = pd.read_csv(infile, keep_default_na=False, sep='\t')
+    adf = pd.read_pickle(infile)
     print(f'before clustering df.shape: {adf.shape}')
 
     print('clustering ...')
