@@ -40,6 +40,11 @@ def get_args():
         help=('figure width, default to 16 based on experience')
     )
     parser.add_argument(
+        '--seqname-beg-end', type=int, nargs=2, default=None,
+        help=('if specified, the beginning and ending of the plot '
+              'on the chromosome are enforced, e.g. [25357088, 25357993]')
+    )
+    parser.add_argument(
         '-o', '--output', type=str, default=None,
         help=('default to be <contig_id>.png')
     )
@@ -170,9 +175,15 @@ def add_figure_title(figure, contig, clvs):
     figure.suptitle(title, fontsize=20, y=1.02, verticalalignment='bottom')
 
 
-def plot_alignment(contig, df_reads, clvs, output, fig_width):
+def plot_alignment(contig, df_reads, clvs, output, fig_width, seqname_beg_end=None):
     num_skips = visaln.calc_num_skips(contig)
     df_xlims = visaln.calc_xlim_pairs(contig, clvs)
+
+    if seqname_beg_end is not None:
+        min_idx = df_xlims.xmin.idxmin()
+        max_idx = df_xlims.xmax.idxmax()
+        df_xlims.loc[min_idx, 'xmin'] = seqname_beg_end[0]
+        df_xlims.loc[max_idx, 'xmax'] = seqname_beg_end[1]
 
     fig_height = calc_figure_height(df_reads)
     fig, axes = prepare_fig_axes(
@@ -233,7 +244,10 @@ def main():
     if output is None:
         output = gen_output(contig, args.clvs)
 
-    plot_alignment(contig, df_reads, args.clvs, output, args.figure_width)
+    plot_alignment(contig, df_reads, args.clvs, output,
+                   args.figure_width,
+                   args.seqname_beg_end
+    )
 
 
 if __name__ == "__main__":
