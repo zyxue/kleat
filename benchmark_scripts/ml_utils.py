@@ -78,21 +78,6 @@ def compare(df_pred, df_ref, map_cutoff):
     return sensitivity, precision, f1
 
 
-def load_polya_seq_df_114genes(sample_id):
-    dd = {
-        'UHRC1': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C1/polyA-Seq/polyA-Seq-truth-114-genes.csv',
-        'UHRC2': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C2/polyA-Seq/polyA-Seq-truth-114-genes.csv',
-        'HBRC4': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C4/polyA-Seq/polyA-Seq-truth-114-genes.csv',
-        'HBRC6': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C6/polyA-Seq/polyA-Seq-truth-114-genes.csv'
-    }
-    infile = dd[sample_id]
-
-    logging.info(f'reading {infile} ...')
-    df = pd.read_csv(infile)
-    logging.info('reading done'.format(infile))
-    return df
-
-
 def load_bed(input_bed):
     """"mostly for whole transcriptome"""
     return pd.read_csv(
@@ -105,10 +90,22 @@ def load_polya_seq_df(sample_id):
         'UHRC1': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/UHR1.bed',
         'UHRC2': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/UHR2.bed',
         'HBRC4': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain1.bed',
-        'HBRC6': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain2.bed'
+        'HBRC6': '/projects/cheny_prj/KLEAT_benchmarking/polyA_seq/Brain2.bed',
+
+        'UHRC1_114genes': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C1/polyA-Seq/polyA-Seq-truth-114-genes.csv',
+        'UHRC2_114genes': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/UHR/C2/polyA-Seq/polyA-Seq-truth-114-genes.csv',
+        'HBRC4_114genes': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C4/polyA-Seq/polyA-Seq-truth-114-genes.csv',
+        'HBRC6_114genes': '/projects/btl/zxue/tasrkleat-TCGA-results/tasrkleat-TCGA-analysis-scripts/benchmark-kleat.bk/HBR/C6/polyA-Seq/polyA-Seq-truth-114-genes.csv'
     }
+
     infile = dd[sample_id]
 
     logging.info(f'reading {infile} ...')
-    df = load_bed(infile)
+    if infile.endswith('csv'):
+        df = pd.read_csv(infile)
+        logging.info('reading done'.format(infile))
+    elif infile.endswith('bed'):
+        df = load_bed(infile)
+    else:
+        raise ValueError('unknown file extension: {0}'.format(infile))
     return df

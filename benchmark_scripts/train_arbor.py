@@ -20,8 +20,12 @@ logging.basicConfig(
 
 
 def load_df(sample_id):
-    infile = os.path.abspath(
-        f'./benchmark_transcriptome/{sample_id}.ml_ready.pkl')
+    # kind of hacky
+    if sample_id.endswith('114genes'):
+        sample_id = sample_id.replace('_114genes', '')
+        infile = os.path.abspath(f'./benchmark_114genes/{sample_id}.ml_ready.pkl')
+    else:
+        infile = os.path.abspath(f'./benchmark_transcriptome/{sample_id}.ml_ready.pkl')
     logging.info(f'reading {infile} ...')
     df = pd.read_pickle(infile)
     return df
@@ -53,12 +57,12 @@ def train_it_wrapper(args):
     return train_it(*args)
 
 
-def predict(df_te_mapped, clf):
-    Xs_te = df_te_mapped[KARBOR_FEATURE_COLS]
-    df_te_mapped['predicted'] = clf.predict(Xs_te)
+def predict(df_te, clf):
+    Xs_te = df_te[KARBOR_FEATURE_COLS]
+    df_te['predicted'] = clf.predict(Xs_te)
 
     clv_key_cols = ['seqname', 'strand', 'clv']
-    out_df = df_te_mapped.query('predicted')[clv_key_cols].drop_duplicates()
+    out_df = df_te.query('predicted')[clv_key_cols].drop_duplicates()
     return out_df
 
 
@@ -83,13 +87,13 @@ def cluster_clv(df, cutoff=20):
     return out
 
 
-def run_test(test_sample_id, df_te_mapped, df_ref, clf, map_cutoff):
+def run_test(test_sample_id, df_te, df_ref, clf, map_cutoff):
     """args as list, otherwise this function can't be passed
     multiprocessing.Pool"""
     logging.info('testing on {0} with tree max_depth={1}'.format(
         test_sample_id, clf.max_depth))
 
-    df_predicted = predict(df_te_mapped, clf)
+    df_predicted = predict(df_te, clf)
     df_clustered = cluster_clv(df_predicted)
 
     recall, precision, f1 = compare(df_clustered, df_ref, map_cutoff)
@@ -105,12 +109,11 @@ def run_test_in_parallel(clf_list, test_sample_ids, map_cutoff, num_cpus):
     for test_sample_id in test_sample_ids:
         df_te = load_df(test_sample_id)
         df_ref = load_polya_seq_df(test_sample_id)
-        df_te_mapped = map_to_ref(df_te, df_ref, map_cutoff)
 
         args_list_for_test = []
         for clf in clf_list:
             args_list_for_test.append(
-                (test_sample_id, df_te_mapped, df_ref, clf, map_cutoff)
+                (test_sample_id, df_te, df_ref, clf, map_cutoff)
             )
 
         with multiprocessing.Pool(num_cpus) as p:
