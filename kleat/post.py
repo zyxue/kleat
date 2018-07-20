@@ -16,13 +16,54 @@ from tqdm import tqdm
 
 from kleat.misc import utils as U
 from kleat.misc import settings as S
-
+from kleat.misc.cluster import cluster_clv_sites
 
 logger = logging.getLogger(__name__)
 
 
 def set_sort_join_strs(vals):
     return '|'.join(sorted(set(vals)))
+
+
+# TODO: this is a common pattern to parallelize groupby -> apply operation,
+# apply the patter to polyA evidence aggregation later
+def prepare_args_for_cluster(df, groupby_cols):
+    logging.info('grouping by {0}'.format(groupby_cols))
+    iters = tqdm(df.groupby(groupby_cols))
+    grps = []
+    for key, grp in iters:
+        # Heads-up: different from the argument passed to groupby(...).apply(),
+        # this grp would have groupby_cols still in it
+        grps.append(grp)
+    return grps
+
+
+def cluster_clv_sites_wrapper(args):
+    df, cutoff = args
+    return cluster_clv_sites(df, cutoff)
+
+
+def cluster_clv_parallel(df, cutoff, num_cpus=1):
+    """
+    :param num_cpus: 24 is the number of large chromosomes in human
+
+    return clustered clv in new dataframe with three columns:
+
+    - seqname
+    - strand
+    - clv, i.e. the representative mode clv for each cluster
+    """
+    grps = prepare_args_for_cluster(df, ['seqname', 'strand'])
+    grps = [(g, 20) for g in grps]  # add cutoff
+
+    with multiprocessing.Pool(num_cpus) as p:
+        print('clustering clvs in parallel) using {0} CPUs ...'.format(num_cpus))
+        res = p.map(cluster_clv_sites_wrapper, grps)
+
+    logging.info('concatenating clustered sub dataframes ...')
+    df_res = pd.concat(res)
+
+    return df_res
 
 
 def prepare_grps_for_agg(df_clv):

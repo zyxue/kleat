@@ -12,7 +12,11 @@ from kleat.misc import apautils
 from kleat.args import get_args
 from kleat.proc import process_suffix, process_bridge_and_link, process_blank
 from kleat.post import (
-    aggregate_polya_evidence, add_annot_info, add_hex_dist, add_extra
+    cluster_clv_parallel,
+    aggregate_polya_evidence,
+    add_annot_info,
+    add_hex_dist,
+    add_extra
 )
 from kleat.misc import utils as U
 from kleat.misc import settings as S
@@ -99,9 +103,13 @@ def main():
     df_clv = U.timeit(pd.read_csv)(tmp_output, keep_default_na=False, sep='\t')
     logger.info('df.shape: {0}'.format(df_clv.shape))
 
-    # TODO: slow step, maybe parallize it
+    logger.info('Clustering clv ...')
+    df_clustered = cluster_clv_parallel(df_clv, args.cluster_cutoff, args.num_cpus)
+    df_clustered['clv'] = df_clustered['mode_clv']
+    df_clustered.drop(['cluster_id', 'mode_clv'], axis=1, inplace=True)
+
     logger.info('Aggregating polya evidence for each (seqname, strand, clv)...')
-    df_agg = aggregate_polya_evidence(df_clv, args.num_cpus)
+    df_agg = aggregate_polya_evidence(df_clustered, args.num_cpus)
 
     logger.info('Calculating closest annotated clv...')
     df_ant_dist = add_annot_info(df_agg, args.karbor_clv_annotation)
