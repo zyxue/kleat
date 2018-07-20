@@ -1,14 +1,18 @@
 import sys
 import argparse
+import logging
 
 from tqdm import tqdm
 import pandas as pd
 import pysam
 import matplotlib.pyplot as plt
 
-
 from kleat.evidence import bridge
 from kleat.visaln import visaln
+
+
+logging.basicConfig(
+    level=logging.DEBUG, format='%(asctime)s|%(levelname)s|%(message)s')
 
 
 def get_args():
@@ -63,7 +67,7 @@ def log_contig_info(contig):
             'query_name', 'is_reverse', 'cigarstring',
             'reference_start', 'reference_end',
     ]:
-        print('contig.{0}: {1}'.format(attr, getattr(contig, attr)))
+        logging.info('contig.{0}: {1}'.format(attr, getattr(contig, attr)))
 
 
 def collect_reads(contig, r2c_bam):
@@ -226,18 +230,20 @@ def main():
     args = get_args()
 
     c2g_bam_file = args.contigs_to_genome
+    r2c_bam_file = args.reads_to_contigs
+    logging.info('c2g_bam_file: {0}'.format(c2g_bam_file))
+    logging.info('r2g_bam_file: {0}'.format(r2c_bam_file))
+
     c2g_bam = pysam.AlignmentFile(c2g_bam_file)
 
     contig = fetch_contig(c2g_bam, args.contig_id, args.seqname)
     if contig is None:
-        print('The specified contig id: {0} is NOT found in {1}'.format(args.contigs_to_genome))
+        logging.info('The specified contig id: {0} is NOT found in {1}'.format(args.contigs_to_genome))
         sys.exit(1)
 
     log_contig_info(contig)
 
-    r2c_bam_file = args.reads_to_contigs
     r2c_bam = pysam.AlignmentFile(r2c_bam_file)
-    print(r2c_bam)
     df_reads = collect_reads(contig, r2c_bam)
 
     output = args.output
