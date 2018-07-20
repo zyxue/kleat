@@ -61,4 +61,8 @@ def get_args():
               '(boundry between BAM_CMATCH and BAM_CREF_SKIP)')
     )
 
+    parser.add_argument(
+        '--cluster-cutoff', type=int, default=20,
+        help=('the cutoff for single-linkage clustering')
+    )
     return parser.parse_args()
