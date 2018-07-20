@@ -136,7 +136,7 @@ def get_abs_end(aln):
     return cx
 
 
-def calc_xlim(contig, ith_skip, jth_skip, predicted_clv, padding=None):
+def calc_xlim(contig, ith_skip, jth_skip, clvs, padding=None):
     """
     calculate the proper xlim boundries for the region between nth and nth+1 skip regions
 
@@ -162,11 +162,14 @@ def calc_xlim(contig, ith_skip, jth_skip, predicted_clv, padding=None):
             skip_count += 1
 
         if key == S.BAM_CREF_SKIP:
-            # print(skip_count, end=', ')
             if skip_count == ith_skip:
                 x0 = pos + val - padding
-                if pos < predicted_clv and x0 >= predicted_clv:
-                    x0 = predicted_clv - padding  # 100 is padding
+
+                # TODO: needs refactor, maybe buggy
+                for _clv in clvs:
+                    if pos < _clv and x0 >= _clv:
+                        x0 = min(x0, _clv - padding)  # 100 is padding
+
             elif skip_count == jth_skip:
                 x1 = pos + padding - 1
                 break
