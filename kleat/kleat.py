@@ -160,7 +160,7 @@ def main():
     df_clustered.drop(['cluster_id', 'mode_clv'], axis=1, inplace=True)
 
     logger.info('Aggregating polya evidence for each (seqname, strand, clv)...')
-    df_agg = aggregate_polya_evidence(df_clv, args.num_cpus)
+    df_agg = aggregate_polya_evidence(df_clustered, args.num_cpus)
 
     logger.info('Calculating closest annotated clv...')
     df_ant_dist = add_annot_info(df_agg, args.karbor_clv_annotation)
