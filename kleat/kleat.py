@@ -168,6 +168,7 @@ def main():
     out_df = df_hex_dist.rename(columns=S.FORMAT_OUTPUT_HEADER_DD)
     add_extra(out_df)
     out_df = out_df[S.OUTPUT_HEADER]
+    out_df.sort_values(['seqname', 'strand', 'clv'], inplace=True)
     dump_output_df(out_df, output, args.output_format)
 
 
