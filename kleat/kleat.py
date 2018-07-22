@@ -54,30 +54,35 @@ def collect_polya_evidence(seqname, tmp_output_file, c2g_bam_file,
     r2c_bam = pysam.AlignmentFile(r2c_bam_file)
     ref_fa = pysam.FastaFile(ref_fa_file)
 
-    gen_key = apautils.gen_clv_key_tuple_from_clv_record
-
     with open(tmp_output_file, 'wt') as opf:
         csvwriter = csv.writer(opf, delimiter='\t')
         csvwriter.writerow(S.HEADER)
-        ascs = []           # already supported clvs
         for contig in c2g_bam.fetch(seqname):
             if contig.is_unmapped:
                 continue
 
-            rec = process_suffix(
-                contig, r2c_bam, ref_fa, csvwriter)
-            if rec is not None:
-                ascs.append(gen_key(rec))
+            do_collection(contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size)
 
-            for rec in process_bridge_and_link(
-                    contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size):
-                # TODO: with either bridge or link, they probably won't support
-                # clv of the other strand
-                ascs.append(gen_key(rec))
-
-            if not apautils.has_tail(contig):
-                process_blank(contig, ref_fa, csvwriter, ascs)
     return tmp_output_file
+
+
+def do_collection(contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size):
+    gen_key = apautils.gen_clv_key_tuple_from_clv_record
+
+    ascs = []           # already supported clvs
+    rec = process_suffix(
+        contig, r2c_bam, ref_fa, csvwriter)
+    if rec is not None:
+        ascs.append(gen_key(rec))
+
+    for rec in process_bridge_and_link(
+            contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size):
+        # TODO: with either bridge or link, they probably won't support
+        # clv of the other strand
+        ascs.append(gen_key(rec))
+
+    if not apautils.has_tail(contig):
+        process_blank(contig, ref_fa, csvwriter, ascs)
 
 
 def collect_polya_evidence_wrapper(args):
