@@ -29,9 +29,7 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 
-def prepare_args_for_polya_evidence_collection(
-        num_cpus, output, c2g_bam_file, r2c_bam_file, ref_fa_file, bridge_skip_check_size):
-
+def prepare_args_for_collect_polya_evidence(num_cpus, output, c2g_bam_file, *args):
     c2g_bam = pysam.AlignmentFile(c2g_bam_file)
 
     args_list = []
@@ -42,13 +40,13 @@ def prepare_args_for_polya_evidence_collection(
         tmp_output_file += '.{0}'.format(seqname)
         U.backup_file(tmp_output_file)
 
-        args = seqname, c2g_bam_file, r2c_bam_file, ref_fa_file, tmp_output_file, bridge_skip_check_size
-        args_list.append(args)
+        the_args = (seqname, tmp_output_file, c2g_bam_file) + args
+        args_list.append(the_args)
     return args_list
 
 
-def collect_polya_evidence(
-        seqname, c2g_bam_file, r2c_bam_file, ref_fa_file, tmp_output_file, bridge_skip_check_size):
+def collect_polya_evidence(seqname, tmp_output_file, c2g_bam_file,
+                           r2c_bam_file, ref_fa_file, bridge_skip_check_size):
     """loop through each contig and collect polyA evidence"""
     logging.info('collecting polyA evidence for {0} ...'.format(seqname))
 
@@ -122,8 +120,9 @@ def main():
     output = gen_output(args.output, args.output_format.lower())
     U.backup_file(output)
 
-    args_list = prepare_args_for_polya_evidence_collection(
-        args.num_cpus, output, c2g_bam_file, r2c_bam_file, ref_fa_file, args.bridge_skip_check_size
+    args_list = prepare_args_for_collect_polya_evidence(
+        args.num_cpus, output, c2g_bam_file,
+        r2c_bam_file, ref_fa_file, args.bridge_skip_check_size
     )
 
     logger.info('Processing contigs in parallel with {0} CPUs...'.format(args.num_cpus))
