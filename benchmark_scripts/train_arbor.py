@@ -11,7 +11,7 @@ import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 
 from ml_utils import load_polya_seq_df, map_clvs, compare, KARBOR_FEATURE_COLS
-from cluster import cluster_clv_sites
+from kleat.misc.cluster import cluster_clv_sites
 from kleat.misc.utils import backup_file
 
 
