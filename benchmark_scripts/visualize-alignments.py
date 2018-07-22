@@ -49,6 +49,13 @@ def get_args():
               'on the chromosome are enforced, e.g. [25357088, 25357993]')
     )
     parser.add_argument(
+        '--plot-all-reads', action='store_true',
+        help=('By default, only bridge reads are collected and plotted. '
+              'If this argument is specified, all reads will be plotted '
+              'the output figure could be large if many reads are aligned '
+              'to the given contig. Unmapped reads are always ignored')
+    )
+    parser.add_argument(
         '-o', '--output', type=str, default=None,
         help=('default to be <contig_id>.png')
     )
@@ -70,29 +77,38 @@ def log_contig_info(contig):
         logging.info('contig.{0}: {1}'.format(attr, getattr(contig, attr)))
 
 
-def collect_reads(contig, r2c_bam):
+def extract_read_info(contig, read):
+    if contig.is_reverse:
+        contig_len = contig.infer_query_length(always=True)
+        read_info = [
+            contig_len - read.reference_end,
+            contig_len - read.reference_start,
+            not read.is_reverse,
+            f'rev({read.cigarstring})',
+            tuple(reversed(read.cigartuples))
+        ]
+    else:
+        contig_len = contig.infer_query_length(always=True)
+        read_info = [
+            read.reference_start,
+            read.reference_end,
+            read.is_reverse,
+            f'{read.cigarstring}',
+            read.cigartuples
+        ]
+    return read_info
+
+
+def collect_reads(contig, r2c_bam, plot_all_reads):
     reads = r2c_bam.fetch(contig.query_name)
     reads_info = []
     for rd in reads:
-        if bridge.is_a_bridge_read(rd):
-            if contig.is_reverse:
-                contig_len = contig.infer_query_length(always=True)
-                reads_info.append([
-                    contig_len - rd.reference_end,
-                    contig_len - rd.reference_start,
-                    not rd.is_reverse,
-                    f'rev({rd.cigarstring})',
-                    tuple(reversed(rd.cigartuples))
-                ])
-            else:
-                contig_len = contig.infer_query_length(always=True)
-                reads_info.append([
-                    rd.reference_start,
-                    rd.reference_end,
-                    rd.is_reverse,
-                    f'{rd.cigarstring}',
-                    rd.cigartuples
-                ])
+        if rd.is_unmapped:
+            continue
+
+        if plot_all_reads or bridge.is_a_bridge_read(rd):
+            rd_info = extract_read_info(contig, rd)
+            reads_info.append(rd_info)
 
     df_reads = pd.DataFrame(
         reads_info, columns=[
@@ -244,7 +260,10 @@ def main():
     log_contig_info(contig)
 
     r2c_bam = pysam.AlignmentFile(r2c_bam_file)
-    df_reads = collect_reads(contig, r2c_bam)
+    df_reads = collect_reads(contig, r2c_bam, args.plot_all_reads)
+    logging.info('collected {0} reads aligned to for {1} '
+                 '(use --plot-all-reads to plot all reads)'.format(
+                     df_reads.shape[0], contig.query_name))
 
     output = args.output
     if output is None:
