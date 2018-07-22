@@ -57,7 +57,7 @@ def cluster_clv_parallel(df, cutoff, num_cpus=1):
     grps = [(g, 20) for g in grps]  # add cutoff
 
     with multiprocessing.Pool(num_cpus) as p:
-        print('clustering clvs in parallel) using {0} CPUs ...'.format(num_cpus))
+        logger.info('clustering clvs in parallel) using {0} CPUs ...'.format(num_cpus))
         res = p.map(cluster_clv_sites_wrapper, grps)
 
     logging.info('concatenating clustered sub dataframes ...')
