@@ -90,8 +90,8 @@ def aggregate_polya_evidence(df_clv, num_cpus):
 
 
 def agg_polya_evidence_per(grp):
-    sum_cols = grp[S.COLS_TO_SUM].sum()
-    max_cols = grp[S.COLS_TO_MAX].max()
+    sum_cols = grp[S.COLS_TO_SUM].sum().astype(int)
+    max_cols = grp[S.COLS_TO_MAX].max().astype(int)
     any_cols = grp[S.COLS_TO_ANY].any()
     str_cols = grp[S.COLS_TO_JOIN].apply(set_sort_join_strs)
     # pick the strongest PAS hexamer
