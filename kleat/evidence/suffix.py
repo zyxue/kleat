@@ -11,7 +11,7 @@ from kleat.hexamer.hexamer import (
 )
 
 
-def calc_num_suffix_reads(r2c_bam, suffix_contig, ref_clv):
+def calc_num_suffix_reads(r2c_bam, suffix_contig, clv):
     """
     calculate the number of reads aligned to the cleavage site
 
@@ -20,7 +20,7 @@ def calc_num_suffix_reads(r2c_bam, suffix_contig, ref_clv):
     num_tail_reads = r2c_bam.count(
         # region is half-open
         # https://pysam.readthedocs.io/en/latest/glossary.html#term-region
-        suffix_contig.query_name, ref_clv, ref_clv + 1
+        suffix_contig.query_name, clv, clv + 1
     )
     return num_tail_reads
 
@@ -37,13 +37,14 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
     ref_clv = apautils.calc_ref_clv(contig, tail_side)
     tail_len = apautils.calc_tail_length(contig, tail_side)
 
-    num_suffix_reads = calc_num_suffix_reads(r2c_bam, contig, ref_clv)
-
     if strand == '-':
         ctg_clv = tail_len
     else:
         ctg_seq_len = contig.infer_query_length(always=True)
         ctg_clv = ctg_seq_len - tail_len - 1
+
+    num_suffix_reads = calc_num_suffix_reads(r2c_bam, contig, ctg_clv)
+
     ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
         contig, strand, ref_clv, ref_fa, ctg_clv)
 
