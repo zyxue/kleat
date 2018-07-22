@@ -57,7 +57,7 @@ def cluster_clv_parallel(df, cutoff, num_cpus=1):
     grps = [(g, 20) for g in grps]  # add cutoff
 
     with multiprocessing.Pool(num_cpus) as p:
-        print('clustering clvs in parallel) using {0} CPUs ...'.format(num_cpus))
+        logger.info('clustering clvs in parallel using {0} CPUs ...'.format(num_cpus))
         res = p.map(cluster_clv_sites_wrapper, grps)
 
     logging.info('concatenating clustered sub dataframes ...')
@@ -90,12 +90,12 @@ def aggregate_polya_evidence(df_clv, num_cpus):
 
 
 def agg_polya_evidence_per(grp):
-    sum_cols = grp[S.COLS_TO_SUM].sum()
-    max_cols = grp[S.COLS_TO_MAX].max()
+    sum_cols = grp[S.COLS_TO_SUM].sum().astype(int)
+    max_cols = grp[S.COLS_TO_MAX].max().astype(int)
     any_cols = grp[S.COLS_TO_ANY].any()
     str_cols = grp[S.COLS_TO_JOIN].apply(set_sort_join_strs)
     # pick the strongest PAS hexamer
-    hex_cols = grp[S.COLS_CONTIG_HEXAMERS].loc[grp.ctg_hex_id.idxmax()]
+    hex_cols = grp[S.COLS_CONTIG_HEXAMERS].loc[grp.ctg_hex_id.astype(int).idxmax()]
     one_cols = grp[S.COLS_PICK_ONE].iloc[0]
     return pd.concat([sum_cols, max_cols, any_cols,
                       str_cols, hex_cols, one_cols])

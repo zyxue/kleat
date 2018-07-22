@@ -47,8 +47,6 @@ def backup_one_file(f):
         logger.info("Backing up {0} to {1}".format(f, rn_to))
         os.rename(f, rn_to)
         return rn_to
-    else:
-        logger.warning('{0} doesn\'t exist'.format(f))
 
 
 def backup_file(*files):
