@@ -6,12 +6,14 @@ from kleat.evidence.suffix import is_a_suffix_read
 import kleat.misc.settings as S
 
 
-def test_is_a_suffix_read_for_forward_suffix_contig():
+def test_is_a_left_tail_suffix_read_for_forward_suffix_contig():
     """
      TT
       └ATC                      # suffix read
     TTTATCGC                    # suffix contig
-    01234567
+    012345678                   # contig coord
+    567890123                   # genome coord
+       ^ 1
     """
     mock_read = MagicMock()
     mock_read.query_sequence = 'TTATC'
@@ -22,6 +24,7 @@ def test_is_a_suffix_read_for_forward_suffix_contig():
     ]
 
     mock_contig = MagicMock()
+    mock_contig.is_reverse = False
     mock_contig.query_sequence = 'TTTATCGC'
     mock_contig.cigartuples = [
         (S.BAM_CSOFT_CLIP, 3),
@@ -30,12 +33,47 @@ def test_is_a_suffix_read_for_forward_suffix_contig():
     assert is_a_suffix_read(mock_read, mock_contig)
 
 
-def test_is_a_suffix_read_for_reverse_suffix_contig():
+def test_is_a_left_tail_suffix_read_for_reverse_suffix_contig():
+    """
+    Actually, it makes no difference to is_a_suffix_read whether contig is reversed or not
+
+       TT
+        └ATC                     # suffix read
+      TTTATCGC                   # suffix contig
+      012345678                  # contig coord
+         |
+     GCGATAAA                   # rev complement contig
+    876543210                   # rev contig coord
+  ...GCGAT...                   # genome
+     567890123
+       1^
+    """
+    mock_read = MagicMock()
+    mock_read.query_sequence = 'TTATC'
+    mock_read.reference_start = 3
+    mock_read.cigartuples = [
+        (S.BAM_CSOFT_CLIP, 2),
+        (S.BAM_CMATCH, 3),
+    ]
+
+    mock_contig = MagicMock()
+    mock_contig.is_reverse = True
+    mock_contig.query_sequence = 'GCGATAAA'
+    mock_contig.cigartuples = [
+        (S.BAM_CMATCH, 5),
+        (S.BAM_CSOFT_CLIP, 3),
+    ]
+    assert is_a_suffix_read(mock_read, mock_contig)
+
+
+def test_is_a_right_tail_suffix_read_for_forward_suffix_contig():
     """
          AA
       CGC┘                      # suffix read
     ATCGCAAA                    # suffix contig
-    01234567
+    012345678                   # contig coord
+    567890123                   # genome coord
+        ^1
     """
     mock_read = MagicMock()
     mock_read.query_sequence = 'CGCAA'
@@ -46,11 +84,46 @@ def test_is_a_suffix_read_for_reverse_suffix_contig():
     ]
 
     mock_contig = MagicMock()
+    mock_contig.is_reverse = False
     mock_contig.query_sequence = 'ATCGCAAA'
     mock_contig.infer_query_length.return_value = 8
     mock_contig.cigartuples = [
         (S.BAM_CMATCH, 5),
         (S.BAM_CSOFT_CLIP, 3),
+    ]
+    assert is_a_suffix_read(mock_read, mock_contig)
+
+
+def test_is_a_right_tail_suffix_read_for_reverse_suffix_contig():
+    """
+    Actually, it makes no difference to is_a_suffix_read whether contig is reversed or not
+
+         AA
+      CGC┘                      # suffix read
+    ATCGCAAA                    # suffix contig
+    012345678                   # contig coord
+        |
+     TTTGCGTA                   # rev complement contig
+    876543210
+     ...GCGTA...                # genome
+        234567                  # genome coord
+        ^1
+    """
+    mock_read = MagicMock()
+    mock_read.query_sequence = 'CGCAA'
+    mock_read.reference_end = 4
+    mock_read.cigartuples = [
+        (S.BAM_CMATCH, 3),
+        (S.BAM_CSOFT_CLIP, 2),
+    ]
+
+    mock_contig = MagicMock()
+    mock_contig.is_reverse = True
+    mock_contig.query_sequence = 'TTTGCGTA'
+    mock_contig.infer_query_length.return_value = 8
+    mock_contig.cigartuples = [
+        (S.BAM_CSOFT_CLIP, 3),
+        (S.BAM_CMATCH, 5),
     ]
     assert is_a_suffix_read(mock_read, mock_contig)
 
