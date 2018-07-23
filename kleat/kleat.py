@@ -154,13 +154,15 @@ def main():
         logger.info('Dumping raw results before aggregation to {0}'.format(tmp_output))
         df_clv.to_csv(tmp_output, sep='\t', index=False)
 
-    logger.info('Clustering clv ...')
-    df_clustered = cluster_clv_parallel(df_clv, args.cluster_cutoff, args.num_cpus)
-    df_clustered['clv'] = df_clustered['mode_clv']
-    df_clustered.drop(['cluster_id', 'mode_clv'], axis=1, inplace=True)
+    if args.cluster_first_then_aggregate:
+        logger.info('Clustering clv since --cluster-first-then-aggregate is specified ...')
+        df_clustered = cluster_clv_parallel(df_clv, args.cluster_cutoff, args.num_cpus)
+        df_clustered['clv'] = df_clustered['mode_clv']
+        df_clustered.drop(['cluster_id', 'mode_clv'], axis=1, inplace=True)
+        df_clv = df_clustered
 
     logger.info('Aggregating polya evidence for each (seqname, strand, clv)...')
-    df_agg = aggregate_polya_evidence(df_clustered, args.num_cpus)
+    df_agg = aggregate_polya_evidence(df_clv, args.num_cpus)
 
     logger.info('Calculating closest annotated clv...')
     df_ant_dist = add_annot_info(df_agg, args.karbor_clv_annotation)

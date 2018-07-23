@@ -62,6 +62,21 @@ def get_args():
     )
 
     parser.add_argument(
+        '--cluster-first-then-aggregate', action="store_true",
+        help=('the default approach is '
+              'aggregate_polya_evidence -> filter -> cluster, '
+              'if this argument is specified, then the order becomes '
+              'cluster -> aggregate_polya_evidence -> filter. '
+              'The idea is that by clustering first, neighbouring clvs would '
+              'result in stronger polyA evidence signal, but '
+              'preliminary results show that it does not make a big difference. '
+              'Also, note that if the data is noisy, cluster before filter '
+              'would further decrease the clv resolution since '
+              'single-linkage culstering would combine '
+              'those noisy clvs in to the clvs with real signal')
+    )
+
+    parser.add_argument(
         '--cluster-cutoff', type=int, default=20,
         help=('the cutoff for single-linkage clustering')
     )
