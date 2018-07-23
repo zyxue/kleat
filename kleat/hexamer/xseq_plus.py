@@ -1,8 +1,7 @@
 import kleat.misc.settings as S
-from kleat.misc.apautils import (
-    calc_genome_offset,
-    fetch_seq                   # deal with circular DNA, too, e.g. chrM
-)
+from kleat.misc.apautils import fetch_seq
+from kleat.misc.calc_genome_offset import calc_genome_offset
+
 
 """xseq: extract_seq"""
 

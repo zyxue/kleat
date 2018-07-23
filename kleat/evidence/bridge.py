@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from kleat.evidence.do_bridge import do_bridge
 from kleat.misc import apautils
+from kleat.misc.calc_genome_offset import calc_genome_offset
 import kleat.misc.settings as S
 
 # for bridge PAS hexamer search needs done in a more customized way than just
@@ -84,8 +85,7 @@ def analyze_bridge(contig, read, ref_fa, dd_bridge, bridge_skip_check_size):
 
     strand, ctg_clv, tail_len, tail_direction = bdg_support
 
-    offset = apautils.calc_genome_offset(
-        contig.cigartuples, ctg_clv, tail_direction, skip_check_size=3)
+    offset = calc_genome_offset(contig.cigartuples, ctg_clv, tail_direction, skip_check_size=3)
 
     if offset < 0:             # meaning the clv is on soft/hard clipped region
         return

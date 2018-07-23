@@ -77,8 +77,8 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
     :param ref_fa: pysam instance of reference genome fasta. if provided,
                    will also search PAS hexamer on reference genome.
     """
-    strand = apautils.calc_strand(tail_side)
-    ref_clv = apautils.calc_ref_clv(contig, tail_side)
+    strand = calc_strand(tail_side)
+    ref_clv = calc_ref_clv(contig, tail_side)
     tail_len = apautils.calc_tail_length(contig, tail_side)
 
     if strand == '-':
