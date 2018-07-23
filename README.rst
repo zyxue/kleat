@@ -47,7 +47,6 @@ cleavage site likely exists nearby.
 ..
    * Documentation: https://kleat.readthedocs.io.
 
-
 Install
 --------
 
@@ -85,13 +84,23 @@ Then install kleat with pip
 
    pip install git+https://github.com/zyxue/kleat.git#egg=kleat
 
-
 Features
 --------
 
 * Suffix (previously known as tail), bridge, link, blank
 * Search PAS hexamer on the contig
 * Hardclip regions are considered, too, and well tested.
+* Process all chromosomes in parallel, and parallized other steps as much as
+  possible (e.g. aggregate polyA evidence per clv)
+
+Usage
+-----
+
+* Inputs to `--contig-to-genome` and `--reads-to-contigs` should both be sorted
+  and indexed with samtools_.
+
+.. _samtools: http://samtools.sourceforge.net/
+
 
 Notes on result interpretation
 ------------------------------
@@ -134,18 +143,18 @@ For a particular contig, you could insert pdb such as below
 
 .. code-block::
 
-@@ -32,6 +32,11 @@ def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter, bridge_skip_chec
-         if contig.is_unmapped:
-             continue
- 
-+        if contig.query_name == "<your contig name>" and contig.reference_name == "chrX":
-+            pass
-+        else:
-+            continue
-+
-         ascs = []           # already supported clvs
-         rec = process_suffix(
-             contig, r2c_bam, ref_fa, csvwriter)
+    @@ -32,6 +32,11 @@ def collect_polya_evidence(c2g_bam, r2c_bam, ref_fa, csvwriter, bridge_skip_chec
+             if contig.is_unmapped:
+                 continue
+
+    +        if contig.query_name == "<your contig name>" and contig.reference_name == "chrX":
+    +            pass
+    +        else:
+    +            continue
+    +
+             ascs = []           # already supported clvs
+             rec = process_suffix(
+                 contig, r2c_bam, ref_fa, csvwriter)
 
 
 Zero-based index
