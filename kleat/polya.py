@@ -1,6 +1,7 @@
 import os
 import csv
 import logging
+import tempfile
 
 import pysam
 from tqdm import tqdm
@@ -13,19 +14,21 @@ from kleat.misc import settings as S
 logger = logging.getLogger(__name__)
 
 
-def gen_tmp_output(output):
-    return os.path.join(
-        os.path.dirname(output), '__tmp_{0}.tsv'.format(os.path.basename(output)))
+def gen_tmp_output(output, path=None):
+    if path is None:
+        path = os.path.dirname(output)
+    return os.path.join(path, '__tmp_{0}.tsv'.format(os.path.basename(output)))
 
 
 def prepare_args_for_collect_polya_evidence(num_cpus, output, c2g_bam_file, *args):
     c2g_bam = pysam.AlignmentFile(c2g_bam_file)
 
     args_list = []
+    tmpdir = tempfile.gettempdir()
     for k, seqname in tqdm(enumerate(c2g_bam.references),
                            desc='prepared', unit=' seqnames'):
 
-        tmp_output_file = gen_tmp_output(output)
+        tmp_output_file = gen_tmp_output(output, tmpdir)
         tmp_output_file += '.{0}'.format(seqname)
         U.backup_file(tmp_output_file)
 
