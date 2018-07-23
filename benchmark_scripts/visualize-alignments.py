@@ -99,16 +99,19 @@ def extract_read_info(contig, read):
     return read_info
 
 
-def collect_reads(contig, r2c_bam, plot_all_reads):
+def collect_reads(contig, r2c_bam, plot_all_reads, max_num=100):
     reads = r2c_bam.fetch(contig.query_name)
     reads_info = []
-    for rd in reads:
+    for k, rd in enumerate(reads):
         if rd.is_unmapped:
             continue
 
         if plot_all_reads or bridge.is_a_bridge_read(rd):
             rd_info = extract_read_info(contig, rd)
             reads_info.append(rd_info)
+
+        if len(reads_info) == max_num:
+            break
 
     df_reads = pd.DataFrame(
         reads_info, columns=[
