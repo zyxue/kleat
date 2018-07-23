@@ -55,18 +55,18 @@ def is_a_suffix_read(read, contig, tail_len=None):
         return False
 
 
-def calc_num_suffix_reads(r2c_bam, suffix_contig, clv):
+def analyze_suffix_reads(r2c_bam, suffix_contig, ctg_clv, ctg_tail_len):
     """
     calculate the number of reads aligned to the cleavage site
 
     https://pysam.readthedocs.io/en/latest/api.html?highlight=AlignmentSegment#pysam.AlignedSegment.cigartuples
     """
-    num_tail_reads = r2c_bam.count(
-        # region is half-open
-        # https://pysam.readthedocs.io/en/latest/glossary.html#term-region
-        suffix_contig.query_name, clv, clv + 1
-    )
-    return num_tail_reads
+    num_suffix_reads, max_tail_len = 0, 0
+    for read in r2c_bam.fetch(suffix_contig.query_name, ctg_clv, ctg_clv + 1):
+        if is_a_suffix_read(read, suffix_contig, ctg_tail_len):
+            max_tail_len = max(max_tail_len, apautils.calc_tail_length(read))
+            num_suffix_reads += 1
+    return num_suffix_reads, max_tail_len
 
 
 def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
@@ -87,7 +87,7 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
         ctg_seq_len = contig.infer_query_length(always=True)
         ctg_clv = ctg_seq_len - tail_len - 1
 
-    num_suffix_reads = calc_num_suffix_reads(r2c_bam, contig, ctg_clv)
+    num_suffix_reads, max_suffix_read_tail_len = analyze_suffix_reads(r2c_bam, contig, ctg_clv, tail_len)
 
     ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
         contig, strand, ref_clv, ref_fa, ctg_clv)
