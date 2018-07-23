@@ -47,9 +47,9 @@ def test_calc_xlim_with_two_skips():
         (S.BAM_CHARD_CLIP, 3),
     )
 
-    assert calc_xlim(contig, 0, 1, predicted_clv=4, padding=1) == (-1, 3)
-    assert calc_xlim(contig, 1, 2, predicted_clv=4, padding=1) == (3, 9)
-    assert calc_xlim(contig, 2, 3, predicted_clv=4, padding=1) == (13, 20)
+    assert calc_xlim(contig, 0, 1, clvs=[4], padding=1) == (-1, 3)
+    assert calc_xlim(contig, 1, 2, clvs=[4], padding=1) == (3, 9)
+    assert calc_xlim(contig, 2, 3, clvs=[4], padding=1) == (13, 20)
 
-    assert calc_xlim(contig, 1, 2, predicted_clv=4, padding=2) == (3, 10)
-    assert calc_xlim(contig, 2, 3, predicted_clv=12, padding=2) == (10, 21)
+    assert calc_xlim(contig, 1, 2, clvs=[4], padding=2) == (3, 10)
+    assert calc_xlim(contig, 2, 3, clvs=[12], padding=2) == (10, 21)
