@@ -55,17 +55,21 @@ def is_a_suffix_read(read, contig, ctg_tail_len=None):
         return False
 
 
-def analyze_suffix_reads(r2c_bam, suffix_contig, ctg_clv, ctg_tail_len):
+def analyze_suffix_reads(r2c_bam, contig, ctg_clv, ctg_tail_len):
     """
-    calculate the number of reads aligned to the cleavage site
-
-    https://pysam.readthedocs.io/en/latest/api.html?highlight=AlignmentSegment#pysam.AlignedSegment.cigartuples
+    :param contig: suffix contig
     """
     num_suffix_reads, max_tail_len = 0, 0
-    for read in r2c_bam.fetch(suffix_contig.query_name, ctg_clv, ctg_clv + 1):
+    if not contig.is_reverse:
+        reads = r2c_bam.fetch(contig.query_name, ctg_clv, ctg_clv + 1)
+    else:
+        rev_ctg_clv = contig.infer_query_length(always=True) - ctg_clv
+        reads = r2c_bam.fetch(contig.query_name, rev_ctg_clv, rev_ctg_clv + 1)
+
+    for read in reads:
         if read.is_unmapped:
             continue
-        if is_a_suffix_read(read, suffix_contig, ctg_tail_len):
+        if is_a_suffix_read(read, contig, ctg_tail_len):
             max_tail_len = max(max_tail_len, apautils.calc_tail_length(read))
             num_suffix_reads += 1
     return num_suffix_reads, max_tail_len
