@@ -11,6 +11,22 @@ from kleat.hexamer.hexamer import (
 )
 
 
+def is_a_suffix_read(read, contig, tail_len=None):
+    """
+    :param read: read
+    :param contig: a suffix contig
+    :param tail_len: the tail length of the suffix_contig
+    """
+    if tail_len is None:
+        tail_len = apautils.calc_tail_length(contig)
+    if apautils.left_tail(contig):
+        return read.reference_start == tail_len
+    elif apautils.right_tail(contig):
+        return read.reference_end == contig.infer_sequence_length(always=True) - tail_len
+    else:
+        return False
+
+
 def calc_num_suffix_reads(r2c_bam, suffix_contig, clv):
     """
     calculate the number of reads aligned to the cleavage site
