@@ -1,6 +1,6 @@
 import pytest
 
-from kleat.misc.apautils import calc_genome_offset
+from kleat.misc.calc_genome_offset import calc_genome_offset
 import kleat.misc.settings as S
 
 

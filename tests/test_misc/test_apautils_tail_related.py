@@ -43,20 +43,6 @@ def test_right_tail():
     assert A.right_tail(mock_non_tailed_read) is False
 
 
-def test_calc_ref_clv():
-    f = A.calc_ref_clv
-    assert f(mock_left_tailed_read) == 11
-    assert f(mock_right_tailed_read) == 12
-    with pytest.raises(ValueError, match=r'not a suffix segment'):
-        f(mock_non_tailed_read)
-
-
-def test_calc_ref_clv_passing_tail_side_argument():
-    f = A.calc_ref_clv
-    assert f(mock_left_tailed_read, 'left') == 11
-    assert f(mock_right_tailed_read, 'right') == 12
-
-
 def test_calc_tail_length():
     f = A.calc_tail_length
     assert f(mock_left_tailed_read) == 3
@@ -72,20 +58,3 @@ def test_calc_tail_length_passing_tail_side_argument():
     err_msg = r'not be a right tailed segment as its last CIGAR is not BAM_CSOFT_CLIP'
     with pytest.raises(ValueError, match=err_msg):
         f(mock_left_tailed_read, 'right')
-
-
-def test_calc_strand_from_suffix_segment():
-    f = A.calc_strand_from_suffix_segment
-    assert f(mock_left_tailed_read) == '-'
-    assert f(mock_right_tailed_read) == '+'
-    with pytest.raises(ValueError, match=r'not a suffix segment, hence strand cannot be inferred'):
-        f(mock_non_tailed_read)
-
-
-def test_calc_strand_passing_tail_side_argument():
-    f = A.calc_strand
-    assert f('left') == '-'
-    assert f('right') == '+'
-    err_msg = 'tail_side must be "left" or "right", but None passed'
-    with pytest.raises(ValueError, match=err_msg):
-        f(None)

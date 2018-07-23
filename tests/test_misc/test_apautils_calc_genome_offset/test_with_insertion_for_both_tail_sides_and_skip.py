@@ -1,7 +1,7 @@
 import pytest
 
 import kleat.misc.settings as S
-from kleat.misc.apautils import calc_genome_offset
+from kleat.misc.calc_genome_offset import calc_genome_offset
 
 
 @pytest.mark.parametrize("ctg_clv, tail_side, skip_check_size, expected_gnm_offset", [
