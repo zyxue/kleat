@@ -39,18 +39,18 @@ def calc_strand(tail_side):
                          'but {0} passed'.format(tail_side))
 
 
-def is_a_suffix_read(read, contig, tail_len=None):
+def is_a_suffix_read(read, contig, ctg_tail_len=None):
     """
     :param read: read
     :param contig: a suffix contig
     :param tail_len: the tail length of the suffix_contig
     """
-    if tail_len is None:
-        tail_len = apautils.calc_tail_length(contig)
-    if apautils.left_tail(contig):
-        return read.reference_start == tail_len
-    elif apautils.right_tail(contig):
-        return read.reference_end == contig.infer_sequence_length(always=True) - tail_len
+    if ctg_tail_len is None:
+        ctg_tail_len = apautils.calc_tail_length(contig)
+    if apautils.left_tail(read):
+        return read.reference_start == ctg_tail_len
+    elif apautils.right_tail(read):
+        return read.reference_end == contig.infer_query_length(always=True) - 1 - ctg_tail_len
     else:
         return False
 
