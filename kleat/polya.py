@@ -37,7 +37,7 @@ def prepare_args_for_collect_polya_evidence(num_cpus, output, c2g_bam_file, *arg
 def collect_polya_evidence(seqname, tmp_output_file, c2g_bam_file,
                            r2c_bam_file, ref_fa_file, bridge_skip_check_size):
     """loop through each contig and collect polyA evidence"""
-    logging.info('collecting polyA evidence for {0} ...'.format(seqname))
+    logging.info('collecting polyA evidence for {0} to {1} ...'.format(seqname, tmp_output_file))
 
     c2g_bam = pysam.AlignmentFile(c2g_bam_file)
     r2c_bam = pysam.AlignmentFile(r2c_bam_file)
@@ -52,6 +52,7 @@ def collect_polya_evidence(seqname, tmp_output_file, c2g_bam_file,
 
             do_collection(contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size)
 
+    logging.info('collecting polyA evidence for {0} to {1} is done'.format(seqname, tmp_output_file))
     return tmp_output_file
 
 
