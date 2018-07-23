@@ -11,6 +11,34 @@ from kleat.hexamer.hexamer import (
 )
 
 
+def calc_ref_clv(suffix_segment, tail_side=None):
+    """
+    Calculate cleavage site position wst the reference
+
+    :param tail_sideed: pass to avoid redundant checking of tail
+    """
+    if tail_side is None:
+        tail_side = apautils.has_tail(suffix_segment)
+
+    # the coordinates (+1 or not) are verified against visualization on IGV
+    if tail_side == 'left':
+        return suffix_segment.reference_start
+    elif tail_side == 'right':
+        return suffix_segment.reference_end - 1
+    else:
+        raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
+
+
+def calc_strand(tail_side):
+    if tail_side == 'left':
+        return '-'
+    elif tail_side == 'right':
+        return '+'
+    else:
+        raise ValueError('tail_side must be "left" or "right", '
+                         'but {0} passed'.format(tail_side))
+
+
 def is_a_suffix_read(read, contig, tail_len=None):
     """
     :param read: read

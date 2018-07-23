@@ -1,7 +1,6 @@
 from Bio import Seq
 
 import kleat.misc.settings as S
-from kleat.misc.calc_genome_offset import calc_genome_offset
 
 
 def reverse_complement(seq):
@@ -132,7 +131,6 @@ def right_tail(segment, tail_base='A'):
     """
     seq = segment.query_sequence
     last_cigar = segment.cigartuples[-1]
-    # potential test case == "A0.R100820":
     return (
         seq.endswith(tail_base)
         # right clipped
@@ -145,7 +143,6 @@ def right_tail(segment, tail_base='A'):
 def left_tail(segment, tail_base='T'):
     seq = segment.query_sequence
     first_cigar = segment.cigartuples[0]
-    # potential test case A0.S36384
     return (
         seq.startswith(tail_base)
         # left clipped
@@ -162,24 +159,6 @@ def has_tail(segment):
         return 'right'
     else:
         return None
-
-
-def calc_ref_clv(suffix_segment, tail_side=None):
-    """
-    Calculate cleavage site position wst the reference
-
-    :param tail_sideed: pass to avoid redundant checking of tail
-    """
-    if tail_side is None:
-        tail_side = has_tail(suffix_segment)
-
-    # the coordinates (+1 or not) are verified against visualization on IGV
-    if tail_side == 'left':
-        return suffix_segment.reference_start
-    elif tail_side == 'right':
-        return suffix_segment.reference_end - 1
-    else:
-        raise ValueError('{0} is not a suffix segment'.format(suffix_segment))
 
 
 def calc_tail_length(suffix_segment, tail_side=None):
@@ -203,28 +182,6 @@ def calc_tail_length(suffix_segment, tail_side=None):
                          '{1} CIGAR is not BAM_CSOFT_CLIP ({2})'.format(
                              tail_side, cigar_idx, S.BAM_CSOFT_CLIP))
     return the_cigar[1]
-
-
-def calc_strand_from_suffix_segment(suffix_segment):
-    """
-    calculate the strand of clv (hence the corresponding gene) from a suffix
-    segment
-    """
-    tail_side = has_tail(suffix_segment)
-    if tail_side is None:
-        raise ValueError('{0} is not a suffix segment, hence strand cannot be '
-                         'inferred'.format(suffix_segment))
-    return calc_strand(tail_side)
-
-
-def calc_strand(tail_side):
-    if tail_side == 'left':
-        return '-'
-    elif tail_side == 'right':
-        return '+'
-    else:
-        raise ValueError('tail_side must be "left" or "right", '
-                         'but {0} passed'.format(tail_side))
 
 
 def write_row(clv_record, csvwriter):
