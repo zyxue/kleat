@@ -89,7 +89,6 @@ def is_hardclipped(contig):
     return False
 
 
-# TODO: test this
 def infer_query_sequence(contig, always=False):
     """
     :param always: mimic pysam api for infer_query_length, by setting always to
