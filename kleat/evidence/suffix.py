@@ -63,6 +63,8 @@ def analyze_suffix_reads(r2c_bam, suffix_contig, ctg_clv, ctg_tail_len):
     """
     num_suffix_reads, max_tail_len = 0, 0
     for read in r2c_bam.fetch(suffix_contig.query_name, ctg_clv, ctg_clv + 1):
+        if read.is_unmapped:
+            continue
         if is_a_suffix_read(read, suffix_contig, ctg_tail_len):
             max_tail_len = max(max_tail_len, apautils.calc_tail_length(read))
             num_suffix_reads += 1
