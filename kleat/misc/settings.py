@@ -22,7 +22,7 @@ HEADER = [
     'evidence_type', 'contig_id_at_pos', 'contig_len', 'contig_mapq', 'contig_is_hardclipped',
 
     # suffix
-    'num_suffix_reads', 'suffix_contig_tail_len', 'num_suffix_contigs',
+    'num_suffix_reads', 'max_suffix_read_tail_len', 'suffix_contig_tail_len', 'num_suffix_contigs',
 
     # bridge
     'num_bridge_reads', 'max_bridge_read_tail_len', 'num_bridge_contigs',
@@ -34,7 +34,7 @@ HEADER = [
     'num_blank_contigs',
 
     'ctg_hex', 'ctg_hex_id', 'ctg_hex_pos',
-    'ref_hex', 'ref_hex_id', 'ref_hex_pos'
+    'ref_hex', 'ref_hex_id', 'ref_hex_pos',
 ]
 
 
@@ -43,7 +43,6 @@ HEADER = [
 FORMAT_OUTPUT_HEADER_DD = {     # dd just means dict
     'contig_len': 'max_contig_len',
     'contig_mapq': 'max_contig_mapq',
-    'num_suffix_reads': 'max_num_suffix_reads',
     'suffix_contig_tail_len': 'max_suffix_contig_tail_len',
     'contig_is_hardclipped': 'any_contig_is_hardclipped',
     'contig_id_at_pos': 'contig_ids_at_pos',
@@ -72,11 +71,14 @@ OUTPUT_HEADER = [
     'num_blank_contigs',
     'num_total_contigs',
 
-    'max_num_suffix_reads',
-    'max_suffix_contig_tail_len',
+    'num_suffix_reads',
     'num_bridge_reads',
-    'max_bridge_read_tail_len',
     'num_link_reads',
+
+    'max_suffix_read_tail_len',
+    'max_bridge_read_tail_len',
+
+    'max_suffix_contig_tail_len',
 
     'ctg_hex',
     'ctg_hex_id',
@@ -148,6 +150,7 @@ ENSEMBL_TO_UCSC_SEQNAME = dict(zip(ENSEMBL_SEQNAMES, UCSC_SEQNAMES))
 
 # columns grouped and used when merging polyA evidence
 COLS_TO_SUM = [
+    'num_suffix_reads',
     'num_bridge_reads',
     'num_link_reads',
 
@@ -161,12 +164,9 @@ COLS_TO_MAX = [
     'contig_len',
     'contig_mapq',
 
-    # num_suffix_reads (with its current definition) values are not really
-    # summable as one read often a single suffix read can support multiple
-    # neighbouring clvs
-    'num_suffix_reads',
     'suffix_contig_tail_len',
-    'max_bridge_read_tail_len'
+    'max_suffix_read_tail_len',
+    'max_bridge_read_tail_len',
 ]
 
 COLS_TO_ANY = [                 # any(), if any is True, then True
