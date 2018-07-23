@@ -50,7 +50,8 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
             is_hardclipped,
 
             0,                   # num_tail_reads
-            0,                   # tail_length
+            0,                   # max_suffix_read_tail_len
+            0,                   # suffix_contig_tail_length
             0,                   # num_suffix_contigs
 
             0,                   # num_bridge_reads

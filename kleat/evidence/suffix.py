@@ -81,15 +81,16 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
     """
     strand = calc_strand(tail_side)
     ref_clv = calc_ref_clv(contig, tail_side)
-    tail_len = apautils.calc_tail_length(contig, tail_side)
+    ctg_tail_len = apautils.calc_tail_length(contig, tail_side)
 
     if strand == '-':
-        ctg_clv = tail_len
+        ctg_clv = ctg_tail_len
     else:
         ctg_seq_len = contig.infer_query_length(always=True)
-        ctg_clv = ctg_seq_len - tail_len - 1
+        ctg_clv = ctg_seq_len - ctg_tail_len - 1
 
-    num_suffix_reads, max_suffix_read_tail_len = analyze_suffix_reads(r2c_bam, contig, ctg_clv, tail_len)
+    num_suffix_reads, max_suffix_read_tail_len = analyze_suffix_reads(
+        r2c_bam, contig, ctg_clv, ctg_tail_len)
 
     ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
         contig, strand, ref_clv, ref_fa, ctg_clv)
@@ -109,7 +110,8 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
         apautils.is_hardclipped(contig),
 
         num_suffix_reads,
-        tail_len,
+        max_suffix_read_tail_len,
+        ctg_tail_len,
         1,                      # num_suffix_contigs
 
         # other types of evidence are left empty

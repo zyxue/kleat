@@ -120,7 +120,8 @@ def gen_clv_record(contig, clv_key_tuple, num_link_reads, ref_fa):
         apautils.is_hardclipped(contig),
 
         0,                      # num_tail_reads
-        0,                      # tail_length
+        0,                      # max_suffix_read_tail_len
+        0,                      # suffix_contig_tail_length
         0,                      # num_suffix_contigs
 
         0,                      # num_bridge_reads
