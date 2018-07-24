@@ -102,7 +102,8 @@ OUTPUT_HEADER = [
     'num_contigs_bridge',
     'num_contigs_link',
     'num_contigs_blank',
-    'num_contigs_total',
+
+    'num_total_contigs',
 
     'num_reads_suffix',
     'num_reads_bridge',
