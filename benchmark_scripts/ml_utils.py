@@ -24,7 +24,7 @@ KARBOR_FEATURE_COLS = (
         'num_blank_contigs',
         'num_total_contigs',
 
-        'max_num_suffix_reads',
+        'num_suffix_reads',
         'max_suffix_contig_tail_len',
 
         'num_bridge_reads',
