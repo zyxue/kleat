@@ -21,6 +21,14 @@ HEADER = [
     'strand',
     'clv',
 
+    'ctg_hex',
+    'ctg_hex_id',
+    'ctg_hex_pos',
+
+    'ref_hex',
+    'ref_hex_id',
+    'ref_hex_pos',
+
     'evidence_type',
     'contig_id_at_pos',
     'contig_len',
@@ -40,14 +48,6 @@ HEADER = [
     'num_link_contigs',
 
     'num_blank_contigs',
-
-    'ctg_hex',
-    'ctg_hex_id',
-    'ctg_hex_pos',
-
-    'ref_hex',
-    'ref_hex_id',
-    'ref_hex_pos',
 ]
 
 
@@ -56,9 +56,28 @@ HEADER = [
 FORMAT_OUTPUT_HEADER_DD = {     # dd just means dict
     'contig_len': 'max_contig_len',
     'contig_mapq': 'max_contig_mapq',
-    'suffix_contig_tail_len': 'max_suffix_contig_tail_len',
-    'contig_is_hardclipped': 'any_contig_is_hardclipped',
+
     'contig_id_at_pos': 'contig_ids_at_pos',
+    'contig_is_hardclipped': 'any_contig_is_hardclipped',
+
+    'contig_tail_len_suffix': 'max_contig_tail_len_suffix',
+
+    # below are just for convenience, easier for human eyes when looking at
+    # headers in the output
+    'num_suffix_reads': 'num_reads_suffix',
+    'max_suffix_read_tail_len': 'max_read_tail_len_suffix',
+    'suffix_contig_tail_len': 'contig_tail_len_suffix',
+    'num_suffix_contigs': 'num_contigs_suffix',
+
+    'num_bridge_reads': 'num_reads_bridge',
+    'max_bridge_read_tail_len': 'max_read_tail_len_bridge',
+    'num_bridge_contigs': 'num_contigs_bridge',
+
+    'num_link_reads': 'num_reads_link',
+    'num_link_contigs': 'num_contigs_link',
+
+    'num_blank_contigs': 'num_contigs_blank',
+
 }
 
 # header in the output sorted in a intuitive way.
@@ -74,24 +93,24 @@ OUTPUT_HEADER = [
 
     'evidence_type',
     'contig_ids_at_pos',
-    'max_contig_len',
-    'max_contig_mapq',
-    'any_contig_is_hardclipped',
+    'contig_max_len',
+    'contig_max_mapq',
+    'contig_any_is_hardclipped',
 
-    'num_suffix_contigs',
-    'num_bridge_contigs',
-    'num_link_contigs',
-    'num_blank_contigs',
-    'num_total_contigs',
+    'num_contigs_suffix',
+    'num_contigs_bridge',
+    'num_contigs_link',
+    'num_contigs_blank',
+    'num_contigs_total',
 
-    'num_suffix_reads',
-    'num_bridge_reads',
-    'num_link_reads',
+    'num_reads_suffix',
+    'num_reads_bridge',
+    'num_reads_link',
 
-    'max_suffix_read_tail_len',
-    'max_bridge_read_tail_len',
+    'max_read_tail_len_suffix',
+    'max_read_tail_len_bridge',
 
-    'max_suffix_contig_tail_len',
+    'max_contig_tail_len_suffix',
 
     'ctg_hex',
     'ctg_hex_id',
