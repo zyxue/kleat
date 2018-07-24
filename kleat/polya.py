@@ -62,14 +62,12 @@ def collect_polya_evidence(seqname, tmp_output_file, c2g_bam_file,
 def do_collection(contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size):
     gen_key = apautils.gen_clv_key_tuple_from_clv_record
 
-    ascs = []           # already supported clvs
-    rec = process_suffix(
-        contig, r2c_bam, ref_fa, csvwriter)
+    ascs = []                   # already supported clvs
+    rec = process_suffix(contig, r2c_bam, ref_fa, csvwriter)
     if rec is not None:
         ascs.append(gen_key(rec))
 
-    for rec in process_bridge_and_link(
-            contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size):
+    for rec in process_bridge_and_link(contig, r2c_bam, ref_fa, csvwriter, bridge_skip_check_size):
         # TODO: with either bridge or link, they probably won't support
         # clv of the other strand
         ascs.append(gen_key(rec))
