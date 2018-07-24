@@ -126,27 +126,31 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
         strand,
         ref_clv,
 
+        ctg_hex,
+        ctg_hex_id,
+        ctg_hex_pos,
+
+        ref_hex,
+        ref_hex_id,
+        ref_hex_pos,
+
         'suffix',
         '{0}@{1}'.format(contig.query_name, ctg_clv),
         contig.query_length,
         contig.mapq,
         apautils.is_hardclipped(contig),
 
-        num_suffix_reads,
-        max_suffix_read_tail_len,
-        ctg_tail_len,
-        1,                      # num_suffix_contigs
+        num_suffix_reads=num_suffix_reads,
+        max_suffix_read_tail_len=max_suffix_read_tail_len,
+        suffix_contig_tail_len=ctg_tail_len,
+        num_suffix_contigs=1,
 
-        # other types of evidence are left empty
-        0,                      # num_bridge_reads
-        0,                      # max_bridge_read_tail_len
-        0,                      # num_bridge_contigs
+        num_bridge_reads=0,
+        max_bridge_read_tail_len=0,
+        num_bridge_contigs=0,
 
-        0,                      # num_link_reads
-        0,                      # num_link_contigs
+        num_link_reads=0,
+        num_link_contigs=0,
 
-        0,                      # num_blank_contigs
-
-        ctg_hex, ctg_hex_id, ctg_hex_pos,
-        ref_hex, ref_hex_id, ref_hex_pos
+        num_blank_contigs=0,
     )

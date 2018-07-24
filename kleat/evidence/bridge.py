@@ -99,7 +99,7 @@ def analyze_bridge(contig, read, ref_fa, dd_bridge, bridge_skip_check_size):
 
 
 def gen_clv_record(contig, clv_key_tuple,
-                   num_bridge_reads, max_bridge_tail_len,
+                   num_bridge_reads, max_bridge_read_tail_len,
                    ctg_hex_tuple, ref_fa):
     """
     :param contig: bridge contig
@@ -117,26 +117,31 @@ def gen_clv_record(contig, clv_key_tuple,
         strand,
         ref_clv,
 
+        ctg_hex,
+        ctg_hex_id,
+        ctg_hex_pos,
+
+        ref_hex,
+        ref_hex_id,
+        ref_hex_pos,
+
         'bridge',
         '{0}@{1}'.format(contig.query_name, ctg_clv),
         contig.infer_query_length(True),
         contig.mapq,
         apautils.is_hardclipped(contig),
 
-        0,                      # num_tail_reads
-        0,                      # max_suffix_read_tail_len
-        0,                      # suffix_contig_tail_length
-        0,                      # num_suffix_contigs
+        num_suffix_reads=0,
+        max_suffix_read_tail_len=0,
+        suffix_contig_tail_len=0,
+        num_suffix_contigs=0,
 
-        num_bridge_reads,
-        max_bridge_tail_len,
-        1,                      # num_bridge_contigs
+        num_bridge_reads=num_bridge_reads,
+        max_bridge_read_tail_len=max_bridge_read_tail_len,
+        num_bridge_contigs=1,
 
-        0,                      # num_link_reads,
-        0,                      # num_link_contigs
+        num_link_reads=0,
+        num_link_contigs=0,
 
-        0,                      # num_blank_contigs
-
-        ctg_hex, ctg_hex_id, ctg_hex_pos,
-        ref_hex, ref_hex_id, ref_hex_pos
+        num_blank_contigs=0,
     )
