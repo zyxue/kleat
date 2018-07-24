@@ -90,6 +90,14 @@ def analyze_suffix_reads(r2c_bam, contig, ctg_clv):
     return num_suffix_reads, max_tail_len
 
 
+def calc_ctg_clv(strand, ctg_seq_len, ctg_tail_len):
+    if strand == '-':
+        ctg_clv = ctg_tail_len
+    else:
+        ctg_clv = ctg_seq_len - ctg_tail_len - 1
+    return ctg_clv
+
+
 def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
     """
     :param contig: suffix contig
@@ -101,12 +109,8 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
     strand = calc_strand(tail_side)
     ref_clv = calc_ref_clv(contig, tail_side)
     ctg_tail_len = apautils.calc_tail_length(contig, tail_side)
-
-    if strand == '-':
-        ctg_clv = ctg_tail_len
-    else:
-        ctg_seq_len = contig.infer_query_length(always=True)
-        ctg_clv = ctg_seq_len - ctg_tail_len - 1
+    ctg_seq_len = contig.infer_query_length(always=True)
+    ctg_clv = calc_ctg_clv(strand, ctg_seq_len, ctg_tail_len)
 
     num_suffix_reads, max_suffix_read_tail_len = analyze_suffix_reads(
         r2c_bam, contig, ctg_clv)
