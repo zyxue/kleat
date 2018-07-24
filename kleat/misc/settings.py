@@ -31,9 +31,10 @@ HEADER = [
 
     'evidence_type',
     'contig_id_at_pos',
+    'contig_is_hardclipped',
+
     'contig_len',
     'contig_mapq',
-    'contig_is_hardclipped',
 
     'num_suffix_reads',
     'max_suffix_read_tail_len',
@@ -54,19 +55,17 @@ HEADER = [
 # A dictionary for renaming some of the columns in the header after aggregating
 # polyA evidence to be more sensible, and less confusing
 FORMAT_OUTPUT_HEADER_DD = {     # dd just means dict
-    'contig_len': 'max_contig_len',
-    'contig_mapq': 'max_contig_mapq',
-
     'contig_id_at_pos': 'contig_ids_at_pos',
     'contig_is_hardclipped': 'any_contig_is_hardclipped',
 
-    'contig_tail_len_suffix': 'max_contig_tail_len_suffix',
+    'contig_len': 'contig_max_len',
+    'contig_mapq': 'contig_max_mapq',
 
     # below are just for convenience, easier for human eyes when looking at
     # headers in the output
     'num_suffix_reads': 'num_reads_suffix',
     'max_suffix_read_tail_len': 'max_read_tail_len_suffix',
-    'suffix_contig_tail_len': 'contig_tail_len_suffix',
+    'suffix_contig_tail_len': 'max_contig_tail_len_suffix',
     'num_suffix_contigs': 'num_contigs_suffix',
 
     'num_bridge_reads': 'num_reads_bridge',
@@ -93,10 +92,10 @@ OUTPUT_HEADER = [
 
     'evidence_type',
     'contig_ids_at_pos',
+    'any_contig_is_hardclipped',
+
     'contig_max_len',
     'contig_max_mapq',
-
-    'any_contig_is_hardclipped',
 
     'num_contigs_suffix',
     'num_contigs_bridge',
