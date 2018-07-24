@@ -125,11 +125,11 @@ def gen_clv_record(contig, clv_key_tuple, num_link_reads, ref_fa):
         ref_hex_id,
         ref_hex_pos,
 
-        'link',
-        '{0}@{1}'.format(contig.query_name, ctg_clv),
-        contig.query_length,
-        contig.mapq,
-        apautils.is_hardclipped(contig),
+        evidence_type='link',
+        contig_id_at_pos='{0}@{1}'.format(contig.query_name, ctg_clv),
+        contig_len=contig.query_length,
+        contig_mapq=contig.mapq,
+        contig_is_hardclipped=apautils.is_hardclipped(contig),
 
         num_suffix_reads=0,
         max_suffix_read_tail_len=0,

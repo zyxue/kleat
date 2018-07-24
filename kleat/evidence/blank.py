@@ -50,11 +50,11 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
             ref_hex_id,
             ref_hex_pos,
 
-            'blank',
-            '{0}@{1}'.format(contig.query_name, ctg_clv),
-            contig.query_length,
-            contig.mapq,
-            is_hardclipped,
+            evidence_type='blank',
+            contig_id_at_pos='{0}@{1}'.format(contig.query_name, ctg_clv),
+            contig_len=contig.query_length,
+            contig_mapq=contig.mapq,
+            contig_is_hardclipped=is_hardclipped,
 
             num_suffix_reads=0,
             max_suffix_read_tail_len=0,

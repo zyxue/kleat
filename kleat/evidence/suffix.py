@@ -134,11 +134,11 @@ def gen_clv_record(contig, r2c_bam, tail_side, ref_fa):
         ref_hex_id,
         ref_hex_pos,
 
-        'suffix',
-        '{0}@{1}'.format(contig.query_name, ctg_clv),
-        contig.query_length,
-        contig.mapq,
-        apautils.is_hardclipped(contig),
+        evidence_type='suffix',
+        contig_id_at_pos='{0}@{1}'.format(contig.query_name, ctg_clv),
+        contig_len=contig.query_length,
+        contig_mapq=contig.mapq,
+        contig_is_hardclipped=apautils.is_hardclipped(contig),
 
         num_suffix_reads=num_suffix_reads,
         max_suffix_read_tail_len=max_suffix_read_tail_len,
