@@ -88,6 +88,14 @@ def analyze_link(contig, polyA_or_T_read):
     return seqname, strand, ref_clv
 
 
+def calc_ctg_clv(strand, ctg_seq_len):
+    if strand == '-':
+        ctg_clv = 0
+    else:
+        ctg_clv = ctg_seq_len - 1
+    return ctg_clv
+
+
 def gen_clv_record(contig, clv_key_tuple, num_link_reads, ref_fa):
     """
     :param contig: link contig
@@ -95,12 +103,8 @@ def gen_clv_record(contig, clv_key_tuple, num_link_reads, ref_fa):
     :param ref_fa: if provided, search PAS hexamer on reference genome, too
     """
     seqname, strand, ref_clv = clv_key_tuple
-
-    if strand == '-':
-        ctg_clv = 0
-    else:
-        ctg_seq_len = contig.infer_query_length(always=True)
-        ctg_clv = ctg_seq_len - 1
+    ctg_seq_len = contig.infer_query_length(always=True)
+    ctg_clv = calc_ctg_clv(strand, ctg_seq_len)
 
     ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
         contig, strand, ref_clv, ref_fa, ctg_clv)
