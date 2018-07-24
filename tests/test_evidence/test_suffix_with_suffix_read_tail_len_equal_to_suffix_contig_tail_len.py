@@ -87,7 +87,7 @@ def test_is_a_right_tail_suffix_read_for_forward_suffix_contig_with_suffix_read_
     """
     mock_read = MagicMock()
     mock_read.query_sequence = 'CGCAAA'
-    mock_read.reference_end = 7
+    mock_read.reference_end = 8
     mock_read.cigartuples = [
         (S.BAM_CMATCH, 5),
     ]
@@ -120,7 +120,7 @@ def test_is_a_right_tail_suffix_read_for_reverse_suffix_contig_with_suffix_read_
     """
     mock_read = MagicMock()
     mock_read.query_sequence = 'CGCAAA'
-    mock_read.reference_end = 10
+    mock_read.reference_end = 11
     mock_read.cigartuples = [
         (S.BAM_CMATCH, 5),
     ]

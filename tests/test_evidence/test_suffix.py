@@ -81,7 +81,7 @@ def test_is_a_right_tail_suffix_read_for_forward_suffix_contig():
     """
     mock_read = MagicMock()
     mock_read.query_sequence = 'CGCAA'
-    mock_read.reference_end = 6
+    mock_read.reference_end = 7  # ensure consistency with pysam, NOT 6
     mock_read.cigartuples = [
         (S.BAM_CMATCH, 5),
     ]
@@ -114,7 +114,7 @@ def test_is_a_right_tail_suffix_read_for_reverse_suffix_contig():
     """
     mock_read = MagicMock()
     mock_read.query_sequence = 'CGCAA'
-    mock_read.reference_end = 9
+    mock_read.reference_end = 10
     mock_read.cigartuples = [
         (S.BAM_CMATCH, 5),
     ]
@@ -165,7 +165,7 @@ def test_is_not_a_suffix_read_for_reverse_suffix_contig():
     """
     mock_read = MagicMock()
     mock_read.query_sequence = 'CGC'
-    mock_read.reference_end = 4
+    mock_read.reference_end = 5
     mock_read.cigartuples = [
         (S.BAM_CMATCH, 3),
     ]

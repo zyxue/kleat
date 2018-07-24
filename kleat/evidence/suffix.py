@@ -54,13 +54,13 @@ def is_a_suffix_read(read, contig, ctg_clv):
             if set(read.query_sequence[0:tail_len]) == set_T:
                 return tail_len
         elif apautils.right_tail(contig):
-            tail_len = read.reference_end - ctg_clv
+            tail_len = read.reference_end - ctg_clv - 1
             if set(read.query_sequence[-tail_len:]) == set_A:
                 return tail_len
     else:
         n_ctg_clv = contig.infer_query_length(always=True) - ctg_clv - 1
         if apautils.left_tail(contig):
-            tail_len = read.reference_end - n_ctg_clv
+            tail_len = read.reference_end - n_ctg_clv - 1
             if set(read.query_sequence[-tail_len:]) == set_A:
                 return tail_len
         elif apautils.right_tail(contig):
