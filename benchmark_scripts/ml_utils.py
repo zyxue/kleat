@@ -14,23 +14,26 @@ KARBOR_FEATURE_COLS = (
         'signed_dist_to_aclv',
         # 'abs_dist_to_aclv',
 
-        'max_contig_len',
-        'max_contig_mapq',
         'any_contig_is_hardclipped',
 
-        'num_suffix_contigs',
-        'num_bridge_contigs',
-        'num_link_contigs',
-        'num_blank_contigs',
+        'contig_max_len',
+        'contig_max_mapq',
+
+        'num_contigs_suffix',
+        'num_contigs_bridge',
+        'num_contigs_link',
+        'num_contigs_blank',
+
         'num_total_contigs',
 
-        'num_suffix_reads',
-        'max_suffix_contig_tail_len',
+        'num_reads_suffix',
+        'num_reads_bridge',
+        'num_reads_link',
 
-        'num_bridge_reads',
-        'max_bridge_read_tail_len',
+        'max_read_tail_len_suffix',
+        'max_read_tail_len_bridge',
 
-        'num_link_reads',
+        'max_contig_tail_len_suffix',
 
         'ctg_hex_dist',
         # 'ref_hex_dist',
