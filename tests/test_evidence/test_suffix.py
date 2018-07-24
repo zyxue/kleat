@@ -30,13 +30,11 @@ def test_is_a_left_tail_suffix_read_for_forward_suffix_contig():
         (S.BAM_CSOFT_CLIP, 3),
         (S.BAM_CMATCH, 5),
     ]
-    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=3)
+    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=3) == 2
 
 
 def test_is_a_left_tail_suffix_read_for_reverse_suffix_contig():
     """
-    Actually, it makes no difference to is_a_suffix_read whether contig is reversed or not
-
             TTATC               # suffix read
            TTT
            | └ATCGCTAC          # suffix contig in r2c alignment
@@ -48,7 +46,7 @@ def test_is_a_left_tail_suffix_read_for_reverse_suffix_contig():
        ctg_clv^  1
       109876543210              # rev contig coord, corresponding to contig coord in r2c alignment
        1      |ctg_clv
-    ...GTAGCGATCGT...            # genome
+    ...GTAGCGATCGT...           # genome
        234567890123             # genome coord
        ref_clv^1
     """
@@ -67,14 +65,14 @@ def test_is_a_left_tail_suffix_read_for_reverse_suffix_contig():
         (S.BAM_CMATCH, 5),
         (S.BAM_CSOFT_CLIP, 3),
     ]
-    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=7)
+    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=7) == 2
 
 
 def test_is_a_right_tail_suffix_read_for_forward_suffix_contig():
     """
-         CGCAA                      # suffix read
+         CGCAA                     # suffix read
             AAA
-       ATCGC┘ |                   # suffix contig
+       ATCGC┘ |                    # suffix contig
        012345678                   # contig coord
            ^ctg_clv
     ...ATCGCTGC...
@@ -95,7 +93,7 @@ def test_is_a_right_tail_suffix_read_for_forward_suffix_contig():
         (S.BAM_CMATCH, 5),
         (S.BAM_CSOFT_CLIP, 3),
     ]
-    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=4)
+    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=4) == 2
 
 
 def test_is_a_right_tail_suffix_read_for_reverse_suffix_contig():
@@ -129,7 +127,7 @@ def test_is_a_right_tail_suffix_read_for_reverse_suffix_contig():
         (S.BAM_CSOFT_CLIP, 3),
         (S.BAM_CMATCH, 8),
     ]
-    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=3)
+    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=3) == 2
 
 
 def test_is_not_a_suffix_read_for_forward_suffix_contig():
@@ -154,7 +152,7 @@ def test_is_not_a_suffix_read_for_forward_suffix_contig():
         (S.BAM_CSOFT_CLIP, 3),
         (S.BAM_CMATCH, 5),
     ]
-    assert not is_a_suffix_read(mock_read, mock_contig, ctg_clv=3)
+    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=3) is None
 
 
 def test_is_not_a_suffix_read_for_reverse_suffix_contig():
@@ -180,7 +178,7 @@ def test_is_not_a_suffix_read_for_reverse_suffix_contig():
         (S.BAM_CMATCH, 5),
         (S.BAM_CSOFT_CLIP, 3),
     ]
-    assert not is_a_suffix_read(mock_read, mock_contig, ctg_clv=4)
+    assert is_a_suffix_read(mock_read, mock_contig, ctg_clv=4) is None
 
 
 # At the momment, these variables are just copied form

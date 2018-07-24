@@ -44,27 +44,29 @@ def is_a_suffix_read(read, contig, ctg_clv):
     :param read: read
     :param contig: a suffix contig
     :param tail_len: the tail length of the suffix_contig
+
+    if it's a suffix read, return suffix_read_tail_len, else return None
     """
+    set_A, set_T = {'A'}, {'T'}
     if not contig.is_reverse:
         if apautils.left_tail(contig):
-            offset = read.reference_start
-            return set(read.query_sequence[0:ctg_clv - offset]) == {'T'}
+            tail_len = ctg_clv - read.reference_start
+            if set(read.query_sequence[0:tail_len]) == set_T:
+                return tail_len
         elif apautils.right_tail(contig):
-            delta = read.reference_end - ctg_clv
-            return set(read.query_sequence[-delta:]) == {'A'}
-        else:
-            return False
+            tail_len = read.reference_end - ctg_clv
+            if set(read.query_sequence[-tail_len:]) == set_A:
+                return tail_len
     else:
         n_ctg_clv = contig.infer_query_length(always=True) - ctg_clv - 1
         if apautils.left_tail(contig):
-            delta = read.reference_end - n_ctg_clv
-            return set(read.query_sequence[-delta:]) == {'A'}
+            tail_len = read.reference_end - n_ctg_clv
+            if set(read.query_sequence[-tail_len:]) == set_A:
+                return tail_len
         elif apautils.right_tail(contig):
-
-            offset = read.reference_start
-            return set(read.query_sequence[0:n_ctg_clv - offset]) == {'T'}
-        else:
-            return False
+            tail_len = n_ctg_clv - read.reference_start
+            if set(read.query_sequence[0:tail_len]) == set_T:
+                return tail_len
 
 
 def analyze_suffix_reads(r2c_bam, contig, ctg_clv):
@@ -81,8 +83,9 @@ def analyze_suffix_reads(r2c_bam, contig, ctg_clv):
     for read in reads:
         if read.is_unmapped:
             continue
-        if is_a_suffix_read(read, contig, ctg_clv):
-            max_tail_len = max(max_tail_len, apautils.calc_tail_length(read))
+        tail_len = is_a_suffix_read(read, contig, ctg_clv)
+        if tail_len is not None:
+            max_tail_len = max(max_tail_len, tail_len)
             num_suffix_reads += 1
     return num_suffix_reads, max_tail_len
 
