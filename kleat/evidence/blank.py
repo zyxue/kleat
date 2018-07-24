@@ -6,6 +6,8 @@ from kleat.hexamer.hexamer import (
     gen_reference_hexamer_tuple
 )
 
+from kleat.evidence.link import calc_ctg_clv
+
 
 def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
     """
@@ -26,11 +28,8 @@ def gen_two_clv_records(contig, ref_fa, already_supported_clv_keys):
         if clv_key in already_supported_clv_keys:
             continue
 
-        if strand == '-':
-            ctg_clv = 0
-        else:
-            ctg_seq_len = contig.infer_query_length(always=True)
-            ctg_clv = ctg_seq_len - 1
+        ctg_seq_len = contig.infer_query_length(always=True)
+        ctg_clv = calc_ctg_clv(strand, ctg_seq_len)
 
         ctg_hex, ctg_hex_id, ctg_hex_pos = gen_contig_hexamer_tuple(
             contig, strand, ref_clv, ref_fa, ctg_clv)
