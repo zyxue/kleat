@@ -95,7 +95,8 @@ OUTPUT_HEADER = [
     'contig_ids_at_pos',
     'contig_max_len',
     'contig_max_mapq',
-    'contig_any_is_hardclipped',
+
+    'any_contig_is_hardclipped',
 
     'num_contigs_suffix',
     'num_contigs_bridge',
