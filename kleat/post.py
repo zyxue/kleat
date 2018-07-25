@@ -62,8 +62,9 @@ def cluster_clv_parallel(df, cutoff, num_cpus=1):
 
     logging.info('concatenating clustered sub dataframes ...')
     df_res = pd.concat(res)
-
-    return df_res
+    dedupped = df_res[['seqname', 'strand', 'mode_clv']].drop_duplicates()
+    out = dedupped.rename(columns={'mode_clv': 'clv'}).reset_index(drop=True)
+    return out
 
 
 def prepare_grps_for_agg(df_clv):
