@@ -15,11 +15,13 @@ logger = logging.getLogger(__name__)
 
 
 def gen_tmp_output(output, path=None):
+    hash_str = str(abs(hash(output)))[:8]  # a output specific id
     if path is None:
         path = os.path.dirname(output)
-    return os.path.join(path, '__tmp_{0}.tsv'.format(os.path.basename(output)))
+    bname = '__tmp_{0}.{1}.tsv'.format(os.path.basename(output), hash_str)
+    return os.path.join(path, bname)
 
-
+        
 def prepare_args_for_collect_polya_evidence(num_cpus, output, c2g_bam_file, *args):
     c2g_bam = pysam.AlignmentFile(c2g_bam_file)
 
