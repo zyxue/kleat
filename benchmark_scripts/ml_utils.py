@@ -3,6 +3,7 @@ import logging
 import numpy as np
 import pandas as pd
 
+from kleat.post import cluster_clv_parallel
 from kleat.misc.settings import CANDIDATE_HEXAMERS_WITH_NA
 
 
@@ -112,3 +113,23 @@ def load_polya_seq_df(sample_id):
     else:
         raise ValueError('unknown file extension: {0}'.format(infile))
     return df
+
+
+def calc_precision_recall_curve(
+        df_with_pred_prob, df_ref, map_cutoff, cluster_cutoff, thresholds, num_cpus):
+    _df = df_with_pred_prob
+    res = []
+    for threshold in thresholds:
+        print(threshold, end=',')
+        _df['predicted'] = _df['pred_prob'] >= threshold
+        df_predicted = _df.query('predicted')
+        if df_predicted.shape[0] > 0:
+            df_clustered = cluster_clv_parallel(
+                df_predicted, cluster_cutoff, num_cpus)
+            recall, prec, f1 = compare(df_clustered, df_ref, map_cutoff)
+            res.append([recall, prec, f1, threshold])
+        else:
+            # when recall is 0, set precision to 1
+            res.append([0, 1, 0, threshold])
+    df_res = pd.DataFrame(res, columns=['recall', 'prec', 'f1', 'threshold'])
+    return df_res
