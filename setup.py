@@ -17,7 +17,8 @@ requirements = [
     'biopython>=1.72',
     'pandas>=0.23.1',
     'numpy>=1.14.5',
-    'matplotlib>=2.2.2'
+    'matplotlib>=2.2.2',
+    'scipy>=1.1.0',
 ]
 
 setup_requirements = ['pytest-runner', ]
