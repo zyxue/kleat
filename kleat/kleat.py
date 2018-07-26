@@ -107,6 +107,7 @@ def main():
     out_df = out_df[S.OUTPUT_HEADER]
     out_df.sort_values(['seqname', 'strand', 'clv'], inplace=True)
     dump_output_df(out_df, output, args.output_format)
+    logger.info('Completed writing to {0}...'.format(output))
 
 
 if __name__ == "__main__":
