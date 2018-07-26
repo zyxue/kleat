@@ -6,9 +6,9 @@ import logging
 import multiprocessing
 import subprocess
 
-
 import pandas as pd
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
+from sklearn.ensemble import GradientBoostingClassifier
 
 from ml_utils import load_polya_seq_df, map_clvs, compare, KARBOR_FEATURE_COLS
 from kleat.misc.cluster import cluster_clv_sites
@@ -38,17 +38,23 @@ def map_to_ref(df, df_ref, map_cutoff):
     return df
 
 
-def prepare_args(df_tr_mapped, max_depth_list):
+def prepare_args(df_tr_mapped, max_depth_list, clf_type):
     Xs = df_tr_mapped[KARBOR_FEATURE_COLS]
     ys = df_tr_mapped.is_tp.values
     res = []
     for d in max_depth_list:
-        clf = DecisionTreeClassifier(max_depth=d)
+        if clf_type == 'DecisionTreeClassifier':
+            clf = DecisionTreeClassifier(max_depth=d)
+        elif clf_type == 'GradientBoostingClassifier':
+            clf = GradientBoostingClassifier(learning_rate=0.01, max_depth=d, n_estimators=1000)
+        else:
+            raise NotImplementedError(f"{clf_type} hasn't been implemented")
         res.append([clf, Xs, ys])
     return res
 
 
 def train_it(clf, Xs, ys):
+    logging.info(f'training {clf}')
     clf.fit(Xs, ys)
     return clf
 
@@ -61,6 +67,7 @@ def predict(df_te, clf):
     Xs_te = df_te[KARBOR_FEATURE_COLS]
     df_te['predicted'] = clf.predict(Xs_te)
 
+    # dedup here may not be necessary
     clv_key_cols = ['seqname', 'strand', 'clv']
     out_df = df_te.query('predicted')[clv_key_cols].drop_duplicates()
     return out_df
@@ -90,8 +97,7 @@ def cluster_clv(df, cutoff=20):
 def run_test(test_sample_id, df_te, df_ref, clf, map_cutoff):
     """args as list, otherwise this function can't be passed
     multiprocessing.Pool"""
-    logging.info('testing on {0} with tree max_depth={1}'.format(
-        test_sample_id, clf.max_depth))
+    logging.info(f'testing on {test_sample_id} with {clf}')
 
     df_predicted = predict(df_te, clf)
     df_clustered = cluster_clv(df_predicted)
@@ -123,17 +129,22 @@ def run_test_in_parallel(clf_list, test_sample_ids, map_cutoff, num_cpus):
     return all_results
 
 
-def gen_clf_outputs(output, depth):
+def gen_clf_output(output, classifier_type, depth):
     """
     generate path to output clf pickl based on output_csv and depth of the tree
     """
     out_pkl = os.path.join(
         os.path.dirname(output),
-        os.path.basename(output).replace('.csv', f'.tree_max_depth_{depth}.pkl')
+        os.path.basename(output).replace('.csv', f'.{classifier_type}.tree_max_depth_{depth}.pkl')
     )
+    return out_pkl
+
+
+def gen_tree_vis_outputs(output, classifier_type, depth):
+    out_pkl = gen_clf_output(output, classifier_type, depth)
     out_dot = out_pkl[:-3] + 'dot'
     out_png = out_pkl[:-3] + 'png'
-    return out_pkl, out_dot, out_png
+    return out_dot, out_png
 
 
 def pickle_clf(clf, out_pkl):
@@ -159,14 +170,21 @@ def get_args():
         '-d', '--max-depths', type=int, nargs=3, default=[2, 20, 1],
         help='the range of max_depth values for training the tree, [beg, end, step]'
     )
-    parser.add_argument(
-        '-p', '--pickle-depths', type=int, nargs='+', default=[],
-        help=('for the particular max_depth values, '
-              'the tree would be pickled and a visualization would be produced ')
-    )
+    # just pickle them all
+    # parser.add_argument(
+    #     '-p', '--pickle-depths', type=int, nargs='+', default=[],
+    #     help=('for the particular max_depth values, '
+    #           'the tree would be pickled and a visualization would be produced ')
+    # )
     parser.add_argument(
         '-o', '--output', type=str, default='./out.csv',
         help='output for recording testing results in csv'
+    )
+    parser.add_argument(
+        '-t', '--classifier-type', type=str, default='DecisionTreeClassifier',
+        choices=['DecisionTreeClassifier', 'GradientBoostingClassifier'],
+        help=('the tree-based classifier type intended, the name follows '
+              'the corresponding classifier class name in scikit-learn')
     )
     parser.add_argument(
         '--no-testing', action='store_true',
@@ -196,6 +214,7 @@ def main():
     args = get_args()
     train_sample_id = args.train_sample_id
     test_sample_ids = args.test_sample_ids
+    clf_type = args.classifier_type
 
     df_tr = load_df(train_sample_id)
     df_tr_ref = load_polya_seq_df(train_sample_id)
@@ -204,7 +223,7 @@ def main():
     beg, end, step = args.max_depths
     max_depth_list = range(beg, end, step)
     logging.info(f'max_depth list trees: {max_depth_list}')
-    train_args = prepare_args(df_tr_mapped, max_depth_list)
+    train_args = prepare_args(df_tr_mapped, max_depth_list, clf_type)
 
     logging.info('prepare for TRAINing ...')
     with multiprocessing.Pool(args.num_cpus) as p:
@@ -213,11 +232,15 @@ def main():
 
     clf_dd = dict(zip(max_depth_list, clf_list))
     for depth in clf_dd:
-        if depth in args.pickle_depths:
-            clf_pkl, clf_dot, clf_png = gen_clf_outputs(args.output, depth)
-            backup_file(clf_pkl, clf_dot, clf_png)
+        clf_pkl = gen_clf_output(args.output, clf_type, depth)
+        backup_file(clf_pkl)
+        logging.info(f'pickling {clf_pkl}')
+        pickle_clf(clf_dd[depth], clf_pkl)
 
-            pickle_clf(clf_dd[depth], clf_pkl)
+        if clf_type == 'DecisionTreeClassifier':
+            # output visualization as well
+            clf_dot, clf_png = gen_tree_vis_outputs(args.output, clf_type, depth)
+            backup_file(clf_dot, clf_png)
             export_graphviz(clf_dd[depth], clf_dot, args.vis_tree_max_depth,
                             feature_names=KARBOR_FEATURE_COLS)
             try:
