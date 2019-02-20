@@ -159,9 +159,15 @@ def get_args():
     )
 
     parser.add_argument(
-        '-r', '--train-sample-id', type=str, required=True,
+        '-r', '--train-sample-id', type=str,
         help='the sample ID to train a decision tree on, e.g. HBRC4'
     )
+    parser.add_argument(
+        '--trained-classifier', type=str, default=None,
+        help=('a pickle file to the trained classifier. '
+              'If this option is specified, then -r is ignored')
+    )
+
     parser.add_argument(
         '-e', '--test-sample-ids', type=str, nargs='+', required=True,
         help='the sample IDs to test the tree on, e.g. UHRC1 UHRC2 HBRC4 HBRC6'
@@ -212,42 +218,48 @@ def get_args():
 
 def main():
     args = get_args()
-    train_sample_id = args.train_sample_id
     test_sample_ids = args.test_sample_ids
-    clf_type = args.classifier_type
 
-    df_tr = load_df(train_sample_id)
-    df_tr_ref = load_polya_seq_df(train_sample_id)
-    df_tr_mapped = map_to_ref(df_tr, df_tr_ref, args.map_cutoff)
+    if args.trained_classifier is None:
+        train_sample_id = args.train_sample_id
+        clf_type = args.classifier_type
 
-    beg, end, step = args.max_depths
-    max_depth_list = range(beg, end, step)
-    logging.info(f'max_depth list trees: {max_depth_list}')
-    train_args = prepare_args(df_tr_mapped, max_depth_list, clf_type)
+        df_tr = load_df(train_sample_id)
+        df_tr_ref = load_polya_seq_df(train_sample_id)
+        df_tr_mapped = map_to_ref(df_tr, df_tr_ref, args.map_cutoff)
 
-    logging.info('prepare for TRAINing ...')
-    with multiprocessing.Pool(args.num_cpus) as p:
-        logging.info(f'start parallel training with {args.num_cpus} CPUs ...')
-        clf_list = p.map(train_it_wrapper, train_args)
+        beg, end, step = args.max_depths
+        max_depth_list = range(beg, end, step)
+        logging.info(f'max_depth list trees: {max_depth_list}')
+        train_args = prepare_args(df_tr_mapped, max_depth_list, clf_type)
 
-    clf_dd = dict(zip(max_depth_list, clf_list))
-    for depth in clf_dd:
-        clf_pkl = gen_clf_output(args.output, clf_type, depth)
-        backup_file(clf_pkl)
-        logging.info(f'pickling {clf_pkl}')
-        pickle_clf(clf_dd[depth], clf_pkl)
+        logging.info('prepare for TRAINing ...')
+        with multiprocessing.Pool(args.num_cpus) as p:
+            logging.info(f'start parallel training with {args.num_cpus} CPUs ...')
+            clf_list = p.map(train_it_wrapper, train_args)
 
-        if clf_type == 'DecisionTreeClassifier':
-            # output visualization as well
-            clf_dot, clf_png = gen_tree_vis_outputs(args.output, clf_type, depth)
-            backup_file(clf_dot, clf_png)
-            export_graphviz(clf_dd[depth], clf_dot, args.vis_tree_max_depth,
-                            feature_names=KARBOR_FEATURE_COLS)
-            try:
-                subprocess.call(f'dot -Tpng {clf_dot} -o {clf_png}'.split())
-            except FileNotFoundError as err:
-                logging.warning(err)
-                logging.warning(f'tree visualization ({clf_png}) cannot be generated')
+        clf_dd = dict(zip(max_depth_list, clf_list))
+        for depth in clf_dd:
+            clf_pkl = gen_clf_output(args.output, clf_type, depth)
+            backup_file(clf_pkl)
+            logging.info(f'pickling {clf_pkl}')
+            pickle_clf(clf_dd[depth], clf_pkl)
+
+            if clf_type == 'DecisionTreeClassifier':
+                # output visualization as well
+                clf_dot, clf_png = gen_tree_vis_outputs(args.output, clf_type, depth)
+                backup_file(clf_dot, clf_png)
+                export_graphviz(clf_dd[depth], clf_dot, args.vis_tree_max_depth,
+                                feature_names=KARBOR_FEATURE_COLS)
+                try:
+                    subprocess.call(f'dot -Tpng {clf_dot} -o {clf_png}'.split())
+                except FileNotFoundError as err:
+                    logging.warning(err)
+                    logging.warning(f'tree visualization ({clf_png}) cannot be generated')
+    else:
+        logging.info(f'loading {args.trained_classifier} ...')
+        with open(args.trained_classifier, 'rb') as inf:
+            clf_list = [pickle.load(inf)]
 
     if args.no_testing:
         logging.info('--no-testing is specified, no testing will be run.')
