@@ -8,4 +8,10 @@ time python benchmark_scripts/train_arbor.py --train-sample-id HBRC4 --test-samp
 for i in UHRC1 UHRC2 HBRC4 HBRC6 ; do echo "python ./benchmark_scripts/max_recall_analysis.py $i"; done  | parallel --ungroup
 ```
 
-python benchmark_scripts/predict.py --test-sample-ids HBRC4_114genes HBRC6_114genes UHRC1_114genes UHRC2_114genes --classifier-pkl benchmark_transcriptome/tcga-run-3/benchmark.tree_max_depth_7.pkl --output benchmark_114genes/tcga-run-3/benchmark.csv
+```
+time python benchmark_scripts/predict.py --test-sample-ids HBRC4_114genes HBRC6_114genes UHRC1_114genes UHRC2_114genes --classifier-pkl benchmark_transcriptome/tcga-run-3/benchmark.tree_max_depth_7.pkl --output benchmark_114genes/tcga-run-3/benchmark.csv
+```
+
+```
+time python benchmark_scripts/train_automl.py --train-sample-id HBRC4 --test-sample-ids HBRC4 HBRC6 UHRC1 UHRC2 --max-depths 1 2 1 --output benchmark_transcriptome/tcga-run-4/benchmark-automl.csv --num-cpus 30
+```
