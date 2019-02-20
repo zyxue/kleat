@@ -127,7 +127,71 @@ Development
    . venv/bin/activate
    pip install -r requirements_dev.txt
    python setup.py develop
+
+.. code-block::
+
    kleat --help
+
+   usage: kleat [-h] -c CONTIGS_TO_GENOME -r READS_TO_CONTIGS -f REFERENCE_GENOME
+                -a KARBOR_CLV_ANNOTATION [-o OUTPUT] [-m OUTPUT_FORMAT]
+                [-p NUM_CPUS] [--keep-pre-aggregation-tmp-file]
+                [--bridge-skip-check-size BRIDGE_SKIP_CHECK_SIZE]
+                [--cluster-first-then-aggregate]
+                [--cluster-cutoff CLUSTER_CUTOFF]
+
+   KLEAT: cleavage site detection via de novo assembly
+
+   optional arguments:
+     -h, --help            show this help message and exit
+     -c CONTIGS_TO_GENOME, --contigs-to-genome CONTIGS_TO_GENOME
+                           input contig-to-genome alignment BAM file
+     -r READS_TO_CONTIGS, --reads-to-contigs READS_TO_CONTIGS
+                           input read-to-contig alignment BAM file
+     -f REFERENCE_GENOME, --reference-genome REFERENCE_GENOME
+                           reference genome FASTA file, if provided, KLEAT will
+                           search polyadenylation signal (PAS) hexamer in both
+                           contig and reference genome, which is useful for
+                           checking mutations that may affect PAS hexmaer. Note
+                           this fasta file needs to be consistent with the one
+                           used for generating the read-to-contig BAM alignments
+     -a KARBOR_CLV_ANNOTATION, --karbor-clv-annotation KARBOR_CLV_ANNOTATION
+                           the annotated clv pickle formatted for karbor with
+                           (seqname, strand, clv, gene_ids, gene_names) columns
+                           this file is processed from GTF annotation file
+     -o OUTPUT, --output OUTPUT
+                           output tsv file, if not specified, it will use prefix
+                           output, and the extension depends on the value of
+                           --output-format. e.g. output.csv, output.pickle, etc.
+     -m OUTPUT_FORMAT, --output-format OUTPUT_FORMAT
+                           also support tsv, pickle (python)
+     -p NUM_CPUS, --num-cpus NUM_CPUS
+                           parallize the step of aggregating polya evidence for
+                           each (seqname, strand, clv)
+     --keep-pre-aggregation-tmp-file
+                           specify this if you would like to keep the tmp file
+                           before aggregating polyA evidence per cleavage site,
+                           mostly for debugging purpose
+     --bridge-skip-check-size BRIDGE_SKIP_CHECK_SIZE
+                           the size beyond which the clv is predicted be on the
+                           next matched region. Otherwise, clv is predicted to be
+                           at the edge of the prevision match. The argument is
+                           added because inconsistent break points are observed
+                           between read (softclip as in r2c alignment) and contig
+                           (boundry between BAM_CMATCH and BAM_CREF_SKIP)
+     --cluster-first-then-aggregate
+                           the default approach is aggregate_polya_evidence ->
+                           filter -> cluster, if this argument is specified, then
+                           the order becomes cluster -> aggregate_polya_evidence
+                           -> filter. The idea is that by clustering first,
+                           neighbouring clvs would result in stronger polyA
+                           evidence signal, but preliminary results show that it
+                           does not make a big difference. Also, note that if the
+                           data is noisy, cluster before filter would further
+                           decrease the clv resolution since single-linkage
+                           culstering would combine those noisy clvs in to the
+                           clvs with real signal
+     --cluster-cutoff CLUSTER_CUTOFF
+                           the cutoff for single-linkage clustering
 
 To uninstall
 
